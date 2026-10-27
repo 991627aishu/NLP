@@ -1,0 +1,221 @@
+[
+  {
+    "id": "TC-01",
+    "name": "Ashwagandha (Kannada Native)",
+    "query": "ಅಶ್ವಗಂಧದ ಆರೋಗ್ಯ ಪ್ರಯೋಜನಗಳು ಏನು?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "herbs",
+    "detected_language": "Kannada",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-02",
+    "name": "Ashwagandha (Kanglish spelling variation)",
+    "query": "ashwagandha inda enu upayogagalu ide?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "herbs",
+    "detected_language": "Possible romanized Kannada / Kanglish",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-03",
+    "name": "Neem (Hindi Devanagari)",
+    "query": "नीम के पत्ते के क्या फायदे हैं?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "herbs",
+    "detected_language": "Hindi (Devanagari; other Devanagari languages may be confused)",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-04",
+    "name": "Neem (Hinglish with variation)",
+    "query": "neem ka upyog kaise kare?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "herbs",
+    "detected_language": "Possible romanized Hindi / Hinglish",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-05",
+    "name": "Turmeric/Pasupu (Telugu Native)",
+    "query": "పసుపు వలన కలిగే ప్రయోజనాలు ఏమిటి?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "herbs",
+    "detected_language": "Telugu",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-06",
+    "name": "Turmeric/Pasupu (Romanized Telugu)",
+    "query": "pasupu upayogam enti?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "herbs",
+    "detected_language": "Possible romanized Telugu",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-07",
+    "name": "Pitta Dosha Concept (English)",
+    "query": "What physiological functions are governed by Pitta dosha?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "general",
+    "detected_language": "English or romanized/code-mixed Latin input",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-08",
+    "name": "Ama and Agni Relationship (Grounded Abstention)",
+    "query": "How does low Agni lead to Ama accumulation?",
+    "passed": true,
+    "notes": [],
+    "auto_category": "general",
+    "detected_language": "English or romanized/code-mixed Latin input",
+    "citations": [],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-09",
+    "name": "Multi-symptom Clinical Query (Hinglish)",
+    "query": "mujhe bahut tej bukhar aur khansi hai",
+    "passed": true,
+    "notes": [],
+    "auto_category": "disease",
+    "detected_language": "Possible romanized Hindi / Hinglish",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-10",
+    "name": "Multi-symptom Clinical Query (English)",
+    "query": "fever, headache, fatigue and vomiting",
+    "passed": true,
+    "notes": [],
+    "auto_category": "disease",
+    "detected_language": "English or romanized/code-mixed Latin input",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-11",
+    "name": "Out-of-Domain Car Mechanics",
+    "query": "how to change car engine oil and spark plugs",
+    "passed": true,
+    "notes": [],
+    "auto_category": "general",
+    "detected_language": "English or romanized/code-mixed Latin input",
+    "citations": [
+      1
+    ],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-12",
+    "name": "Non-Medical Synthetic Query",
+    "query": "quantum semiconductor fabrication plant in ancient ayurveda",
+    "passed": true,
+    "notes": [],
+    "auto_category": "general",
+    "detected_language": "English or romanized/code-mixed Latin input",
+    "citations": [],
+    "has_emergency": false
+  },
+  {
+    "id": "TC-13",
+    "name": "Emergency: Crushing Chest Pressure (English)",
+    "query": "I feel crushing pressure in my chest and difficulty breathing",
+    "passed": true,
+    "notes": [],
+    "auto_category": "disease",
+    "detected_language": "English or romanized/code-mixed Latin input",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "has_emergency": true
+  },
+  {
+    "id": "TC-14",
+    "name": "Emergency: Severe Chest Pain (Hinglish variation)",
+    "query": "sine me tez dard aur ghutan ho rahi hai",
+    "passed": true,
+    "notes": [],
+    "auto_category": "disease",
+    "detected_language": "Possible romanized Hindi / Hinglish",
+    "citations": [],
+    "has_emergency": true
+  },
+  {
+    "id": "TC-15",
+    "name": "Emergency: Telugu Chest Pain Compound",
+    "query": "నాకు తీవ్రమైన గుండెనొప్పి వస్తోంది",
+    "passed": true,
+    "notes": [],
+    "auto_category": "disease",
+    "detected_language": "Telugu",
+    "citations": [],
+    "has_emergency": true
+  },
+  {
+    "id": "TC-16",
+    "name": "Emergency: Kannada Breathing Failure",
+    "query": "ಉಸಿರಾಡಲು ಆಗುತ್ತಿಲ್ಲ ತಕ್ಷಣ ಸಹಾಯ ಬೇಕು",
+    "passed": true,
+    "notes": [],
+    "auto_category": "disease",
+    "detected_language": "Kannada",
+    "citations": [],
+    "has_emergency": true
+  }
+]

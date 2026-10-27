@@ -1,0 +1,17 @@
+{
+  "status": "trained",
+  "model_type": "Multinomial Naive Bayes + TF-IDF (1-2 grams)",
+  "dataset": "Columbia University Disease-Symptom Knowledge Database",
+  "total_samples": 1119,
+  "distinct_classes": 134,
+  "train_samples": 839,
+  "test_samples": 280,
+  "test_accuracy": 0.5464,
+  "top3_accuracy": 0.7071,
+  "top5_accuracy": 0.7607,
+  "macro_precision": 0.637,
+  "macro_recall": 0.5825,
+  "macro_f1": 0.5373,
+  "confidence_threshold": 0.08,
+  "scientific_disclaimer": "Academic comparative baseline trained on Columbia University general clinical associations. This model is not an autonomous diagnostic instrument and does not replace professional medical judgment."
+}

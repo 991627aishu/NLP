@@ -1,0 +1,138 @@
+{
+  "project": "AyurMitra",
+  "generated_at_utc": "2026-10-27T15:59:11.439226+00:00",
+  "dataset_status": {
+    "WHO PDF and extracted terminology chunks": true,
+    "Columbia disease-symptom association table": true,
+    "NAMASTE standardized terminology workbook": true,
+    "IMPPAT plant-use association table": true,
+    "AYUSH Research Portal evidence register (file and schema ready)": true,
+    "AYUSH register contains records marked as human-reviewed": false,
+    "AYUSH Research Portal manually reviewed evidence register": false
+  },
+  "sources": {
+    "WHO": {
+      "ready": true,
+      "raw_pdf_count": 1,
+      "prepared_chunks": 1023,
+      "pages_represented": 606,
+      "purpose": "Terminology/document retrieval; not disease-label training data."
+    },
+    "NAMASTE": {
+      "ready": true,
+      "rows": 14968,
+      "columns": [
+        "rec_id",
+        "t_id",
+        "term_id",
+        "term_devanagari",
+        "term_iast",
+        "wordtree",
+        "parent_id",
+        "def_id",
+        "w_trans",
+        "w_def",
+        "refn",
+        "sys_id",
+        "source_sheet"
+      ],
+      "sheets": 1,
+      "purpose": "Official Ayurveda terminology/code/definition lookup."
+    },
+    "IMPPAT": {
+      "ready": true,
+      "files": [
+        {
+          "name": "imppat_plant_info.csv",
+          "rows": 4154,
+          "columns": [
+            "Plant_identifier",
+            "Indian_Medicinal_plant",
+            "Synonymous names",
+            "Kingdom",
+            "Family",
+            "Group",
+            "Common_name",
+            "IUCN_Red_List_Category",
+            "System_of_Medicine"
+          ]
+        },
+        {
+          "name": "imppat_plant_therapeutic_use.csv",
+          "rows": 94261,
+          "columns": [
+            "IMPPAT_Plant_identifier",
+            "Indian_Medicinal_plant",
+            "Plant_part",
+            "IMPPAT_Therapeutic_use_identifier",
+            "Therapeutic_use"
+          ]
+        }
+      ],
+      "usable_plant_use_associations": 94261,
+      "purpose": "Source-listed plant-part/use associations; not personalized clinical recommendations."
+    },
+    "Columbia": {
+      "ready": true,
+      "rows": 1898,
+      "distinct_diseases": 134,
+      "columns": [
+        "disease_raw",
+        "disease_code",
+        "disease",
+        "disease_count_in_source",
+        "symptom_raw",
+        "symptom_code",
+        "symptom",
+        "source",
+        "source_url"
+      ],
+      "purpose": "General disease/symptom association ranking; not Ayurveda-specific and not a validated classifier."
+    },
+    "AYUSH Research Portal": {
+      "ready": false,
+      "purpose": "Only manually reviewed, cited records are indexed; portal is not assumed to provide a bulk dataset."
+    }
+  },
+  "raw_files": [
+    {
+      "file": "data/raw/columbia_disease_symptom_source.html",
+      "bytes": 1503447,
+      "sha256": "8f8cb38b379ed5894b88558ae499b77915fe2f899c850d09706c1e26962ded9a"
+    },
+    {
+      "file": "data/raw/imppat_plant_info.csv",
+      "bytes": 541093,
+      "sha256": "f68c4f57ee1a58079147bf40c4cec03d647c2e2354e77e058db6e7620e450011"
+    },
+    {
+      "file": "data/raw/imppat_plant_therapeutic_use.csv",
+      "bytes": 7356547,
+      "sha256": "dab0c68bbda8553947dd3b645e0c9931eeeaccf977c41c27539c5dd5eb09f77e"
+    },
+    {
+      "file": "data/raw/namaste_ayurveda_sat_combined.xlsx",
+      "bytes": 2169105,
+      "sha256": "5c4c0228415da2806eefbf9b7f1b95a9432a5ff436b9dcc24682299cf0044cbe"
+    },
+    {
+      "file": "data/raw/WHO.pdf",
+      "bytes": 4631484,
+      "sha256": "89f7de2113f9d4463398783f7797c3ce62b97e01cfa5d765a6eb1b9b1ba47fd2"
+    }
+  ],
+  "missing_sources": [
+    "AYUSH Research Portal"
+  ],
+  "missing_required_sources": [],
+  "missing_optional_sources": [
+    "AYUSH Research Portal"
+  ],
+  "next_actions": {
+    "NAMASTE": "Download SAT-COMBINED from https://namaste.ayush.gov.in/sat_Ayurveda if absent; rerun downloader and preparation.",
+    "IMPPAT": "Download the official Plant - Therapeutic use Association and Information on Medicinal Plants tables from https://cb.imsc.res.in/imppat/download if absent; retain original file formats and prefix filenames with imppat_.",
+    "Columbia": "Retry official source download from https://impact.dbmi.columbia.edu/~friedma/Projects/DiseaseSymptomKB/index.html; if unavailable, do not substitute an unlicensed mirror without project approval.",
+    "AYUSH Research Portal": "Add only manually reviewed citations/claims to the evidence register; do not scrape or invent records."
+  },
+  "integrity_note": "File hashes are recorded for reproducibility. Missing datasets are not fabricated. File existence alone does not imply clinical validity."
+}

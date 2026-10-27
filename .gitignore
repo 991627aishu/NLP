@@ -1,0 +1,39 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Raw & Processed Large Datasets (generate via scripts/prepare_datasets.py)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/processed/*.json
+!data/ayush_evidence_register_template.csv
+!data/source_manifest.json
+
+# File formats excluded from source folders
+data/raw/*.xlsx
+data/raw/*.xls
+data/raw/*.pdf
+data/raw/*.html
+data/raw/*.tsv
+data/raw/*.csv
+data/raw/*.zip
+
+# Temporary, build, and log files
+*.log
+.DS_Store
+Thumbs.db

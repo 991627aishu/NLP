@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AyurMitra — Source-Grounded Multilingual Ayurvedic Knowledge & Evidence Assistant</title>
+    <meta name="description" content="Explore Ayurveda knowledge, botanical references, and symptom associations grounded in WHO, NAMASTE, IMPPAT 2.0, and AYUSH evidence registers.">
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="app-header" id="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-badge">
+                    <span class="brand-icon">🌿</span>
+                    <span class="brand-sparkle">✦</span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">AyurMitra</span>
+                    <span class="brand-subtitle">Source-Grounded Evidence Assistant</span>
+                </div>
+            </div>
+            
+            <div class="header-status">
+                <span class="status-dot"></span>
+                <span class="status-label">Research Prototype v1.2</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="#how-it-works" class="nav-link" id="nav-how">How it works</a>
+                <a href="#sources" class="nav-link" id="nav-sources">Sources</a>
+                <a href="#evaluation-section" class="nav-link" id="nav-eval">Ablation Study</a>
+                <a href="#kg-section" class="nav-link" id="nav-kg">Knowledge Graph</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section" id="hero-section">
+            <div class="kicker-pill">
+                <span class="kicker-spark">✦</span>
+                <span>Academic AI/ML & NLP Research Project</span>
+            </div>
+            <h1 class="hero-headline">Explore Ayurveda Knowledge.<br><span class="gradient-text">Grounded in Verifiable Evidence.</span></h1>
+            <p class="hero-description">
+                Query standardized Ayurvedic terminologies (WHO, NAMASTE), botanical pharmacology (IMPPAT 2.0),
+                and clinical disease-symptom associations. Every claim retains transparent source attribution and citation traceability.
+            </p>
+        </section>
+
+        <!-- Topic Categories -->
+        <div class="category-grid" role="tablist" aria-label="Ayurveda Categories">
+            <button class="category-card active" data-category="general" id="tab-general" role="tab" aria-selected="true">
+                <div class="card-icon">✦</div>
+                <div class="card-content">
+                    <strong class="card-title">General Ayurveda</strong>
+                    <span class="card-desc">Doshas, Agni, Ama, Dhatus, and WHO/NAMASTE definitions</span>
+                </div>
+            </button>
+            <button class="category-card" data-category="herbs" id="tab-herbs" role="tab" aria-selected="false">
+                <div class="card-icon">❋</div>
+                <div class="card-content">
+                    <strong class="card-title">Ayurvedic Herbs</strong>
+                    <span class="card-desc">Botanical identities, Sanskrit terms, and IMPPAT plant-uses</span>
+                </div>
+            </button>
+            <button class="category-card" data-category="disease" id="tab-disease" role="tab" aria-selected="false">
+                <div class="card-icon">⌕</div>
+                <div class="card-content">
+                    <strong class="card-title">Symptoms & Conditions</strong>
+                    <span class="card-desc">Explore clinical associations with Explainable AI & ML baseline</span>
+                </div>
+            </button>
+        </div>
+
+        <!-- Search Box Panel -->
+        <section class="search-panel" id="search-panel">
+            <div class="search-header-row">
+                <label id="query-label" for="query" class="query-prompt-label">Ask a general Ayurveda question</label>
+                
+                <div class="mode-select-wrapper">
+                    <label for="answer-mode" class="mode-label">Generation Mode:</label>
+                    <select id="answer-mode" class="mode-select" aria-label="Answer Generation Mode">
+                        <option value="ollama">✨ AI Generative Mode (Ollama)</option>
+                        <option value="extractive" selected>📄 Grounded Extractive Mode (Fast & Auditable)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="search-input-group">
+                <textarea id="query" class="query-textarea" placeholder="Try: What does Agni mean in Ayurveda?" rows="2" aria-label="Search Query Input"></textarea>
+                <button id="search-button" class="btn-search" type="button" aria-label="Search Sources">
+                    <span class="btn-text">Search Sources</span>
+                    <span class="btn-arrow">↗</span>
+                </button>
+            </div>
+
+            <!-- Quick Example Chips -->
+            <div class="quick-chips-wrapper">
+                <span class="chips-label">Try Multilingual Queries:</span>
+                <div class="chips-container" id="chips-container">
+                    <button class="chip-btn" data-query="tulsi inda enu upayoga?" data-cat="herbs">🌿 Tulsi (Kanglish)</button>
+                    <button class="chip-btn" data-query="ತುಳಸಿಯ ಉಪಯೋಗಗಳೇನು?" data-cat="herbs">🌿 ತುಳಸಿ (Kannada)</button>
+                    <button class="chip-btn" data-query="tulsi ke kya fayde hain?" data-cat="herbs">🌿 Tulsi (Hinglish)</button>
+                    <button class="chip-btn" data-query="तुलसी के क्या फायदे हैं?" data-cat="herbs">🌿 तुलसी (Hindi)</button>
+                    <button class="chip-btn" data-query="tulsi upayogalu emiti?" data-cat="herbs">🌿 Tulsi (Rom. Telugu)</button>
+                    <button class="chip-btn" data-query="తులసి ఉపయోగాలు ఏమిటి?" data-cat="herbs">🌿 తులసి (Telugu)</button>
+                    <button class="chip-btn" data-query="What are the uses of tulsi?" data-cat="herbs">🌿 Tulsi (English)</button>
+                    <button class="chip-btn" data-query="What is Agni in Ayurveda?" data-cat="general">✦ Agni Concept</button>
+                    <button class="chip-btn" data-query="thale novu kemmu aagide" data-cat="disease">⌕ Headache (Kanglish)</button>
+                    <button class="chip-btn chip-emergency" data-query="Severe chest pain radiating to left arm" data-cat="disease">🚨 Emergency Alert</button>
+                </div>
+            </div>
+
+            <!-- Language and Script Detection Bar -->
+            <div class="query-meta-bar">
+                <div class="lang-detector" id="lang-detector">
+                    <span class="lang-icon">🌐</span>
+                    <span id="language-hint">English or romanized/code-mixed Latin input · script detection active</span>
+                </div>
+                <div id="input-error" class="input-error-msg" hidden></div>
+            </div>
+        </section>
+
+        <!-- Red Flag Emergency Alert Banner -->
+        <div id="emergency-banner" class="emergency-alert-card" hidden>
+            <div class="alert-icon">🚨</div>
+            <div class="alert-body">
+                <strong class="alert-title">Clinical Emergency Triage Warning</strong>
+                <p id="emergency-text" class="alert-desc"></p>
+                <div class="emergency-helpline">
+                    <span>Emergency Helplines: <strong>112</strong> (National) · <strong>102/108</strong> (Ambulance) · <strong>14416</strong> (Tele-MANAS)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Refinement Banner -->
+        <div id="clarification-banner" class="clarification-alert-card" hidden>
+            <div class="alert-icon">💡</div>
+            <div class="alert-body">
+                <strong class="alert-title">Query Refinement Suggestion</strong>
+                <p id="clarification-text" class="alert-desc"></p>
+            </div>
+        </div>
+
+        <!-- Search Response Section -->
+        <section id="response" class="response-container" hidden>
+            <!-- Answer Card -->
+            <div class="answer-card" id="answer-card">
+                <div class="answer-header">
+                    <div class="answer-tag-group">
+                        <span id="answer-category-badge" class="badge-category">GENERAL AYURVEDA</span>
+                        <span id="result-language-badge" class="badge-lang">English</span>
+                        <span id="answer-mode-badge" class="badge-mode">Grounded Extractive</span>
+                    </div>
+                    <div class="citation-hint-text">Click citations <span class="citation-pill">[E1]</span> to inspect supporting evidence</div>
+                </div>
+
+                <div id="summary-text" class="evidence-summary-line">Evidence summary loading...</div>
+                
+                <div class="answer-body-box">
+                    <div id="answer" class="answer-prose">Answer will appear here.</div>
+                </div>
+
+                <div class="detected-entities-bar" id="detected-entities-bar" hidden>
+                    <span class="entities-label">Recognized Entities:</span>
+                    <div id="entities-tags" class="entities-tags"></div>
+                </div>
+
+                <!-- Scientific Limitations Accordion -->
+                <details class="limitations-details" id="limitations-details">
+                    <summary class="limitations-summary">
+                        <span>⚠️ Important Scientific & Safety Disclaimers</span>
+                        <span class="chevron">▼</span>
+                    </summary>
+                    <div id="limitations" class="limitations-content"></div>
+                </details>
+            </div>
+
+            <!-- Explainable AI (XAI) Panel for Condition Matching -->
+            <div id="xai-panel" class="xai-panel" hidden>
+                <div class="xai-title-row">
+                    <h3>Explainable AI Matching (XAI)</h3>
+                    <span class="xai-subtitle">Transparent symptom-to-condition association breakdown</span>
+                </div>
+
+                <!-- ML Classifier Comparison Card -->
+                <div id="ml-classifier-card" class="ml-comparison-card" hidden>
+                    <div class="ml-header">
+                        <strong>🤖 Academic ML Baseline Prediction:</strong>
+                        <span id="ml-abstain-status" class="ml-badge">Active</span>
+                    </div>
+                    <div id="ml-predictions-list" class="ml-pred-grid"></div>
+                </div>
+
+                <div id="xai-cards-container" class="xai-grid"></div>
+            </div>
+
+            <!-- Knowledge Graph Traversal Context -->
+            <div id="kg-context-panel" class="kg-context-panel" hidden>
+                <div class="kg-header-row">
+                    <h3>Knowledge Graph Context (Multi-Source Provenance)</h3>
+                    <span class="kg-subtitle">Cross-source exact-label connections from NAMASTE, IMPPAT, & Columbia</span>
+                </div>
+                <div id="kg-entities-container" class="kg-grid"></div>
+            </div>
+
+            <!-- Supporting Evidence Source Records -->
+            <div class="source-records-section" id="source-records-section">
+                <div class="records-header-row">
+                    <h2>Retrieved Evidence Records</h2>
+                    <span class="records-count" id="records-count">Showing matching evidence</span>
+                </div>
+                <div id="results" class="results-grid"></div>
+            </div>
+
+            <!-- Source Catalogs Reference -->
+            <div class="sources-catalog-panel" id="sources">
+                <div class="section-label">Source Repositories Used</div>
+                <div id="source-list" class="source-items-grid"></div>
+            </div>
+        </section>
+
+        <!-- System Architecture & How it works -->
+        <section class="how-it-works-section" id="how-it-works">
+            <h2 class="section-heading">How AyurMitra Operates</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <h3 class="step-title">Multilingual Query Parsing</h3>
+                    <p class="step-desc">Normalizes English, Hindi, Kannada, Hinglish, and Kanglish while safeguarding Sanskrit Ayurvedic terminology and botanical identities.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <h3 class="step-title">Hybrid Retrieval (BM25 + TF-IDF)</h3>
+                    <p class="step-desc">Combines lexical term exactness and sparse semantic coverage across 110,000+ passages with exact botanical-alias boosting.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <h3 class="step-title">Grounded Answer Synthesis</h3>
+                    <p class="step-desc">Extracts verifiable passages or prompts local Ollama LLMs to cite retrieved evidence records, abstaining when evidence is insufficient.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">04</div>
+                    <h3 class="step-title">Safety Triage & Guardrails</h3>
+                    <p class="step-desc">Screens for red-flag symptoms (e.g., chest pain, respiratory distress), provides emergency alerts, and enforces non-diagnostic boundaries.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research Ablation Study & Evaluation Benchmarks -->
+        <section class="evaluation-section" id="evaluation-section">
+            <div class="eval-header">
+                <h2 class="section-heading">Empirical Research Evaluation & Ablation Study</h2>
+                <p class="eval-subtitle">Reproducible benchmark on held-out gold query set (<code class="code-tag">gold_queries.jsonl</code>) over 18,400+ candidate passages.</p>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="benchmark-table" id="benchmark-table">
+                    <thead>
+                        <tr>
+                            <th>Retrieval Method</th>
+                            <th>Precision@1</th>
+                            <th>Precision@5</th>
+                            <th>Recall@1</th>
+                            <th>Recall@5</th>
+                            <th>MRR</th>
+                            <th>nDCG@5</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmark-table-body">
+                        <tr>
+                            <td>BM25 Baseline</td>
+                            <td>0.1765</td>
+                            <td>0.0941</td>
+                            <td>0.0588</td>
+                            <td>0.1667</td>
+                            <td>0.2735</td>
+                            <td>0.1562</td>
+                        </tr>
+                        <tr>
+                            <td>TF-IDF Baseline</td>
+                            <td>0.0588</td>
+                            <td>0.0706</td>
+                            <td>0.0196</td>
+                            <td>0.1275</td>
+                            <td>0.1441</td>
+                            <td>0.0950</td>
+                        </tr>
+                        <tr>
+                            <td>Hybrid (BM25 + TF-IDF)</td>
+                            <td>0.0588</td>
+                            <td>0.0824</td>
+                            <td>0.0196</td>
+                            <td>0.1471</td>
+                            <td>0.1637</td>
+                            <td>0.1137</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>Proposed (Hybrid + NLP + Boosting)</strong></td>
+                            <td><strong>0.2353</strong></td>
+                            <td><strong>0.1176</strong></td>
+                            <td><strong>0.0784</strong></td>
+                            <td><strong>0.2059</strong></td>
+                            <td><strong>0.3402</strong></td>
+                            <td><strong>0.1965</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Condition Classifier Baseline Metrics -->
+            <div class="classifier-metrics-card" id="classifier-metrics-card">
+                <h3>Condition Classifier Baseline (Columbia Benchmark)</h3>
+                <div class="metrics-stats-grid" id="classifier-stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-val">54.6%</span>
+                        <span class="stat-name">Test Accuracy</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-val">70.7%</span>
+                        <span class="stat-name">Top-3 Accuracy</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-val">76.1%</span>
+                        <span class="stat-name">Top-5 Accuracy</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-val">0.537</span>
+                        <span class="stat-name">Macro-F1</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-val">134</span>
+                        <span class="stat-name">Conditions (Classes)</span>
+                    </div>
+                </div>
+                <p class="classifier-note">Academic baseline trained on 1,119 samples using TF-IDF + Multinomial Naive Bayes with confidence thresholding (0.08) and safe abstention.</p>
+            </div>
+        </section>
+
+        <!-- Knowledge Graph & Dataset Readiness Section -->
+        <section class="readiness-section" id="kg-section">
+            <div class="readiness-grid">
+                <!-- Dataset Readiness Card -->
+                <div class="readiness-card">
+                    <h3 class="card-section-title">Local Dataset Readiness</h3>
+                    <p class="readiness-desc">Only datasets present on this machine contribute searchable evidence.</p>
+                    <div id="dataset-status" class="dataset-status-list">
+                        <div class="status-item ready"><span class="badge-icon">✓</span> WHO Ayurveda Terminologies (1,023 chunks)</div>
+                        <div class="status-item ready"><span class="badge-icon">✓</span> NAMASTE SAT-Combined Workbook (14,968 rows)</div>
+                        <div class="status-item ready"><span class="badge-icon">✓</span> IMPPAT 2.0 Medicinal Plants (94,261 associations)</div>
+                        <div class="status-item ready"><span class="badge-icon">✓</span> Columbia Disease-Symptom KB (1,898 associations)</div>
+                        <div class="status-item neutral"><span class="badge-icon">ℹ</span> AYUSH Evidence Register (Draft records pending human review)</div>
+                    </div>
+                </div>
+
+                <!-- Knowledge Graph Summary Card -->
+                <div class="readiness-card">
+                    <h3 class="card-section-title">Multi-Source Knowledge Graph</h3>
+                    <p class="readiness-desc">Preserves source provenance across Ayurveda terms, plants, uses, and conditions.</p>
+                    <div class="kg-stats-row" id="kg-stats-summary">
+                        <div class="kg-stat"><strong id="kg-nodes-count">100k+</strong> Nodes</div>
+                        <div class="kg-stat"><strong id="kg-edges-count">95k+</strong> Directed Edges</div>
+                    </div>
+                    <div class="kg-provenance-note">
+                        Cross-source edges represent exact normalized label matches only. Columbia associations are general clinical associations; IMPPAT use edges are source-listed associations, not personalized advice.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <strong>AyurMitra</strong> · Multilingual Ayurveda NLP & Grounded RAG Research Prototype
+            </div>
+            <p class="footer-disclaimer">
+                Informational academic research tool. Not an autonomous clinical diagnostic system or substitute for licensed medical care.
+            </p>
+        </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
