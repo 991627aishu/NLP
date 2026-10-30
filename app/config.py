@@ -130,8 +130,8 @@ DENSE_MODEL_NAME = os.environ.get("AYUR_DENSE_MODEL", "sentence-transformers/par
 DENSE_MODEL_DIM  = 384
 
 # ── Retrieval settings ────────────────────────────────────────────────────────
-BM25_TOP_K   = 10        # candidates from BM25 before fusion
-DENSE_TOP_K  = 10        # candidates from dense before fusion
+BM25_TOP_K   = 20        # candidates from BM25 before fusion (reconciled with paper §5.5)
+DENSE_TOP_K  = 20        # candidates from dense before fusion (reconciled with paper §5.5)
 FUSION_TOP_K = 5         # final passages returned to generator
 RRF_K        = 60        # reciprocal-rank fusion constant
 
