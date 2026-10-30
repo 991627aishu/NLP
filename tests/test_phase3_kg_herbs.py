@@ -125,6 +125,22 @@ def test_p2_uses_graph_with_provenance():
     assert r1["graph_facts"] == [] and r1["graph_expansion_terms"] == []
 
 
+def test_kg_expansion_and_facts_grounding(kg):
+    # Expansion terms should not drift into symptom labels like Cough
+    exp = [t.lower() for t in kg.expansion_terms("Kapha")]
+    assert "cough" not in exp
+    assert not any("cough" in t for t in exp)
+
+    # Facts distinguish verified vs provisional/heuristic and have provenance
+    facts = kg.facts_for_term("Kapha")
+    assert len(facts) > 0
+    for f in facts:
+        assert "is_verified" in f
+        assert "verification_status" in f
+        assert f["verification_status"] in ("verified", "provisional", "heuristic")
+        assert f.get("source_id") is not None
+
+
 # ── herbs module ─────────────────────────────────────────────────────────────
 @pytest.fixture(scope="module")
 def herbs(kg):

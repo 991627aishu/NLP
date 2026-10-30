@@ -227,6 +227,21 @@ class KnowledgeGraphV2:
             if od["node_type"] not in _FACT_TARGET_TYPES and od["node_type"] != "SymptomPhrase":
                 continue
             other_label = od.get("label_en") or other
+            rev_status = e.get("review_status", "unverified")
+            is_verified = rev_status in VERIFIED_STATUSES
+            rel = str(e.get("relation", ""))
+            is_heuristic = (
+                od["node_type"] == "SymptomPhrase"
+                or rev_status == "project_mapping_unreviewed"
+                or "heuristic" in rel.lower()
+                or "symptom" in rel.lower()
+                or "may_be_associated" in rel.lower()
+            )
+            verification_status = "verified" if is_verified else ("heuristic" if is_heuristic else "provisional")
+            provisional_notice = (
+                "Educational heuristic mapping; not an established clinical or classical text fact."
+                if is_heuristic or not is_verified else None
+            )
             facts.append({
                 # subject -> relation -> object, in the edge's true direction
                 "concept": canonical if u == nid else other_label, "relation": e["relation"],
@@ -234,8 +249,12 @@ class KnowledgeGraphV2:
                 "query_concept": canonical, "target_id": other, "target_type": od["node_type"],
                 "target_definition": (od.get("definition") or "")[:300] or None,
                 "source_id": e.get("source_id"), "locator": e.get("locator"),
-                "review_status": e.get("review_status"), "confidence": e.get("confidence"),
+                "review_status": rev_status, "confidence": e.get("confidence"),
                 "direction": "out" if u == nid else "in",
+                "is_verified": is_verified,
+                "is_heuristic": is_heuristic,
+                "verification_status": verification_status,
+                "provisional_notice": provisional_notice,
             })
             if len(facts) >= limit:
                 break
@@ -246,14 +265,36 @@ class KnowledgeGraphV2:
         nid = self.resolve(canonical)
         if not nid:
             return []
+        from app.core.matcher import DISALLOWED_PLAIN_WORDS
         terms: List[str] = []
         for v in self.graph.successors(nid):
             d = self.graph.nodes[v]
-            if d["node_type"] not in ("WHOTerm", "WHOSection", "NAMASTETerm", "Plant"):
+            # Exclude WHOSection completely to prevent generic headers ("Cough", "General") polluting queries
+            if d["node_type"] not in ("WHOTerm", "NAMASTETerm", "Plant"):
                 continue
-            for cand in (d.get("label_iast"), d.get("botanical_name"), (d.get("label_en") or "").split(",")[0]):
-                if cand and cand.lower() != canonical.lower() and cand not in terms and len(cand) < 40:
-                    terms.append(cand)
+            candidates = []
+            if d["node_type"] == "Plant":
+                if d.get("botanical_name"):
+                    candidates.append(d["botanical_name"])
+            else:
+                if d.get("label_iast"):
+                    candidates.append(d["label_iast"])
+                label_en = (d.get("label_en") or "").split(",")[0].strip()
+                if label_en:
+                    candidates.append(label_en)
+
+            for cand in candidates:
+                cand_clean = cand.strip()
+                cand_lower = cand_clean.lower()
+                if (
+                    cand_clean
+                    and cand_lower != canonical.lower()
+                    and cand_clean not in terms
+                    and len(cand_clean) < 40
+                    and cand_lower not in DISALLOWED_PLAIN_WORDS
+                    and not any(w in cand_lower for w in ["cough", "fever", "pain", "box", "time", "deep", "bulk", "headache"])
+                ):
+                    terms.append(cand_clean)
                     break
             if len(terms) >= k:
                 break

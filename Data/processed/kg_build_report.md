@@ -1,13 +1,13 @@
 # Knowledge Graph v2 — build report
 
-Built 2026-10-30 by `python -m app.core.kg_builder` (deterministic; 8.4 s).
+Built 2026-10-30 by `python -m app.core.kg_builder` (deterministic; 15.0 s).
 
 ## Size
 
-- Nodes: **9,530**  ·  Edges: **72,343**
-- Edges with a source row/page locator extracted by code: **99.92%**
+- Nodes: **9,530**  ·  Edges: **72,341**
+- Edges with a source row/page locator extracted by code: **99.93%**
 - Edges without source_id: 0  ·  without locator: 12 (only project mappings / unverified v1 edges, by design)
-- Isolated nodes: 75
+- Isolated nodes: 74
 
 ## Node types
 
@@ -30,7 +30,7 @@ Built 2026-10-30 by `python -m app.core.kg_builder` (deterministic; 8.4 s).
 | traditionally_used_for | 68,401 |
 | part_of | 3,352 |
 | contains | 535 |
-| described_in | 31 |
+| described_in | 29 |
 | may_be_associated_with_dosha | 10 |
 | refers_to_plant | 8 |
 | comprises | 3 |
@@ -44,7 +44,7 @@ Built 2026-10-30 by `python -m app.core.kg_builder` (deterministic; 8.4 s).
 |---|---|---|
 | grounded_by_code_text | 4 | old v1 relation found stated in a WHO description; needs expert review |
 | unverified | 2 | old v1 relation whose claimed locator failed verification |
-| auto_matched_by_code | 39 | project concept ↔ source term by deterministic string match; needs expert review |
+| auto_matched_by_code | 37 | project concept ↔ source term by deterministic string match; needs expert review |
 | extracted_from_source | 72,288 | relation is a row/column of the source file; locator points to it |
 | project_mapping_unreviewed | 10 | project-written mapping, no source locator |
 
@@ -62,9 +62,9 @@ Built 2026-10-30 by `python -m app.core.kg_builder` (deterministic; 8.4 s).
  "plant_use_edges": 63737,
  "formulations": 541,
  "formulations_without_plant_match": 6,
- "concept_source_links": 39,
+ "concept_source_links": 37,
  "symptom_phrases": 10,
- "build_seconds": 8.4
+ "build_seconds": 15.0
 }
 ```
 

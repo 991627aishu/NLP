@@ -44,7 +44,7 @@
       "kapha",
       "kaphah",
       "kapha dosha",
-      "cough"
+      "shleshma"
     ],
     "definition": "One of the three biological humors; governs structure and lubrication",
     "definition_long": "",
@@ -80,7 +80,7 @@
     "aliases": [
       "prakriti",
       "prakṛti",
-      "constitution",
+      "ayurvedic constitution",
       "body type"
     ],
     "definition": "Individual psychophysical constitution determined at birth",
@@ -99,7 +99,7 @@
     "aliases": [
       "dhatu",
       "dhātu",
-      "tissue"
+      "dhatus"
     ],
     "definition": "Seven basic body tissues in Ayurveda",
     "definition_long": "",
@@ -118,7 +118,7 @@
       "dosha",
       "dosa",
       "doṣa",
-      "humor"
+      "doshas"
     ],
     "definition": "Three biological humors: Vata, Pitta, Kapha",
     "definition_long": "",
@@ -153,7 +153,6 @@
     "aliases": [
       "prana",
       "prāṇa",
-      "life force",
       "vital breath"
     ],
     "definition": "Vital energy / life force associated with Vata",
@@ -190,8 +189,8 @@
     "aliases": [
       "ama",
       "āma",
-      "toxin",
-      "undigested matter"
+      "undigested matter",
+      "ama toxin"
     ],
     "definition": "Undigested metabolic waste; produced when Agni is impaired",
     "definition_long": "",
@@ -209,7 +208,7 @@
     "aliases": [
       "rasayana",
       "rasāyana",
-      "rejuvenation"
+      "rasayana therapy"
     ],
     "definition": "Branch of Ayurveda concerned with rejuvenation and longevity",
     "definition_long": "",
@@ -227,7 +226,7 @@
     "aliases": [
       "panchakarma",
       "pañcakarma",
-      "five actions"
+      "panchakarma therapy"
     ],
     "definition": "Five therapeutic purification/detoxification procedures",
     "definition_long": "",
@@ -245,7 +244,7 @@
     "aliases": [
       "srotas",
       "srotāṃsi",
-      "channels"
+      "body channels"
     ],
     "definition": "Body channels through which Doshas and Dhatus circulate",
     "definition_long": "",
@@ -263,8 +262,7 @@
     "aliases": [
       "nadi",
       "nāḍī",
-      "nerve",
-      "pulse"
+      "nadi pulse"
     ],
     "definition": "Channel or pulse in Ayurvedic physiology; also diagnostic pulse",
     "definition_long": "",
@@ -281,8 +279,7 @@
     "language": "en_or_sa_romanized",
     "aliases": [
       "rasa",
-      "plasma",
-      "lymph"
+      "rasa dhatu"
     ],
     "definition": "First Dhatu; plasma/lymph; carries nutrition throughout body",
     "definition_long": "",
@@ -299,7 +296,7 @@
     "language": "en_or_sa_romanized",
     "aliases": [
       "rakta",
-      "blood"
+      "rakta dhatu"
     ],
     "definition": "Second Dhatu; blood tissue",
     "definition_long": "",
@@ -317,7 +314,7 @@
     "aliases": [
       "mamsa",
       "māṃsa",
-      "muscle"
+      "mamsa dhatu"
     ],
     "definition": "Third Dhatu; muscle tissue",
     "definition_long": "",
@@ -335,7 +332,7 @@
     "aliases": [
       "meda",
       "medas",
-      "fat"
+      "meda dhatu"
     ],
     "definition": "Fourth Dhatu; adipose/fat tissue",
     "definition_long": "",
@@ -352,7 +349,7 @@
     "language": "en_or_sa_romanized",
     "aliases": [
       "asthi",
-      "bone"
+      "asthi dhatu"
     ],
     "definition": "Fifth Dhatu; bone tissue",
     "definition_long": "",
