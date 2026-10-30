@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 
 from app.config import EXPERIMENT_CONFIGS, FUSION_TOP_K, SAFETY_GATE, EDUCATIONAL_DISCLAIMER
 from app.core.safety import check_query_safety, safety_message
-from app.config import EVIDENCE_GATE, EVIDENCE_MIN_COVERAGE, GENERATOR_BACKEND
+from app.config import EVIDENCE_GATE, EVIDENCE_MIN_COVERAGE, GENERATOR_BACKEND, KG_VERSION
 import re as _re
 from app.pipeline.bm25_retriever import QUESTION_STOPWORDS
 
@@ -50,7 +50,18 @@ class AyurMitraPipeline:
         self.generator = EvidenceGroundedGenerator()
         self.generator.translator = self.translator
         self.generator.protector = self.protector
-        self.kg = AyurKnowledgeGraph()
+        self.kg_v1 = AyurKnowledgeGraph()
+        self.kg = self.kg_v1
+        self.kg.version = "v1"
+        if KG_VERSION in ("auto", "v2"):
+            try:
+                from app.core.kg_v2 import load_kg_v2
+                kg2 = load_kg_v2()
+                if kg2 is not None:
+                    self.kg = kg2
+            except Exception as e:  # missing/corrupt v2 graph -> keep v1
+                import logging
+                logging.getLogger("ayurmitra.pipeline").warning("KG v2 unavailable (%s); using v1", e)
         self.web_search = WebSearchFallback()
 
     def process_query(
@@ -131,8 +142,19 @@ class AyurMitraPipeline:
 
         # Step 5: Retrieval (BM25 only for B0; Hybrid RRF for B1, P1, P2)
         # In P1/P2: Grounded ranking utilizes detected Ayurvedic terms
+        # Step 5a (P2 only): bounded graph query expansion (≤5 terms, appended once => lower weight)
+        graph_expansion_terms: List[str] = []
+        retrieval_query = english_query
+        if use_graph and detected_terms and hasattr(self.kg, "expansion_terms"):
+            for t in detected_terms:
+                for x in self.kg.expansion_terms(t.get("canonical_term", ""), k=5):
+                    if x not in graph_expansion_terms and len(graph_expansion_terms) < 5:
+                        graph_expansion_terms.append(x)
+            if graph_expansion_terms:
+                retrieval_query = english_query + " " + " ".join(graph_expansion_terms)
+
         retrieved_passages = self.retriever.retrieve(
-            query=english_query,
+            query=retrieval_query,
             top_k=top_k,
             use_bm25=True,
             use_dense=use_dense,
@@ -175,7 +197,15 @@ class AyurMitraPipeline:
 
         # Step 6: Knowledge Graph Grounding (P2 only)
         graph_facts = []
-        if use_graph and detected_terms:
+        if use_graph and detected_terms and hasattr(self.kg, "facts_for_term"):
+            seen_f = set()
+            for t in detected_terms:
+                for f in self.kg.facts_for_term(t.get("canonical_term", ""), limit=6):
+                    key = (f["query_concept"], f["relation"], f["target_id"])
+                    if key not in seen_f:
+                        seen_f.add(key)
+                        graph_facts.append(f)
+        elif use_graph and detected_terms:
             for t in detected_terms:
                 canon = t.get("canonical_term")
                 if not canon:
@@ -281,6 +311,8 @@ class AyurMitraPipeline:
             "retrieved_passages": retrieved_passages,
             "web_passages": web_passages,
             "graph_facts": graph_facts,
+            "graph_expansion_terms": graph_expansion_terms,
+            "retrieval_query": retrieval_query,
             "answer": final_answer,
             "abstained": gen_res["abstained"],
             "abstention_reason": gen_res["reason"],
@@ -361,6 +393,8 @@ class AyurMitraPipeline:
             "retrieved_passages": [],
             "web_passages": [],
             "graph_facts": [],
+            "graph_expansion_terms": [],
+            "retrieval_query": "",
             "answer": msg,
             "abstained": True,
             "abstention_reason": safety["reason"],

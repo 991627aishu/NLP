@@ -305,7 +305,9 @@ class EvidenceGroundedGenerator:
                 tgt = gf.get("target", "")
                 src = gf.get("source_id", "NAMASTE")
                 loc = gf.get("locator", "")
-                kg_lines.append(f"- {c_name} -> {rel} -> {tgt} (Source: {src}, {loc})")
+                status = gf.get("review_status")
+                status_txt = f"; {status.replace('_', ' ')}" if status else ""
+                kg_lines.append(f"- {c_name} -> {rel} -> {tgt} (Source: {src}, {loc}{status_txt})")
             if kg_lines:
                 explanation_parts.append("Knowledge Graph Grounding:\n" + "\n".join(kg_lines))
         if web_facts:
