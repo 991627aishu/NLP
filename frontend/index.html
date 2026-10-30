@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AyurMitra — multilingual Ayurveda knowledge</title>
+<meta name="description" content="Ask about Ayurveda in English, Hindi or Kannada. Answers come from WHO, NAMASTE and IMPPAT sources, with every source shown. Educational use only.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c7 6 9 14 0 26C7 17 9 9 16 3z' fill='%234F6F52'/%3E%3Cpath d='M16 8v20' stroke='%23F6F5EE' stroke-width='1.6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Serif:wght@500&family=Noto+Serif+Devanagari:wght@500&family=Noto+Serif+Kannada:wght@500&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ask" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-graph" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="7" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M8.3 8.2l2.6 6.4M15.9 7.6l-2.8 7M8.5 6.8l7-.6"/></g></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3c6 5 7 11 0 18C5 14 6 8 12 3z"/><path d="M12 7v14"/></g></symbol>
+  <symbol id="i-lab" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 10h14L14 9V3"/><path d="M7.5 14h9"/></g></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5" stroke-linecap="round"/></g></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></g></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 17-3-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-speaker" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div class="app">
+  <nav class="rail" aria-label="Main">
+    <a class="brand" href="#/ask"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c7 6 9 14 0 26C7 17 9 9 16 3z" fill="var(--sage)"/><path d="M16 8v20" stroke="var(--paper)" stroke-width="1.6"/></svg>AyurMitra</a>
+    <div class="nav" id="nav">
+      <a href="#/ask"><svg><use href="#i-ask"/></svg><span data-i18n="nav_ask">Ask</span></a>
+      <a href="#/graph"><svg><use href="#i-graph"/></svg><span data-i18n="nav_graph">Knowledge graph</span></a>
+      <a href="#/symptoms"><svg><use href="#i-pulse"/></svg><span data-i18n="nav_symptoms">Symptom guidance</span></a>
+      <a href="#/herbs"><svg><use href="#i-leaf"/></svg><span data-i18n="nav_herbs">Herbs &amp; lifestyle</span></a>
+      <a href="#/research"><svg><use href="#i-lab"/></svg><span data-i18n="nav_research">Research lab</span></a>
+      <a href="#/about"><svg><use href="#i-info"/></svg><span data-i18n="nav_about">About &amp; safety</span></a>
+    </div>
+    <div class="rail-foot"><span class="muted">RV University · Team 3</span></div>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <div class="topbar" style="position:relative">
+      <label class="sr" for="ui-lang">Interface language</label>
+      <select id="ui-lang" class="select" aria-label="Interface language">
+        <option value="en">English</option><option value="hi">हिन्दी</option><option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <button id="theme" class="btn icon ghost" aria-label="Switch light or dark theme"><svg width="20" height="20"><use href="#i-moon"/></svg></button>
+      <button id="status-btn" class="status" aria-expanded="false" aria-controls="status-pop"><span class="dot" id="status-dot"></span><span data-i18n="status">System status</span></button>
+      <div id="status-pop" class="status-pop" hidden role="dialog" aria-label="System status"></div>
+    </div>
+    <div id="offline" class="err" hidden role="alert"></div>
+
+    <!-- ASK -->
+    <section class="view" id="view-ask" aria-labelledby="ask-h">
+      <div class="column">
+        <div class="hero">
+          <h1 id="ask-h" data-i18n="hero_title">Ask about Ayurveda in your language</h1>
+          <p data-i18n="hero_sub"></p>
+          <div class="demo" aria-label="Example of term protection">
+            <div class="side"><small data-i18n="demo_plain">Plain translation</small><br>पित्त के लक्षण क्या हैं? → What are the symptoms of <span class="bad">bile</span>?</div>
+            <svg class="arrow" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            <div class="side"><small data-i18n="demo_protected">AyurMitra keeps the term</small><br>What are the symptoms of <span class="seal">Pitta <span class="alt">पित्त · ಪಿತ್ತ</span></span>?</div>
+          </div>
+        </div>
+        <div class="langs" role="group" aria-label="Question language" id="qlangs">
+          <button class="chip-btn" data-ql="en" aria-pressed="true">English</button>
+          <button class="chip-btn" data-ql="hi" aria-pressed="false">हिन्दी</button>
+          <button class="chip-btn" data-ql="kn" aria-pressed="false">ಕನ್ನಡ</button>
+          <button class="chip-btn" data-ql="hinglish" aria-pressed="false">Hinglish</button>
+        </div>
+        <div id="thread" class="thread" aria-live="polite" aria-relevant="additions"></div>
+        <div id="starters-wrap"><small data-i18n="starters">Try one of these</small><div class="starters" id="starters"></div></div>
+
+        <details class="drawer" id="adv">
+          <summary data-i18n="advanced">Research options</summary>
+          <div class="grid">
+            <label class="field"><span data-i18n="mode">System configuration</span>
+              <select id="opt-mode" class="select">
+                <option value="P2">P2 — P1 + knowledge graph</option><option value="P1">P1 — terminology preserved (proposed)</option>
+                <option value="B1">B1 — hybrid, no term protection</option><option value="B0">B0 — BM25 only</option></select></label>
+            <label class="field"><span data-i18n="answer_lang">Answer language</span>
+              <select id="opt-lang" class="select"><option value="auto" data-i18n="auto">Same as question</option>
+                <option value="en">English</option><option value="hi">हिन्दी</option><option value="kn">ಕನ್ನಡ</option></select></label>
+            <label class="field"><span data-i18n="generator">Answer writer</span>
+              <select id="opt-gen" class="select"><option value="extractive" data-i18n="extractive">Quote sources (default)</option>
+                <option value="llm" data-i18n="llm">Language model, sources only</option></select></label>
+            <label class="field"><span data-i18n="voice">Voice</span>
+              <select id="opt-voice" class="select"><option value="female" data-i18n="female">Female</option><option value="male" data-i18n="male">Male</option></select></label>
+          </div>
+          <label class="check"><input type="checkbox" id="opt-web"> <span data-i18n="web">Allow web fallback</span></label>
+          <label class="check"><input type="checkbox" id="opt-autoplay"> <span data-i18n="autoplay">Read answers aloud automatically</span></label>
+          <label class="check"><input type="checkbox" id="opt-conv"> <span data-i18n="conv">Conversation mode</span></label>
+        </details>
+
+        <div id="rec-bar" class="rec-bar" hidden aria-live="assertive">
+          <span data-i18n="recording">Listening</span> <span id="rec-time">0:00</span>
+          <span class="meter" aria-hidden="true"><i id="rec-level"></i></span>
+          <button class="btn ghost" id="rec-cancel" data-i18n="cancel">Cancel</button>
+        </div>
+        <form class="composer" id="composer">
+          <label for="q" class="sr">Question</label>
+          <textarea id="q" rows="1" data-i18n-ph="placeholder" placeholder="Type a question, or tap the microphone…" maxlength="1000"></textarea>
+          <button type="button" class="mic" id="mic" aria-label="Speak your question (Alt+M)" aria-pressed="false"><svg><use href="#i-mic"/></svg></button>
+          <button type="submit" class="btn primary" id="send"><svg width="18" height="18"><use href="#i-send"/></svg><span data-i18n="send">Ask</span></button>
+        </form>
+      </div>
+    </section>
+
+    <!-- GRAPH -->
+    <section class="view" id="view-graph" hidden aria-labelledby="graph-h">
+      <h1 id="graph-h" data-i18n="graph_title">Knowledge graph explorer</h1>
+      <p class="muted" data-i18n="graph_sub"></p>
+      <div class="stat-row panel" id="kg-stats" aria-live="polite"></div>
+      <div class="toolbar">
+        <div class="search"><label for="kg-q" class="sr">Search the graph</label>
+          <input id="kg-q" role="combobox" aria-expanded="false" aria-controls="kg-ac" aria-autocomplete="list" autocomplete="off" data-i18n-ph="search_graph">
+          <ul id="kg-ac" class="ac" role="listbox" hidden></ul></div>
+        <label class="field" style="min-width:150px"><span><span data-i18n="depth">Depth</span>: <b id="kg-depth-v">1</b></span>
+          <input type="range" id="kg-depth" min="1" max="3" value="1" aria-label="Depth in hops"></label>
+        <button class="btn" id="kg-fit" data-i18n="fit">Fit</button>
+        <button class="btn" id="kg-reset" data-i18n="reset">Reset</button>
+        <button class="btn" id="kg-full" data-i18n="fullscreen">Full screen</button>
+        <button class="btn" id="kg-png" data-i18n="png">Save PNG</button>
+        <button class="btn" id="kg-json" data-i18n="json">Save JSON</button>
+        <button class="btn" id="kg-listbtn" aria-pressed="false" data-i18n="list_view">List view</button>
+      </div>
+      <fieldset class="legend" id="kg-types" style="border:0;padding:0"><legend class="sr">Node types</legend></fieldset>
+      <div class="cols">
+        <div>
+          <div class="canvas-wrap" id="kg-wrap"><canvas id="kg-canvas" aria-label="Interactive knowledge graph. Use the list view for a text version." role="img"></canvas></div>
+          <div id="kg-list" hidden class="panel table-wrap"></div>
+          <details class="drawer"><summary data-i18n="path">Show the path between two concepts</summary>
+            <div class="toolbar"><input class="input" id="kg-from" aria-label="From concept" value="Tridosha" style="max-width:220px">
+              <input class="input" id="kg-to" aria-label="To concept" value="Ashwagandha" style="max-width:220px">
+              <button class="btn primary" id="kg-path" data-i18n="find_path">Find path</button></div>
+            <div id="kg-path-out"></div></details>
+        </div>
+        <aside class="panel" id="kg-panel" aria-live="polite"><div class="empty">Select a node to see its sources.</div></aside>
+      </div>
+    </section>
+
+    <!-- SYMPTOMS -->
+    <section class="view" id="view-symptoms" hidden aria-labelledby="sym-h">
+      <div class="column">
+        <h1 id="sym-h" data-i18n="sym_title">Symptom guidance</h1>
+        <p data-i18n="sym_sub"></p>
+        <div class="notice calm">If symptoms are sudden or severe — chest pain, trouble breathing, the worst headache of your life, fainting, heavy bleeding — contact emergency services now.</div>
+        <form class="composer" id="sym-form" style="position:static">
+          <label for="sym-q" class="sr">Describe your symptoms</label>
+          <textarea id="sym-q" rows="2" data-i18n-ph="sym_placeholder" maxlength="1000"></textarea>
+          <button type="button" class="mic" id="sym-mic" aria-label="Speak your symptoms"><svg><use href="#i-mic"/></svg></button>
+          <button class="btn primary" type="submit" data-i18n="sym_go">Show related concepts</button>
+        </form>
+        <div id="sym-out" aria-live="polite" style="margin-top:18px"></div>
+      </div>
+    </section>
+
+    <!-- HERBS -->
+    <section class="view" id="view-herbs" hidden aria-labelledby="herbs-h">
+      <h1 id="herbs-h" data-i18n="herbs_title">Herbs &amp; lifestyle</h1>
+      <p class="muted" data-i18n="herbs_sub"></p>
+      <div class="notice">Recorded traditional uses are not evidence that a plant is effective or safe. AyurMitra gives no doses, preparations or contraindications.</div>
+      <div class="cols">
+        <div>
+          <div class="search" style="margin-bottom:12px"><label for="herb-q" class="sr">Search herbs</label><input id="herb-q" data-i18n-ph="herb_search" autocomplete="off"></div>
+          <div id="herb-results" class="grid-cards" aria-live="polite"></div>
+          <h2 style="margin-top:28px" data-i18n="lifestyle">Daily life topics</h2>
+          <div id="topics" class="langs"></div>
+          <div id="topic-out" aria-live="polite"></div>
+        </div>
+        <aside class="panel" id="herb-detail" aria-live="polite"><div class="empty">Choose a herb to see its records.</div></aside>
+      </div>
+    </section>
+
+    <!-- RESEARCH -->
+    <section class="view" id="view-research" hidden aria-labelledby="res-h">
+      <h1 id="res-h" data-i18n="research_title">Research lab</h1>
+      <p class="muted" data-i18n="research_sub"></p>
+      <div class="panel">
+        <h2 data-i18n="compare">Compare B0 / B1 / P1 / P2</h2>
+        <form class="toolbar" id="cmp-form"><label for="cmp-q" class="sr">Question to compare</label>
+          <input class="input" id="cmp-q" style="flex:1;min-width:240px" value="ಪಿತ್ತಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಲಕ್ಷಣಗಳು ಯಾವುವು?">
+          <button class="btn primary" type="submit" data-i18n="compare">Compare</button></form>
+        <div id="cmp-out" class="compare" aria-live="polite"></div>
+      </div>
+      <div id="res-out" style="margin-top:18px"></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="view" id="view-about" hidden aria-labelledby="about-h">
+      <div class="column" style="max-width:900px">
+        <h1 id="about-h" data-i18n="about_title">About, sources and safety</h1>
+        <div id="about-out"></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="disclaimer-bar" role="note" data-i18n="disclaimer_short"></div>
+<nav class="mobile-nav" aria-label="Main (mobile)" id="mnav">
+  <a href="#/ask"><svg><use href="#i-ask"/></svg><span data-i18n="nav_ask">Ask</span></a>
+  <a href="#/graph"><svg><use href="#i-graph"/></svg><span data-i18n="nav_graph">Graph</span></a>
+  <a href="#/symptoms"><svg><use href="#i-pulse"/></svg><span data-i18n="nav_symptoms">Symptoms</span></a>
+  <a href="#/herbs"><svg><use href="#i-leaf"/></svg><span data-i18n="nav_herbs">Herbs</span></a>
+  <a href="#/research"><svg><use href="#i-lab"/></svg><span data-i18n="nav_research">Research</span></a>
+  <a href="#/about"><svg><use href="#i-info"/></svg><span data-i18n="nav_about">About</span></a>
+</nav>
+<script src="/assets/i18n.js"></script>
+<script src="/assets/graph.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>

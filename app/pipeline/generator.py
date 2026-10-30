@@ -290,7 +290,9 @@ class EvidenceGroundedGenerator:
         # 2. Explanation synthesis
         explanation_parts = []
         if clean_facts:
-            explanation_parts.append(" ".join(_localize(f) if machine_translated else f for f in clean_facts[:3]))
+            # Phase 7: don't repeat the Answer sentence in the Explanation
+            rest = clean_facts[1:3] if len(clean_facts) > 1 else clean_facts[:1]
+            explanation_parts.append(" ".join(_localize(f) if machine_translated else f for f in rest))
         if concept_body:
             if lang == "hi":
                 gl_hdr = "शब्दावली टिप्पणी (परियोजना द्वारा लिखित सारांश; उद्धृत अंशों से नहीं; विशेषज्ञ समीक्षा लंबित)"
@@ -304,7 +306,7 @@ class EvidenceGroundedGenerator:
                 rel = gf.get("relation", "related_to")
                 tgt = gf.get("target", "")
                 src = gf.get("source_id", "NAMASTE")
-                loc = gf.get("locator", "")
+                loc = gf.get("locator") or "no locator"
                 status = gf.get("review_status")
                 status_txt = f"; {status.replace('_', ' ')}" if status else ""
                 kg_lines.append(f"- {c_name} -> {rel} -> {tgt} (Source: {src}, {loc}{status_txt})")
