@@ -154,6 +154,13 @@ def test_tts_endpoint(client):
     assert r["ok"] and r["backend"] in ("edge_tts", "gtts", "browser") and "पित्त" in r["spoken_text"]
 
 
+def test_voice_transcribe_endpoint(client, monkeypatch):
+    monkeypatch.setattr(stt, "transcribe", lambda audio, lang_hint="auto", suffix=".webm":
+                        {"ok": True, "text": "what is the role of Agni in digestion", "confidence": 0.95, "needs_confirmation": False})
+    r = client.post("/api/voice/transcribe", files={"audio": ("a.webm", b"123")}).json()
+    assert r["ok"] is True and r["stage"] == "transcribed" and "Agni" in r["text"]
+
+
 def test_voice_ask_without_stt_is_friendly(client, monkeypatch):
     monkeypatch.setattr(stt, "whisper_importable", lambda: False)
     r = client.post("/api/voice/ask", files={"audio": ("a.webm", b"123")}).json()

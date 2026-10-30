@@ -260,7 +260,14 @@
       r.onresult = e => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { const x = e.results[i]; if (x.isFinal) final += x[0].transcript; else interim += x[0].transcript; } inp.value = (final + interim).trim(); };
       r.onerror = e => { this._ui(false); this.active = null; if (e.error === "not-allowed") this.fail(t("mic_denied"));
         else if (e.error === "network" || e.error === "service-not-allowed") { store.set("ayur.forceServerSTT", true); this.start(this.target); } };
-      r.onend = () => { this._ui(false); this.active = null; if (inp.value.trim()) { inp.focus(); if (this.target === "ask" && $("#opt-conv").checked) ask(); } };
+      r.onend = () => {
+        this._ui(false); this.active = null;
+        if (inp.value.trim()) {
+          inp.focus();
+          Voice._lastFromVoice = true;
+          note(t("edit_transcript") || "Transcript ready. You can review or edit your question, then click Ask.");
+        }
+      };
       r.start(); this.t0 = Date.now(); this._tick();
     },
     _meter() {
@@ -286,20 +293,25 @@
       if (this.ctx) { this.ctx.close().catch(() => {}); this.ctx = null; } this._ui(false);
     },
     async _send() {
-      if (this.cancelled || !this.chunks.length) return; const blob = new Blob(this.chunks, { type: this.chunks[0].type || "audio/webm" });
-      const fd = new FormData(); fd.append("audio", blob, "clip." + (blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm"));
+      if (this.cancelled || !this.chunks.length) return;
+      const blob = new Blob(this.chunks, { type: this.chunks[0].type || "audio/webm" });
+      const fd = new FormData();
+      fd.append("audio", blob, "clip." + (blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm"));
+      fd.append("lang_hint", QL === "hinglish" ? "hi" : QL);
       const isSym = this.target === "symptoms";
-      fd.append("mode", $("#opt-mode").value); fd.append("target_lang", $("#opt-lang").value);
-      fd.append("lang_hint", QL === "hinglish" ? "hi" : QL); fd.append("speak", "true"); fd.append("voice", $("#opt-voice").value);
-      if (isSym) fd.append("confirm_low_confidence", "true");
-      const sk = isSym ? null : addSkeleton();
       try {
-        const r = await api("/api/voice/ask", { method: "POST", form: fd });
-        if (!r.ok) { sk && sk.remove(); return this.fail(r.message || "Speech recognition failed."); }
-        if (r.stage === "confirm" || isSym) { sk && sk.remove(); const inp = this.input(); inp.value = r.transcript?.text || r.text || ""; inp.focus();
-          note(r.stage === "confirm" ? t("low_conf") : t("edit_transcript")); return; }
-        addQuestion(r.transcript.text); r._fromVoice = true; renderAnswer(r, sk);
-      } catch (e) { sk && sk.remove(); this.fail(e.message); }
+        const r = await api("/api/voice/transcribe", { method: "POST", form: fd });
+        if (!r.ok) {
+          return this.fail(r.message || "Speech recognition failed. Please try again or type your question.");
+        }
+        const inp = this.input();
+        inp.value = r.text || r.raw_text || "";
+        inp.focus();
+        Voice._lastFromVoice = true;
+        note(r.needs_confirmation ? t("low_conf") : (t("edit_transcript") || "Transcript ready. You can review or edit your question, then click Ask."));
+      } catch (e) {
+        this.fail(e.message);
+      }
     },
     _ui(on) { const b = this.btn(); b.classList.toggle("rec", on); b.setAttribute("aria-pressed", String(on)); b.setAttribute("aria-label", on ? t("stop") : t("mic"));
       $("#rec-bar").hidden = !(on && this.target === "ask"); },

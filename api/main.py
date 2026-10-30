@@ -214,6 +214,17 @@ def ask(req: AskRequest):
     return out
 
 
+@app.post("/api/voice/transcribe")
+async def voice_transcribe(audio: UploadFile = File(...), lang_hint: str = Form("auto")):
+    from app.voice.stt import transcribe
+    data = await audio.read()
+    if not data:
+        return {"ok": False, "stage": "stt", "error": "empty_audio", "message": "No audio was received."}
+    suffix = Path(audio.filename or "clip.webm").suffix or ".webm"
+    stt_res = transcribe(data, lang_hint=lang_hint if lang_hint in ("en", "hi", "kn") else "auto", suffix=suffix)
+    return {"ok": bool(stt_res.get("ok")), "stage": "transcribed", **stt_res}
+
+
 @app.post("/api/voice/ask")
 async def voice_ask(audio: UploadFile = File(...), mode: str = Form("P2"), target_lang: str = Form("auto"),
                     lang_hint: str = Form("auto"), speak: bool = Form(True), confirm_low_confidence: bool = Form(True),
