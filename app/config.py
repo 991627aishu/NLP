@@ -18,7 +18,9 @@ def _load_dotenv(path: Path) -> None:
             if not line or line.startswith("#") or "=" not in line:
                 continue
             k, v = line.split("=", 1)
-            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+            # Strip inline comments (e.g. `value # comment`)
+            v = v.split("#", 1)[0].strip().strip('"').strip("'")
+            os.environ.setdefault(k.strip(), v)
     except Exception:
         pass
 
@@ -28,19 +30,24 @@ def _resolve_child_dir(parent: Path, preferred: str) -> Path:
 
     The raw-data folder ships as ``Data/`` but older code referred to ``data/``.
     On case-sensitive filesystems (Linux/macOS/cloud) that mismatch silently
-    created a second, empty ``data/`` tree. We resolve to whichever casing exists,
-    preferring an exact match, without renaming anything on disk.
+    created a second, empty ``data/`` tree. On Windows, NTFS is case-preserving
+    so we inspect iterdir() to return the actual casing existing on disk,
+    preferring exact case if both somehow existed, without renaming anything.
     """
-    exact = parent / preferred
-    if exact.is_dir():
-        return exact
     try:
-        for child in parent.iterdir():
-            if child.is_dir() and child.name.lower() == preferred.lower():
-                return child
+        if parent.is_dir():
+            match_any = None
+            for child in parent.iterdir():
+                if child.is_dir() and child.name.lower() == preferred.lower():
+                    if child.name == preferred:
+                        return child
+                    if match_any is None:
+                        match_any = child
+            if match_any is not None:
+                return match_any
     except OSError:
         pass
-    return exact
+    return parent / preferred
 
 
 # ── Root directories ─────────────────────────────────────────────────────────
