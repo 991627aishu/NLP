@@ -508,7 +508,9 @@ class EducationalSymptomMapper:
                     "educational_note": note,
                     "source_id": item["source_id"],
                     "locator": item["locator"],
-                    "provenance": f"[{item['source_id']}, {item['locator']}]"
+                    "provenance": f"[{item['source_id']}, {item['locator']}]",
+                    "mapping_status": "educational_heuristic",
+                    "caution": "Provisional educational correlation; classical literature does not provide algorithmic diagnostic symptom-to-dosha mappings.",
                 })
 
         # 4. SAFE ABSTENTION ON AMBIGUOUS / UNVERIFIED SYMPTOMS

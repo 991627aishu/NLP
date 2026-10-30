@@ -218,6 +218,8 @@
   }
   function renderTrace(r) {
     const b = r.backends || {}; const tm = r.translation_meta || {}; const ev = r.evidence_check || {};
+    const sttBackend = r.transcript?.backend || (Voice.rec ? "browser Web Speech API" : (r._fromVoice ? "audio upload" : "none / text input"));
+    const ttsBackend = (r.tts && r.tts.backend) ? r.tts.backend : "browser speechSynthesis";
     const rows = [
       ["Detected language", `${r.detected_language}${r.is_code_mixed ? ` (code-mixed: ${esc(r.code_mix_type)})` : ""}`],
       ["Segments", (r.segments || []).map(s => `${esc(s.text || s.segment || "")} <small>[${esc(s.lang || s.script || "")}]</small>`).join(" · ") || "—"],
@@ -225,10 +227,10 @@
       ["Translation", `${esc(tm.method || "—")}${tm.translated_text ? `: <em>${esc(tm.translated_text)}</em>` : ""}${tm.warning ? `<br><small>${esc(tm.warning)}</small>` : ""}`],
       ["Canonical query", esc(r.canonical_query || "—")],
       ["Graph expansion", esc((r.graph_expansion_terms || []).join(", ") || "—")],
-      ["Backends", `MT: ${esc(b.translator)}, dense: ${esc(b.dense_model || b.dense)}, writer: ${esc(r.generator_used || b.generator)}, graph: ${esc(b.kg_version)}`],
+      ["Active Backends", `MT: <strong>${esc(b.translator || "rules fallback")}</strong> · Dense: <strong>${esc(b.dense_model || b.dense || "TF-IDF fallback")}</strong> · Generator: <strong>${esc(r.generator_used || b.generator || "extractive")}</strong> · Graph: <strong>${esc(b.kg_version || "v2")}</strong> · STT: <strong>${esc(sttBackend)}</strong> · TTS: <strong>${esc(ttsBackend)}</strong>`],
       ["Evidence check", ev.judgeable ? `coverage ${ev.coverage} (${esc((ev.matched || []).join(", "))})` : "—"],
       ["Abstention", r.abstained ? esc(r.abstention_reason) : "no"],
-      ["Graph facts", (r.graph_facts || []).map(f => `${esc(f.concept)} — ${esc(f.relation)} — ${esc(f.target)} <small>(${esc(f.locator || "no locator")}; <span class="${f.review_status === "extracted_from_source" ? "" : "badge unrev"}">${esc((f.review_status || "").replace(/_/g, " "))}</span>)</small>`).join("<br>") || "—"],
+      ["Graph facts", (r.graph_facts || []).map(f => `${esc(f.concept)} — ${esc(f.relation)} — ${esc(f.target)} <small>(${esc(f.locator || "no locator")}; <span class="${f.is_verified ? "badge ok" : "badge unrev"}">${esc((f.verification_status || f.review_status || "").replace(/_/g, " "))}</span>)${f.provisional_notice ? ` <em>[${esc(f.provisional_notice)}]</em>` : ""}</small>`).join("<br>") || "—"],
       ["Latency", `${Math.round(r.latency_ms || 0)} ms`],
     ];
     return `<dl class="trace">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;

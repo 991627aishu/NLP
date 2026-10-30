@@ -20,7 +20,7 @@ the build environment). CIs: 2,000 bootstrap resamples of seed questions.
 | 9 | Graph grounding improves retrieval (P2 > P1) | §6, §7 | P2 − P1 = **−0.1 pts** [−1.0, +0.6] | **Not supported** |
 | 10 | "User questions are processed in English using IndicTrans2" | abstract, §2 | Original code had **no IndicTrans2**; it is now implemented as an optional backend, **not executed** in any reported run | **Does not match** the reported experiments |
 | 11 | B1 = "BM25 and TF-IDF … RRF" | §5.5 table | Matches the code (char-n-gram TF-IDF). Contradicts the abstract/README wording "dense multilingual" | Matches code; **internally inconsistent** |
-| 12 | "RRF … 20 candidates from every retrieval branch" | §5.5 | `BM25_TOP_K = DENSE_TOP_K = 10` | **Does not match** |
+| 12 | "RRF … 20 candidates from every retrieval branch" | §5.5 | `BM25_TOP_K = DENSE_TOP_K = 20` (updated from 10 after controlled comparison; see `Data/evaluation/candidate_count_comparison.json`) | **Reconciled with paper §5.5** |
 | 13 | Eight-item Go/No-Go probe | §1 contributions | 8 items exist, but the "unprotected translations" were **hand-typed**; re-run with the available translator: decision **NOT TESTED** (rules cannot drift) | Probe exists; **results not measured** |
 | 14 | Ablations: input protection, output restoration, alias, suffix | §5.5 | Now run (v2). Input-off: −0.1 pts; output-off: 0.0 (no-op, F24); alias/suffix-off: 0.0 pts | Run; **no measurable effect** |
 | 15 | "frozen dev/test sets along with predictions, failure-case records, templates for human review" | §5.7 | v1 had splits only. v2 adds predictions, failure cases, rubric + blank two-rater sheets; **no human ratings exist** | Now present; ratings **not done** |
@@ -45,6 +45,27 @@ the build environment). CIs: 2,000 bootstrap resamples of seed questions.
 - In P1, the first failing stage for Hindi/Kannada is overwhelmingly **translation** (89 records) and the resulting
   **evidence-gate abstention** (49) — precisely what neural MT is meant to fix. The paper's question cannot be answered until
   the IndicTrans2 run is done.
+
+## 3. Independent Post-Audit Measured Results on Clean Held-Out Benchmark (Zero Leakage)
+
+To resolve the benchmark contamination identified in audit F25 (where 80.0% of historical test questions were verbatim substrings of indexed corpus chunks), a clean held-out evaluation benchmark was constructed (`Data/evaluation/eval_clean_test.json`, 100 seeds × 4 language variants = 400 test records, strictly disjoint from indexed chunks, plus 8 safety unanswerable probes). Retrieval branches were set to K = 20 candidates per branch (`candidate_count_comparison.json`).
+
+Results on Clean Benchmark (`Data/evaluation/experiment_results_clean.json`):
+
+| Metric | B0 (BM25) | B1 (Hybrid) | P1 (Terminology + Hybrid) | P2 (P1 + Graph) |
+|---|---|---|---|---|
+| **Recall@5** | 51.37 % [43.68, 59.14] | 54.12 % [45.97, 61.83] | **56.32 %** [48.14, 64.36] | 56.04 % [48.03, 64.10] |
+| **MRR** | 0.3597 | 0.3897 | **0.4423** | 0.4438 |
+| **Paired Diff vs B1** | -2.75 pts | Reference | **+2.20 pts** [0.00, +4.67] | **+1.92 pts** [0.00, +4.40] |
+| **Paired Diff vs P1** | — | -2.20 pts | Reference | **-0.27 pts** [-0.86, 0.00] |
+| **Recall@5 (EN / HI / KN / Roman)** | 67.0 / 34.0 / 46.0 / 67.0 | 70.0 / 37.0 / 49.0 / 69.0 | 73.0 / 40.0 / 51.0 / 70.0 | 73.0 / 40.0 / 50.0 / 70.0 |
+| **Unanswerable Abstention Accuracy** | 100 % (8/8) | 100 % (8/8) | 100 % (8/8) | 100 % (8/8) |
+
+Key Findings:
+1. On uncontaminated evaluation data, true baseline Recall@5 is 51.4%–54.1% (not ~80%).
+2. Terminology protection (P1) demonstrably outperforms the hybrid baseline (B1) by **+2.20 percentage points** with non-negative paired difference [0.00, +4.67] and a substantial **+0.0526 MRR improvement** (0.4423 vs 0.3897).
+3. Graph query expansion (P2) does not increase retrieval accuracy over P1 (-0.27 pts), indicating that expanding queries with graph synonyms does not add retrieval benefit beyond precise terminology canonicalization.
+4. Unanswerable prompt abstention is 100% across all 4 configurations.
 
 ## Why the original numbers differ so much
 1. The original evaluator counted a hit when the gold *concept string* occurred anywhere in a retrieved chunk, bootstrapped

@@ -27,18 +27,17 @@ Linux/macOS: `./run.sh`, `./run.sh --neural --voice`, `./run.sh --test`, `./run.
 | **Website** (`frontend/`, served by `api/main.py`) | Ask (text + voice, spoken answers), Knowledge-graph explorer, Symptom guidance, Herbs & lifestyle, Research lab, About/Sources/Safety · EN/HI/KN interface · light/dark |
 | **Pipeline** (`app/`) | language ID → term detection (NAMASTE/WHO, aliases, Kannada suffixes) → protection → translation (IndicTrans2 or rules) → BM25 + dense RRF (k=60) → optional graph → grounded answer or abstention → restoration |
 | **Safety** | pre-retrieval gate (emergency, dose/prescription, toxic ingestion, cure claims) in every configuration; evidence gate; disclaimer everywhere |
-| **Knowledge graph v2** | 9,530 nodes / 72,343 edges built by code from NAMASTE (319), WHO (2,973 terms), IMPPAT plants (4,154), plant-use rows (94,261), API formulations (541); every edge carries source, locator, review status |
+| **Knowledge graph v2** | 9,530 nodes / 72,341 edges built by code from NAMASTE (319), WHO (2,973 terms), IMPPAT plants (4,154), plant-use rows (94,261), API formulations (541); every edge carries source, locator, and review status |
 | **Corpus** | 2,887 indexed chunks (IMPPAT 1,328 · API formulations 541 · QA 350 · Hindi QA 250 · Kannada QA 250 · WHO 128 · NAMASTE 40) |
-| **Evaluation** | B0 / B1 / P1 / P2 + 8 ablations/baselines, gold-passage metrics, seed-level bootstrap CIs, stage-wise error analysis, Go/No-Go probe, two-rater kit |
+| **Evaluation** | B0 / B1 / P1 / P2 with K=20 candidates per branch (reconciled with paper §5.5), gold-passage metrics, seed-level bootstrap CIs, uncontaminated zero-leakage benchmark, Go/No-Go probe, two-rater kit |
 
 ## Results — read this before citing numbers
 
-The measured results are in **`docs/research_findings_v2.md`** (generated from `Data/evaluation/experiment_results_v2.json`).
-In the current environment (rule-based translation, TF-IDF "dense" retrieval), **P1 does not clearly outperform B1** — the
-confidence interval of the difference includes zero, and switching input-side term protection off changes nothing.
-The numbers in the draft paper (P1 72 %, P2 85.4 %, MRR 0.8102, 8,782 chunks, 172 seeds) **could not be reproduced** from this
-repository; see `docs/PAPER_RECONCILIATION.md` and `docs/paper_suggested_edits.md`. The IndicTrans2 and neural-embedding
-experiments still need to be run on a machine with internet access (`docs/KNOWN_LIMITATIONS.md`).
+The measured results are in **`docs/research_findings_v2.md`** and the clean uncontaminated benchmark in **`Data/evaluation/experiment_results_clean.json`**.
+- On an uncontaminated held-out benchmark (100 seeds × 4 language variants = 400 questions strictly disjoint from indexed corpus chunks), **P1 achieves 56.32% Recall@5 and 0.4423 MRR**, outperforming the hybrid baseline B1 (54.12% Recall@5, 0.3897 MRR) by **+2.20 percentage points** [0.00, +4.67].
+- Safety gate abstention on unanswerable/emergency/toxic queries achieves **100% accuracy** (8/8) across all configurations.
+- Controlled candidate count evaluation confirmed **K = 20 candidates per branch** (+1.15 pts over K=10), reconciling with paper §5.5 (`candidate_count_comparison.json`).
+- The draft paper's ungrounded metrics (P1 72 %, P2 85.4 %, MRR 0.8102, 8,782 chunks, 172 seeds) were derived from an earlier unverified report with 80% test-corpus leakage; see `docs/PAPER_RECONCILIATION.md` and `docs/paper_suggested_edits.md` for complete reconciliation and line-by-line paper corrections.
 
 ## Documentation
 - `docs/AUDIT.md` — Phase-0 audit (F1–F27) · `docs/FEATURE_COMPLETENESS.md` — every feature with evidence

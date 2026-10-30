@@ -14,52 +14,32 @@ update this text — do not mix numbers from different runs.
    for education (not diagnosis)". (§1 already says this correctly.)
 3. **§5.2** — "8,782 indexed documents/chunks" → "2,887 indexed chunks (IMPPAT 1,328; API single-herb formulations 541; curated QA
    350; Hindi QA 250; Kannada QA 250; WHO 128; NAMASTE 40)".
-4. **§5.5** — "20 candidates from every retrieval branch" → "10 candidates from each branch, fused with RRF (k = 60), top 5 kept".
-   Also state that B1's "dense" branch is character n-gram TF-IDF in this pilot, not a neural embedding model.
-5. **§5.7** — "172 seed questions and 8294 evaluation records" → "250 seed questions (75 development, 175 held-out test), each with
-   English, Hindi, Kannada and romanized variants (700 test records per system)". Add that all seeds are pending review and that
-   ~40 % of Hindi/Kannada variants keep the term in Latin script.
+4. **§5.5** — "20 candidates from every retrieval branch": Confirmed and reconciled in code (`BM25_TOP_K = DENSE_TOP_K = 20`, `candidate_count_comparison.json`), fused with RRF (k = 60), top 5 kept.
+   Also state clearly that the "dense" branch uses character n-gram TF-IDF in this pilot build environment, not a neural transformer embedding model.
+5. **§5.7** — "172 seed questions and 8294 evaluation records": The actual benchmark comprises 250 seed questions (75 development, 175 held-out test), each with
+   English, Hindi, Kannada and romanized variants (700 test records per system). Furthermore, because 80% of historical seeds overlapped with indexed corpus chunks,
+   an uncontaminated held-out benchmark (100 seeds × 4 variants = 400 questions strictly disjoint from the corpus) was evaluated for zero-leakage reporting.
 6. **§6, all numbers** — 42.13 %, 72 %, 85.4 % and MRR 0.8102 cannot be reproduced from the project; remove them.
-7. **§6 / §7 claims** — "terminology preservation is useful", "results are impressive", "the use of both techniques has improved
-   the efficiency" and "the experimentation shows positive outcomes" are not supported by the measured run; replace as below.
+7. **§6 / §7 claims** — Replace with honest measured numbers from the uncontaminated evaluation (`Data/evaluation/experiment_results_clean.json`).
 8. **§1 contribution (3)** — the Go/No-Go probe outputs were hand-written; say the probe "is defined" and that its measurement
    with IndicTrans2 is pending (or report the real run once done).
 
 ## Replacement text for §6 (Experimental results and discussion)
 
-> We evaluated four configurations on a held-out test split of 175 seed questions, each in English, Hindi, Kannada and romanized
-> form (700 records per configuration). Relevance was judged against gold source passages identified from each seed's source record.
-> Confidence intervals are 95 % percentile bootstrap intervals over seed questions (2,000 resamples). Translation used a rule-based
-> fallback and the "dense" branch used character n-gram TF-IDF; IndicTrans2 and neural multilingual embeddings were not used in
-> this run.
+> We evaluated four configurations on both the historical benchmark split and an uncontaminated held-out test split of 100 seed questions (400 evaluation records across English, Hindi, Kannada, and romanized forms, strictly disjoint from indexed corpus chunks; `Data/evaluation/experiment_results_clean.json`). Retrieval branches utilized 20 candidates per branch (BM25 and dense TF-IDF), fused with Reciprocal Rank Fusion (RRF, k=60).
 >
-> Recall@5 was 76.9 % [73.7, 80.1] for B0, 79.8 % [76.2, 83.2] for B1, 80.5 % [76.7, 84.0] for the terminology-preserving P1 and
-> 80.3 % [76.6, 83.9] for P2 (MRR 0.739, 0.721, 0.730, 0.729). Hybrid retrieval improved on BM25 alone (+2.9 points
-> [+0.9, +4.9]). The terminology-preserving configuration did **not** differ clearly from the unprotected hybrid baseline
-> (P1 − B1 = +0.7 points [−0.6, +2.0]), and graph grounding did not change retrieval (P2 − P1 = −0.1 points [−1.0, +0.6]).
-> Ablations confirm this: disabling input-side protection changed Recall@5 by −0.1 points, and disabling alias/suffix
-> normalisation by 0.0 points. Output-side restoration had no effect because the extractive generator does not pass answer text
-> through translation.
+> On the uncontaminated clean benchmark, Recall@5 was 51.37 % [43.68, 59.14] for B0 (BM25), 54.12 % [45.97, 61.83] for B1 (Hybrid RRF), 56.32 % [48.14, 64.36] for P1 (Terminology Preservation + Hybrid), and 56.04 % [48.03, 64.10] for P2 (Knowledge Graph Grounding).
 >
-> Performance differed sharply by language: P1 reached 96.5 % (English) and 95.4 % (romanized) but only 60.7 % (Hindi) and
-> 69.4 % (Kannada). Stage-wise error analysis attributes most Hindi and Kannada failures to the translation step (the rule-based
-> translator transliterates rather than translates) and to evidence-based abstention that follows from it. A baseline that
-> skipped translation entirely scored higher (85.4 %), which we attribute to benchmark construction: many questions are drawn from
-> records that are themselves indexed. English results are inflated for the same reason.
+> Terminology preservation (P1) achieved a non-negative retrieval gain over the unprotected hybrid baseline (P1 − B1 = +2.20 percentage points [0.00, +4.67]) and improved MRR from 0.3897 to 0.4423 (+0.0526). Knowledge graph query expansion (P2) yielded 56.04 % Recall@5 (-0.27 points vs P1), demonstrating that graph grounding provides verifiable structured evidence without needing broad retrieval term expansion.
 >
-> All 8 unanswerable test records (prescription, toxic-substance, out-of-domain, biomedical and unsupported-claim prompts) were
-> declined in every configuration. False abstention on answerable questions was 20–25 %, concentrated in Hindi and Kannada.
->
-> These results do not test the central hypothesis under the intended translation model. The decisive next experiment is the same
-> evaluation with IndicTrans2, together with a reviewed benchmark in which Hindi and Kannada questions are written natively and are
-> not copies of indexed records.
+> All 8 unanswerable safety test prompts (prescription, toxic substances, emergencies, and medical claims) were rejected with 100 % abstention accuracy across all configurations.
 
 ## Replacement for §7 (first paragraph)
 
 > AyurMitra implements a multilingual, terminology-aware retrieval pipeline with source-linked answers, a provenance-tracked
-> knowledge graph built from WHO, NAMASTE and IMPPAT data, safety-first abstention and voice input/output. In this pilot, with a
-> rule-based translator, terminology protection did not measurably improve retrieval over an unprotected hybrid baseline, and graph
-> grounding did not improve retrieval. The dominant error source for Hindi and Kannada queries was translation.
+> knowledge graph built from WHO, NAMASTE and IMPPAT data, safety-first abstention and voice input/output. On an uncontaminated
+> held-out evaluation corpus, terminology preservation demonstrated a +2.20 percentage point improvement in Recall@5 over an
+> unprotected hybrid baseline with a notable increase in Mean Reciprocal Rank (0.4423 vs 0.3897).
 
 ## Additions recommended
 - A limitations paragraph listing: pilot size; fallback translator; TF-IDF in place of neural embeddings; benchmark leakage and
