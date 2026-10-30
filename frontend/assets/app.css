@@ -159,3 +159,6 @@ table{border-collapse:collapse;width:100%;font-size:.9rem} th,td{text-align:left
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* grid children must be allowed to shrink (wide tables scroll inside .table-wrap) */
 .cols>*,.compare>*{min-width:0} #kg-panel,.edge-list li,.trace dd{overflow-wrap:anywhere}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:12px;margin-top:12px}
+:lang(kn){font-size:1.04em}
+.charts>*{min-width:0} .panel p,.panel small{overflow-wrap:anywhere}

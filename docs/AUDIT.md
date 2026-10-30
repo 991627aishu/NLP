@@ -124,3 +124,16 @@ Command: `python -m pytest tests/test_ayurmitra.py -q`
 ## 7. Blockers for later phases (in this cloud workspace)
 
 - **Phase 2 (IndicTrans2, sentence-transformers), Phase 5 (faster-whisper, edge-tts, gTTS), Phase 6 (FastAPI) and Phase 7 (npm/Vite/React) need PyPI, Hugging Face and npm access.** All three are blocked here. Options: (a) allow `pypi.org`, `files.pythonhosted.org`, `huggingface.co`, `registry.npmjs.org` for this workspace; (b) run those phases on the user's own machine; (c) build code + fallbacks here, unverified against real models (they would be clearly labelled as such in `KNOWN_LIMITATIONS.md`).
+
+---
+
+## 8. Addendum — findings made during Phases 1–8
+
+| # | Severity | Finding | Where handled |
+|---|---|---|---|
+| **F24** | Medium | Output-side restoration (`restore_to_language`) is a no-op: the extractive generator never puts placeholders into the answer. The "output restoration" ablation therefore cannot show an effect. | Real output-side protection added for neural EN→HI/KN answer translation (`translate_answer_text`); ablation reports 0.0 honestly |
+| **F25** | High (evaluation validity) | Every answerable benchmark question's text appears inside an indexed chunk (QA rows / BhashaBench rows). English retrieval is close to a lookup, and an untranslated native-script baseline beats P1. | Reported in `docs/research_findings_v2.md`, `PAPER_RECONCILIATION.md` |
+| **F26** | Medium | Some "Hindi"/"Kannada" variants are English sentences with a short native-script prefix (e.g. "आयुर्वेदिक दृष्टिकोण से: What is typically advised…"). | Reported; benchmark review needed |
+| **F27** | Medium | Several `gold_concept` values are topic labels ("General", "Prasutitantra"), so the v1 concept-match metric is meaningless for them. | v2 uses gold passages derived by code |
+| **F28** | Low | P1's re-ranking boost (+0.05 per matched term, ~3× a typical RRF score) is extra processing that B1 does not get; the small P1 − B1 difference comes from it, not from protection (input-protection-off ablation: −0.1 pts). | Separate `P1-grounding-boost-off` ablation |
+| **F29** | Low | Compound terms such as मंदाग्नि (Mandagni) are not detected by the matcher. | Listed in `KNOWN_LIMITATIONS.md` |

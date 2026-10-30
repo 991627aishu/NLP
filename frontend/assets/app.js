@@ -482,7 +482,7 @@
   });
   function bars(rows, { max = 1, fmt = v => (v * 100).toFixed(1) + "%" } = {}) {
     // rows: [{label, value, ci:[lo,hi]}]
-    const W = 560, rowH = 30, L = 140, H = rows.length * rowH + 24, sx = v => L + (W - L - 60) * Math.max(0, Math.min(1, v / max));
+    const W = 520, rowH = 30, L = 44, H = rows.length * rowH + 24, sx = v => L + (W - L - 170) * Math.max(0, Math.min(1, v / max));
     return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rows.map(r => r.label + " " + fmt(r.value)).join(", "))}">` + rows.map((r, i) => {
       const y = 10 + i * rowH; const ci = r.ci && r.ci.length === 2;
       return `<text x="0" y="${y + 15}">${esc(r.label)}</text><rect x="${L}" y="${y + 4}" width="${Math.max(1, sx(r.value) - L)}" height="14" rx="3" fill="${r.color || "var(--sage)"}"/>` +
@@ -498,10 +498,11 @@
       if (!v2) h += `<div class="empty">No re-run results yet. Run <code class="mono">python -m app.evaluation.evaluator_v2</code>.</div>`;
       else {
         const sys = v2.systems || {}; const main = Object.entries(sys).filter(([, s]) => s.kind === "main");
-        const metric = (k, label) => `<div class="panel chart"><h3>${label}</h3>${bars(main.map(([n, s]) => ({ label: n, value: s.metrics[k]?.mean ?? 0, ci: s.metrics[k]?.ci })))}</div>`;
+        const dec = v => v.toFixed(3);
+        const metric = (k, label, fmt) => `<div class="panel chart"><h3>${label}</h3>${bars(main.map(([n, s]) => ({ label: n, value: s.metrics[k]?.mean ?? 0, ci: s.metrics[k]?.ci })), fmt ? { fmt } : {})}</div>`;
         h += `<div class="panel"><h2>Measured results — ${esc(v2.meta?.split || "")} split</h2><p class="muted">${esc(v2.meta?.summary || "")}</p>
           <p><small>${esc(v2.meta?.n_seeds)} seed questions × ${esc((v2.meta?.languages || []).length)} language variants · CIs: ${esc(v2.meta?.ci_method || "")} · backends: ${esc(JSON.stringify(v2.meta?.backends || {}))}</small></p></div>`;
-        h += `<div class="compare" style="margin-top:12px">${metric("recall_at_5", "Recall@5")}${metric("mrr", "MRR")}${metric("ndcg_at_5", "nDCG@5")}${metric("false_abstention_rate", "False-abstention rate")}</div>`;
+        h += `<div class="charts">${metric("recall_at_5", "Recall@5")}${metric("mrr", "MRR", dec)}${metric("ndcg_at_5", "nDCG@5", dec)}${metric("false_abstention_rate", "False-abstention rate")}</div>`;
         const langs = v2.meta?.languages || [];
         h += `<div class="panel" style="margin-top:12px"><h3>Recall@5 by language</h3><div class="table-wrap"><table><thead><tr><th>System</th>${langs.map(l => `<th>${esc(l)}</th>`).join("")}</tr></thead><tbody>` +
           main.map(([n, s]) => `<tr><td>${n}</td>${langs.map(l => `<td>${((s.by_language?.[l]?.recall_at_5 ?? 0) * 100).toFixed(1)}%</td>`).join("")}</tr>`).join("") + `</tbody></table></div></div>`;

@@ -1,3 +1,5 @@
+> **Superseded (2026-10-30).** This v1 report contradicts its own JSON (e.g. it states 100% abstention accuracy where `experiment_results.json` records 0.0) and its metrics use flawed definitions — see `docs/AUDIT.md` (F7, F12, F17, F18). Measured results are in `docs/research_findings_v2.md`, which is generated from the results JSON. The text below is kept unchanged for the record.
+
 # AyurMitra — Research Findings & Comparative Experiment Report
 
 ## 1. Executive Summary & Research Question
