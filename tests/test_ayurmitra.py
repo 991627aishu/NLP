@@ -609,3 +609,70 @@ def test_multi_symptom_decomposition_and_provenance():
         assert "provenance" in m
         assert "source_id" in m
         assert "WHO" in m["provenance"] or "NAMASTE" in m["provenance"]
+
+
+def test_terminology_does_not_falsely_match_everyday_words():
+    """Verify that everyday English and Hindi/Kannada grammatical words are never matched as domain terms."""
+    matcher = TerminologyMatcher()
+
+    # 1. Hindi verb 'karta' in Hinglish phrase must not match technical term kartA
+    hinglish_q = "Agni digestion mein kya role play karta hai?"
+    terms_hi = [t["canonical_term"] for t in matcher.find_terms(hinglish_q)]
+    assert terms_hi == ["Agni"]
+    assert "kartA" not in terms_hi
+
+    # 2. Kanglish phrase
+    kanglish_q = "Agni digestion alli enu role ide?"
+    terms_kn = [t["canonical_term"] for t in matcher.find_terms(kanglish_q)]
+    assert terms_kn == ["Agni"]
+
+    # 3. Everyday English words (time, five, box, deep, cough, blood, pulse)
+    en_q1 = "What is the best time to take Triphala after five days?"
+    terms_en1 = [t["canonical_term"] for t in matcher.find_terms(en_q1)]
+    assert terms_en1 == ["Triphala"]
+    assert "Time" not in terms_en1
+    assert "Five" not in terms_en1
+
+    en_q2 = "I have a cough and want to check my pulse rate."
+    terms_en2 = [t["canonical_term"] for t in matcher.find_terms(en_q2)]
+    assert "Kapha" not in terms_en2
+    assert "Nadi" not in terms_en2
+
+    # 4. Verified genuine Ayurvedic terms must remain detected
+    v_terms = [t["canonical_term"] for t in matcher.find_terms("What is the difference between Vata and Pitta?")]
+    assert "Vata" in v_terms
+    assert "Pitta" in v_terms
+
+
+def test_four_key_ayurvedic_queries_end_to_end():
+    """Verify the four required test queries produce clean canonical queries and valid citations."""
+    from app.pipeline.rag_pipeline import AyurMitraPipeline
+    pipe = AyurMitraPipeline()
+
+    # 1. Hinglish query
+    r1 = pipe.process_query("Agni digestion mein kya role play karta hai?", system_mode="P1")
+    assert r1["canonical_query"] == "What is the role of Agni in digestion?"
+    assert [t["canonical_term"] for t in r1["detected_terms"]] == ["Agni"]
+    assert not r1["abstained"]
+    assert len(r1["citations"]) > 0
+
+    # 2. Kanglish query
+    r2 = pipe.process_query("Agni digestion alli enu role ide?", system_mode="P1")
+    assert r2["canonical_query"] == "What is the role of Agni in digestion?"
+    assert [t["canonical_term"] for t in r2["detected_terms"]] == ["Agni"]
+    assert not r2["abstained"]
+    assert len(r2["citations"]) > 0
+
+    # 3. English query
+    r3 = pipe.process_query("What is the role of Agni in digestion?", system_mode="P1")
+    assert r3["canonical_query"] == "What is the role of Agni in digestion?"
+    assert [t["canonical_term"] for t in r3["detected_terms"]] == ["Agni"]
+    assert not r3["abstained"]
+    assert len(r3["citations"]) > 0
+
+    # 4. Dual term query
+    r4 = pipe.process_query("What is the difference between Vata and Pitta?", system_mode="P1")
+    assert "Vata" in [t["canonical_term"] for t in r4["detected_terms"]]
+    assert "Pitta" in [t["canonical_term"] for t in r4["detected_terms"]]
+    assert not r4["abstained"]
+    assert len(r4["citations"]) > 0

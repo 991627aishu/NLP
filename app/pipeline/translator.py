@@ -52,6 +52,30 @@ KANNADA_QUERY_PATTERNS = [
     (re.compile(r"(.+?)\s*(?:ಪರಿಹಾರವೇನು|ಚಿಕಿತ್ಸೆ\s*ಏನು|ಹೇಗೆ\s*ಗುಣಪಡಿಸುವುದು)\??", re.IGNORECASE), "How to balance and treat {0}?"),
 ]
 
+# Code-mixed Hinglish query patterns (Romanized Hindi + English)
+HINGLISH_QUERY_PATTERNS = [
+    (re.compile(r"(.+?)\s+(.+?)\s+(?:mein|me|main)\s+(?:kya|kyaa)\s+(?:role|bhumika|yogdan)\s*(?:play\s+karta\s+hai|karta\s+hai|hai|hota\s+hai)\??", re.IGNORECASE), "What is the role of {0} in {1}?"),
+    (re.compile(r"(.+?)\s+(?:mein|me|main)\s+(?:kya|kyaa)\s+(?:role|bhumika)\s*(?:play\s+karta\s+hai|karta\s+hai|hai)\??", re.IGNORECASE), "What role does {0} play?"),
+    (re.compile(r"(.+?)\s*(?:ke|k\s*)?\s*(?:fayde|fayday|labh|benefits)\s*(?:kya\s*hain|kya\s*hai|batao)?\??", re.IGNORECASE), "What are the benefits of {0}?"),
+    (re.compile(r"(.+?)\s*(?:ke|k\s*)?\s*(?:lakshan|symptoms)\s*(?:kya\s*hain|kya\s*hai|batao)?\??", re.IGNORECASE), "What are the symptoms of {0}?"),
+    (re.compile(r"(.+?)\s*(?:ke|k\s*)?\s*(?:karya|kaam|functions)\s*(?:kya\s*hain|kya\s*hai|batao)?\??", re.IGNORECASE), "What are the functions of {0}?"),
+    (re.compile(r"(.+?)\s*(?:kya\s*hai|kya\s*hota\s*hai|kise\s*kehte\s*hain)\??", re.IGNORECASE), "What is {0}?"),
+    (re.compile(r"(.+?)\s+aur\s+(.+?)\s+(?:mein|me)\s*(?:kya\s*antar\s*hai|difference\s*kya\s*hai)\??", re.IGNORECASE), "What is the difference between {0} and {1}?"),
+    (re.compile(r"(.+?)\s*(?:ko|ka)?\s*(?:kaise\s*theek\s*kare|ka\s*ilaj|kaise\s*balance\s*kare)\??", re.IGNORECASE), "How to balance and treat {0}?"),
+]
+
+# Code-mixed Kanglish query patterns (Romanized Kannada + English)
+KANGLISH_QUERY_PATTERNS = [
+    (re.compile(r"(.+?)\s+(.+?)\s+(?:alli|olage)\s+(?:enu|yenu)\s+(?:role|patra)\s*(?:ide|aagide|play\s*madutthe)?\??", re.IGNORECASE), "What is the role of {0} in {1}?"),
+    (re.compile(r"(.+?)\s+(?:alli|olage)\s+(?:enu|yenu)\s+(?:role|patra)\s*(?:ide|play\s*madutthe)?\??", re.IGNORECASE), "What role does {0} play?"),
+    (re.compile(r"(.+?)\s*(?:da|na)?\s*(?:prayojanagalu|upayogagalu|benefits)\s*(?:enu|yenu|yavuvu)?\??", re.IGNORECASE), "What are the benefits of {0}?"),
+    (re.compile(r"(.+?)\s*(?:da|na)?\s*(?:lakshanagalu|symptoms)\s*(?:yavuvu|enu|yenu)?\??", re.IGNORECASE), "What are the symptoms of {0}?"),
+    (re.compile(r"(.+?)\s*(?:da|na)?\s*(?:karyagalu|functions)\s*(?:yavuvu|enu)?\??", re.IGNORECASE), "What are the functions of {0}?"),
+    (re.compile(r"(.+?)\s*(?:endarenu|yavudu|artavenu)\??", re.IGNORECASE), "What is {0}?"),
+    (re.compile(r"(.+?)\s+mattu\s+(.+?)\s+(?:naduvina|alli)\s*(?:vyatyasa\s*enu|difference\s*enu)\??", re.IGNORECASE), "What is the difference between {0} and {1}?"),
+    (re.compile(r"(.+?)\s*(?:ge)?\s*(?:parihara\s*enu|chikitse\s*enu|hege\s*guna\s*maduvudu)\??", re.IGNORECASE), "How to balance and treat {0}?"),
+]
+
 # Concept explanations in Hindi and Kannada for evidence passage localization
 CONCEPT_EXPLANATIONS = {
     "Pitta": {
@@ -282,7 +306,37 @@ class MultilingualTranslator:
                         "warning": None
                     }
 
-        # 4. Transliteration fallback for unmatched strings
+        # 4. Check Code-mixed Hinglish Grammar Patterns (Romanized Hindi)
+        if source_lang in ("hi", "auto"):
+            for pat, template in HINGLISH_QUERY_PATTERNS:
+                m = pat.match(cleaned)
+                if m:
+                    eng_query = template.format(*[g.strip() for g in m.groups()])
+                    return {
+                        "translated_text": eng_query,
+                        "source_lang": "hi",
+                        "target_lang": "en",
+                        "method": "hinglish_grammar_pattern_rule",
+                        "success": True,
+                        "warning": None
+                    }
+
+        # 5. Check Code-mixed Kanglish Grammar Patterns (Romanized Kannada)
+        if source_lang in ("kn", "auto"):
+            for pat, template in KANGLISH_QUERY_PATTERNS:
+                m = pat.match(cleaned)
+                if m:
+                    eng_query = template.format(*[g.strip() for g in m.groups()])
+                    return {
+                        "translated_text": eng_query,
+                        "source_lang": "kn",
+                        "target_lang": "en",
+                        "method": "kanglish_grammar_pattern_rule",
+                        "success": True,
+                        "warning": None
+                    }
+
+        # 6. Transliteration fallback for unmatched strings
         try:
             from indic_transliteration import sanscript
             from indic_transliteration.sanscript import transliterate

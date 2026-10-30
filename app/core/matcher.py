@@ -245,6 +245,23 @@ ROMAN_SPELLING_VARIANTS: Dict[str, str] = {
     "thulasi": "Tulsi",
     "shatavari": "Shatavari",
     "shathavari": "Shatavari",
+    "brahmi": "Brahmi",
+    "brahmee": "Brahmi",
+    "haritaki": "Haritaki",
+    "amalaki": "Amalaki",
+    "amla": "Amalaki",
+    "bibhitaki": "Bibhitaki",
+    "guggulu": "Guggulu",
+    "guggul": "Guggulu",
+}
+
+# Everyday English and grammatical Hindi/Kannada words that must never be
+# matched as standalone technical terms (preventing false protection)
+DISALLOWED_PLAIN_WORDS = {
+    "box", "time", "deep", "five", "pre", "post", "bulk", "non", "ita",
+    "karta", "karte", "karti", "kare", "karna", "hai", "hain", "hoga", "raha", "rahe",
+    "cough", "blood", "pulse", "tissue", "nerve", "muscle", "bone", "fat", "plasma",
+    "lymph", "toxin", "humor", "channels", "body", "health", "water", "food"
 }
 
 # Common Kannada noun suffixes to strip for root term recovery
@@ -292,13 +309,13 @@ class TerminologyMatcher:
                 if not canon:
                     continue
                 self.inventory[canon] = item
-                # Add to Latin lookup
+                # Add to Latin lookup (guarding against plain everyday words)
                 norm_c = _normalize_latin(canon)
-                if norm_c:
+                if norm_c and norm_c.lower() not in DISALLOWED_PLAIN_WORDS:
                     self.latin_lookup[norm_c] = canon
                 for alias in item.get("aliases", []):
                     norm_a = _normalize_latin(alias)
-                    if norm_a:
+                    if norm_a and norm_a.lower() not in DISALLOWED_PLAIN_WORDS:
                         self.latin_lookup[norm_a] = canon
         except Exception as e:
             # Fall back to internal basic inventory if file not yet present
@@ -372,8 +389,8 @@ class TerminologyMatcher:
         # Sort terms by length descending to match multi-words first
         sorted_latin = sorted(self.latin_lookup.items(), key=lambda x: -len(x[0]))
         for alias, canon in sorted_latin:
-            if len(alias) < 3:
-                continue  # skip extremely short ambiguous words like 'or'
+            if len(alias) < 3 or alias.lower() in DISALLOWED_PLAIN_WORDS:
+                continue  # skip extremely short words and disallowed everyday words
             # Use word boundaries for Latin
             pattern = re.compile(r"\b" + re.escape(alias) + r"\b", re.IGNORECASE)
             for m in pattern.finditer(text):
