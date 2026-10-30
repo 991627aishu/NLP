@@ -106,7 +106,7 @@ def normalize_transcript_terms(text: str) -> Dict[str, Any]:
             m = difflib.get_close_matches(lw, [c.lower() for c in _CANONICAL], n=1, cutoff=0.8)
             target = next((c for c in _CANONICAL if m and c.lower() == m[0]), None)
         if target and target.lower() != lw:
-            if lw in _COMMON_WORDS or lw in _STT_VARIANTS:
+            if lw in _COMMON_WORDS:  # real everyday words ("pita" = father) need Ayurvedic context
                 if not has_context:
                     out.append(w)
                     continue
