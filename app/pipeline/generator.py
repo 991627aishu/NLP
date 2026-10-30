@@ -87,6 +87,12 @@ def _clean_passage_sentence(text: str) -> str:
     cleaned = re.sub(r"\bClinical Context:\s*", "", cleaned)
     cleaned = re.sub(r"\bAyurvedic Principle:\s*", "", cleaned)
     cleaned = re.sub(r"qa_cleaned\.csv_rows_\S+", "", cleaned)
+    cleaned = re.sub(r"Ayurvedic Principle on [^?]{0,300}\?:\s*", "", cleaned)  # QA-chunk question prefix
+    # Phase 2: strip WHO-table boilerplate (column headers / running page headers)
+    cleaned = re.sub(r"Term ID English term Description Sanskrit term in IAST\*? Sanskrit term", " ", cleaned)
+    cleaned = re.sub(r"WHO international standard terminologies on Ayurveda \d+", " ", cleaned)
+    cleaned = re.sub(r"^\s*[A-Z][A-Za-z ,()\-]{3,60}?\s\d{1,3}\s(?=\S)", " ", cleaned)  # "Core concepts 33 "
+    cleaned = re.sub(r"(?<=\s)(\d+\.){1,4}\d*\s+(?=[A-Z])", " ", cleaned)  # bare section numbers "2.1 "
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     return cleaned
 
@@ -176,6 +182,10 @@ class EvidenceGroundedGenerator:
                     s.strip() for s in re.split(r"(?<=[.!?])\s+", raw_cleaned)
                     if len(s.strip()) > 25 and not s.strip().endswith("?")
                 ]
+                # Phase 2: prefer sentences that mention the query concepts (stable sort keeps order otherwise)
+                if concept_keywords:
+                    sentences = sorted(sentences, key=lambda x: -sum(1 for kw in concept_keywords
+                                                                      if len(kw) >= 3 and kw in x.lower()))
                 for s in sentences[:3]:
                     if s not in clean_facts and not any(s in existing for existing in clean_facts):
                         clean_facts.append(s)
