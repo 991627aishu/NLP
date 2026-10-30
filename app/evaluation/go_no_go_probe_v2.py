@@ -91,10 +91,10 @@ def main():
     a = ap.parse_args()
     out = run(a.backend)
     (DATA_EVAL / "go_no_go_probe_results_v2.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(json.dumps({k: v for k, v in out.items() if k != "items"}, indent=1, ensure_ascii=False))
+    print(json.dumps({k: v for k, v in out.items() if k != "items"}, indent=1, ensure_ascii=True))
     for i in out["items"]:
-        print(f"{i['probe_id']} {i['concept']:9s} UNPROT[{i['unprotected_status']}] {i['unprotected_output'][:50]!r} | "
-              f"PROT[{i['protected_status']}] {i['protected_output'][:50]!r}")
+        print(f"{i['probe_id']} {i['concept']:9s} UNPROT[{i['unprotected_status']}] {repr(ascii(i['unprotected_output'][:50]))} | "
+              f"PROT[{i['protected_status']}] {repr(ascii(i['protected_output'][:50]))}")
 
 
 if __name__ == "__main__":
