@@ -1,0 +1,2 @@
+# AyurMitra application package
+

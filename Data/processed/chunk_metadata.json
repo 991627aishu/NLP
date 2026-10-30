@@ -1,0 +1,12 @@
+{
+  "total_chunks": 2887,
+  "source_breakdown": {
+    "WHO_PDF": 128,
+    "NAMASTE": 40,
+    "IMPPAT": 1869,
+    "QA_Curated": 350,
+    "Hindi_Parquet": 250,
+    "Kannada_Parquet": 250
+  },
+  "average_word_count": 92.19050917907863
+}
