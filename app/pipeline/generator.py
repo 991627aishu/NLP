@@ -96,6 +96,9 @@ class EvidenceGroundedGenerator:
 
     def __init__(self, relevance_threshold: float = 0.012):
         self.relevance_threshold = relevance_threshold
+        self.backend_used = "extractive"
+        self.translator = None   # set by the pipeline (answer translation, Phase 2)
+        self.protector = None
 
     def generate_answer(
         self,
@@ -239,19 +242,51 @@ class EvidenceGroundedGenerator:
         else:
             answer_lead = f"Based on curated Ayurvedic literature regarding {term_label if term_label else 'this topic'}:"
 
-        if concept_body:
-            direct_answer = f"{answer_lead} {concept_body}"
-        elif clean_facts:
-            direct_answer = f"{answer_lead} {clean_facts[0]}"
+        # Phase 2 (audit F3/F14): the answer must come from the cited evidence.
+        # Previously the hand-written CONCEPT_EXPLANATIONS paragraph WAS the HI/KN
+        # answer even when the cited passage said something else. It is now shown
+        # only as a separately labelled glossary note.
+        machine_translated = False
+        translation_methods = []
+        translator = getattr(self, "translator", None)
+        protector = getattr(self, "protector", None)
+
+        def _localize(en_text: str) -> str:
+            nonlocal machine_translated
+            if lang == "en" or not en_text:
+                return en_text
+            if translator is not None and hasattr(translator, "translate_answer_text"):
+                tr = translator.translate_answer_text(en_text, lang, protector=protector)
+                translation_methods.append(tr.get("method"))
+                if tr.get("machine_translated"):
+                    machine_translated = True
+                    return tr["text"]
+            label = "अंग्रेज़ी स्रोत पाठ" if lang == "hi" else "ಇಂಗ್ಲಿಷ್ ಮೂಲ ಪಠ್ಯ"
+            return f"({label} / English source text) {en_text}"
+
+        if clean_facts:
+            direct_answer = f"{answer_lead} {_localize(clean_facts[0])}"
+            answer_grounding = "evidence_sentence"
         elif web_facts:
-            direct_answer = f"{answer_lead} {web_facts[0]}"
+            direct_answer = f"{answer_lead} {_localize(web_facts[0])}"
+            answer_grounding = "web_snippet"
+        elif concept_body:
+            direct_answer = f"{answer_lead} {concept_body}"
+            answer_grounding = "glossary_only"
         else:
             direct_answer = loc_str["abstention_no_evidence"]
+            answer_grounding = "none"
 
         # 2. Explanation synthesis
         explanation_parts = []
         if clean_facts:
-            explanation_parts.append(" ".join(clean_facts[:3]))
+            explanation_parts.append(" ".join(_localize(f) if machine_translated else f for f in clean_facts[:3]))
+        if concept_body:
+            if lang == "hi":
+                gl_hdr = "शब्दावली टिप्पणी (परियोजना द्वारा लिखित सारांश; उद्धृत अंशों से नहीं; विशेषज्ञ समीक्षा लंबित)"
+            else:
+                gl_hdr = "ಪದಕೋಶ ಟಿಪ್ಪಣಿ (ಯೋಜನೆಯ ಸಾರಾಂಶ; ಉಲ್ಲೇಖಿತ ಭಾಗಗಳಿಂದಲ್ಲ; ತಜ್ಞರ ಪರಿಶೀಲನೆ ಬಾಕಿ)"
+            explanation_parts.append(f"{gl_hdr} [Glossary note — project-written, unreviewed]: {concept_body}")
         if graph_facts:
             kg_lines = []
             for gf in graph_facts[:4]:
@@ -318,4 +353,7 @@ class EvidenceGroundedGenerator:
             "web_citations": web_citations,
             "disclaimer": disclaimer,
             "target_lang": lang,
+            "machine_translated": machine_translated,
+            "answer_grounding": answer_grounding,
+            "answer_translation_methods": translation_methods,
         }

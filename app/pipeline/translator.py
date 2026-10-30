@@ -25,8 +25,9 @@ import logging
 import pandas as pd
 
 log = logging.getLogger("ayurmitra.translator")
+PLACEHOLDER_STRIP = re.compile(r"__AYURTERM_\d+__")
 
-from app.config import HI_PARQUET, KN_PARQUET
+from app.config import HI_PARQUET, KN_PARQUET, TRANSLATOR_BACKEND
 from app.core.matcher import (
     HINDI_TERM_MAP,
     KANNADA_TERM_MAP,
@@ -91,9 +92,66 @@ CONCEPT_EXPLANATIONS = {
 class MultilingualTranslator:
     """Bilingual translation engine with domain alignment and fallback transparency."""
 
-    def __init__(self):
+    def __init__(self, backend: Optional[str] = None):
         self.parallel_qa: Dict[str, str] = {}
         self._load_parallel_datasets()
+        # Phase 2: neural MT (IndicTrans2) with rule-based fallback. Weights load lazily.
+        self.requested_backend = (backend or TRANSLATOR_BACKEND or "auto").lower()
+        self.neural = None
+        self.backend_used = "rules"
+        self.backend_warning: Optional[str] = "Neural MT unavailable — using rule-based fallback"
+        if self.requested_backend in ("auto", "indictrans2"):
+            try:
+                from app.pipeline.translator_neural import get_backend
+                nb = get_backend()
+                if nb.importable():
+                    self.neural = nb
+                    self.backend_used = "indictrans2"
+                    self.backend_warning = "First IndicTrans2 request downloads/loads the model and may take longer"
+                else:
+                    self.backend_warning = f"Neural MT unavailable — using rule-based fallback ({nb.error})"
+            except Exception as e:
+                self.backend_warning = f"Neural MT unavailable — using rule-based fallback ({e})"
+        elif self.requested_backend == "rules":
+            self.backend_warning = None
+
+    # ── Neural helpers ────────────────────────────────────────────────────────
+    @staticmethod
+    def _mostly_latin(text: str) -> bool:
+        letters = [c for c in PLACEHOLDER_STRIP.sub(" ", text) if c.isalpha()]
+        return bool(letters) and sum(1 for c in letters if c.isascii()) / len(letters) > 0.6
+
+    def _neural_failed(self, e: Exception) -> None:
+        log.warning("IndicTrans2 failed (%s) — switching to rule-based fallback", e)
+        self.neural = None
+        self.backend_used = "rules"
+        self.backend_warning = f"Neural MT unavailable — using rule-based fallback ({type(e).__name__})"
+
+    def translate_answer_text(self, en_text: str, target_lang: str, protector=None) -> Dict[str, Any]:
+        """EN -> HI/KN for answer sentences with REAL output-side term protection.
+
+        Terms are protected in the English text, translated with IndicTrans2 and
+        restored in native script (Pitta -> पित्त / ಪಿತ್ತ). Without neural MT the
+        English text is returned unchanged and ``machine_translated`` is False.
+        """
+        if target_lang not in ("hi", "kn") or not en_text.strip():
+            return {"text": en_text, "machine_translated": False, "method": "identity", "placeholders_lost": []}
+        if self.neural is None:
+            return {"text": en_text, "machine_translated": False, "method": "untranslated_no_neural_mt",
+                    "placeholders_lost": []}
+        try:
+            pmap = {}
+            src = en_text
+            if protector is not None:
+                src, pmap = protector.protect(en_text)
+            r = self.neural.translate_protected(src, "en", target_lang)
+            text = protector.restore_to_language(r["text"], pmap, target_lang=target_lang) if pmap else r["text"]
+            return {"text": text, "machine_translated": True, "method": "indictrans2",
+                    "model": r["model"], "placeholders_lost": r["placeholders_lost"]}
+        except Exception as e:
+            self._neural_failed(e)
+            return {"text": en_text, "machine_translated": False, "method": "untranslated_no_neural_mt",
+                    "placeholders_lost": []}
 
     def _load_parallel_datasets(self) -> None:
         """Indexes parallel question pairs from hi.parquet and kn.parquet."""
@@ -118,6 +176,40 @@ class MultilingualTranslator:
             log.warning("Kannada parallel-QA lookup disabled: could not read %s (%s)", KN_PARQUET.name, e)
 
     def translate_to_english(
+        self, text: str, source_lang: str = "auto"
+    ) -> Dict[str, Any]:
+        """HI/KN -> EN. IndicTrans2 when available, else the original rule-based path."""
+        if self.neural is not None and source_lang in ("hi", "kn") and text and text.strip() \
+                and PLACEHOLDER_STRIP.sub("", text).strip():
+            try:
+                src_text, method = text, "indictrans2"
+                if self._mostly_latin(text):  # romanized / Hinglish / Kanglish: native script first
+                    from indic_transliteration import sanscript
+                    tgt_scheme = sanscript.DEVANAGARI if source_lang == "hi" else sanscript.KANNADA
+                    keep = {m.group(0): f"AYTKEEP{i}" for i, m in enumerate(PLACEHOLDER_STRIP.finditer(text))}
+                    tmp = text
+                    for k, v in keep.items():
+                        tmp = tmp.replace(k, v)
+                    tmp = sanscript.transliterate(tmp, sanscript.ITRANS, tgt_scheme)
+                    for k, v in keep.items():
+                        tmp = tmp.replace(sanscript.transliterate(v, sanscript.ITRANS, tgt_scheme), k).replace(v, k)
+                    src_text, method = tmp, "transliteration+indictrans2"
+                r = self.neural.translate_protected(src_text, source_lang, "en")
+                return {
+                    "translated_text": r["text"], "source_lang": source_lang, "target_lang": "en",
+                    "method": method, "model": r["model"], "placeholders_lost": r["placeholders_lost"],
+                    "success": True, "warning": None,
+                }
+            except Exception as e:
+                self._neural_failed(e)
+        res = self._translate_to_english_rules(text, source_lang)
+        if res.get("method") not in ("identity", "empty"):
+            res.setdefault("warning", None)
+            if res["warning"] is None and self.backend_used == "rules" and self.requested_backend != "rules":
+                res["warning"] = self.backend_warning
+        return res
+
+    def _translate_to_english_rules(
         self, text: str, source_lang: str = "auto"
     ) -> Dict[str, Any]:
         """

@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 
 from app.config import EXPERIMENT_CONFIGS, FUSION_TOP_K, SAFETY_GATE, EDUCATIONAL_DISCLAIMER
 from app.core.safety import check_query_safety, safety_message
-from app.config import EVIDENCE_GATE, EVIDENCE_MIN_COVERAGE
+from app.config import EVIDENCE_GATE, EVIDENCE_MIN_COVERAGE, GENERATOR_BACKEND
 import re as _re
 from app.pipeline.bm25_retriever import QUESTION_STOPWORDS
 
@@ -48,6 +48,8 @@ class AyurMitraPipeline:
         self.translator = MultilingualTranslator()
         self.retriever = HybridRetriever()
         self.generator = EvidenceGroundedGenerator()
+        self.generator.translator = self.translator
+        self.generator.protector = self.protector
         self.kg = AyurKnowledgeGraph()
         self.web_search = WebSearchFallback()
 
@@ -58,6 +60,7 @@ class AyurMitraPipeline:
         top_k: int = FUSION_TOP_K,
         target_lang: str = "auto",
         enable_web_search: bool = True,
+        generator: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Executes a query through the chosen pipeline configuration.
@@ -198,6 +201,31 @@ class AyurMitraPipeline:
             web_passages=web_passages,
         )
 
+        # Step 7a: Optional evidence-only LLM generator (never used in benchmarks)
+        generator_used = "extractive"
+        generator_note = None
+        want_llm = (generator or GENERATOR_BACKEND or "extractive").lower() == "llm"
+        if want_llm and not gen_res["abstained"] and retrieved_passages:
+            try:
+                from app.pipeline.llm_generator import LLMGenerator
+                llm = getattr(self, "_llm", None) or LLMGenerator()
+                self._llm = llm
+                out = llm.generate(english_query if effective_target_lang == "en" else query,
+                                   retrieved_passages, graph_facts, target_lang=effective_target_lang)
+                if out["insufficient"]:
+                    gen_res = dict(gen_res, answer=safety_message("insufficient_evidence", effective_target_lang),
+                                   abstained=True, reason="insufficient_evidence", citations=[])
+                else:
+                    cited = set(out["cited_ids"])
+                    cits = [c for c in gen_res.get("citations", []) if c["chunk_id"] in cited] or gen_res.get("citations", [])
+                    src_lines = "\n".join(f"- {c['title']} (`{c['source_id']}` | {c['locator']}) [{c['chunk_id']}]" for c in cits)
+                    gen_res = dict(gen_res, citations=cits,
+                                   answer=f"**Answer:** {out['answer_text']}\n\n**Sources:**\n{src_lines}")
+                generator_used = f"llm:{out['provider']}:{out['model']}"
+                generator_note = {"dropped_sentences": out["dropped_sentences"]}
+            except Exception as e:
+                generator_note = {"llm_error": f"{type(e).__name__}: {e}"[:300], "fell_back_to": "extractive"}
+
         # Step 7b: Evidence gate — abstain instead of answering from passages that
         # share no content word with the question (e.g. out-of-domain queries).
         # Retrieved passages are still returned so retrieval metrics are unaffected.
@@ -262,6 +290,10 @@ class AyurMitraPipeline:
             "backends": self.backend_info(),
             "evidence_check": evidence_check,
             "is_emergency": False,
+            "machine_translated": gen_res.get("machine_translated", False),
+            "answer_grounding": gen_res.get("answer_grounding"),
+            "generator_used": generator_used,
+            "generator_note": generator_note,
         }
 
     @staticmethod
@@ -338,6 +370,10 @@ class AyurMitraPipeline:
             "disclaimer": disclaimer,
             "latency_ms": (time.time() - start_time) * 1000.0,
             "backends": self.backend_info(),
+            "machine_translated": False,
+            "answer_grounding": "safety_gate",
+            "generator_used": "safety_gate",
+            "generator_note": None,
         }
 
     def backend_info(self) -> Dict[str, Any]:
