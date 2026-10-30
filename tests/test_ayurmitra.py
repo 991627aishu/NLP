@@ -489,7 +489,8 @@ def test_ayurvedic_spelling_variants_normalization():
 def test_codemixed_evaluation_dataset_integrity():
     from pathlib import Path
     import json
-    eval_file = Path("data/evaluation/codemixed_multilingual_eval.json")
+    from app.config import DATA_EVAL  # F8 fix: resolves Data/ vs data/ on case-sensitive filesystems
+    eval_file = DATA_EVAL / "codemixed_multilingual_eval.json"
     assert eval_file.exists()
 
     with open(eval_file, "r", encoding="utf-8") as f:

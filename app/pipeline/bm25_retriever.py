@@ -56,15 +56,21 @@ class BM25Retriever:
         self._load_or_build()
 
     def _load_or_build(self) -> None:
+        from app.pipeline.index_cache import stamp_matches, backup_once
         if self.index_path.exists():
             try:
                 with open(self.index_path, "rb") as f:
                     data = pickle.load(f)
+                # Unstamped (v1) BM25 pickles are pure-python rank_bm25 objects and
+                # safe across sklearn versions; only rebuild if the corpus changed.
+                stamp = data.get("_stamp")
+                if stamp is None or stamp_matches(stamp, self.corpus_path, keys=("corpus_sha256",)):
                     self.bm25 = data["bm25"]
                     self.chunks = data["chunks"]
-                return
+                    return
             except Exception:
                 pass
+            backup_once(self.index_path)
 
         self._build_index()
 
@@ -84,7 +90,9 @@ class BM25Retriever:
         # Cache index
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.index_path, "wb") as f:
-            pickle.dump({"bm25": self.bm25, "chunks": self.chunks}, f)
+            from app.pipeline.index_cache import make_stamp
+            pickle.dump({"bm25": self.bm25, "chunks": self.chunks,
+                         "_stamp": make_stamp(self.corpus_path)}, f)
 
     def retrieve(self, query: str, top_k: int = BM25_TOP_K) -> List[Dict[str, Any]]:
         """

@@ -20,7 +20,11 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+import logging
+
 import pandas as pd
+
+log = logging.getLogger("ayurmitra.translator")
 
 from app.config import HI_PARQUET, KN_PARQUET
 from app.core.matcher import (
@@ -100,8 +104,8 @@ class MultilingualTranslator:
                 en_q = str(r.get("question", "")).strip()
                 if hi_q and en_q:
                     self.parallel_qa[hi_q] = en_q
-        except Exception:
-            pass
+        except Exception as e:  # F21: was a silent pass (e.g. pyarrow missing)
+            log.warning("Hindi parallel-QA lookup disabled: could not read %s (%s)", HI_PARQUET.name, e)
 
         try:
             df_kn = pd.read_parquet(KN_PARQUET)
@@ -110,8 +114,8 @@ class MultilingualTranslator:
                 en_q = str(r.get("question", "")).strip()
                 if kn_q and en_q:
                     self.parallel_qa[kn_q] = en_q
-        except Exception:
-            pass
+        except Exception as e:  # F21
+            log.warning("Kannada parallel-QA lookup disabled: could not read %s (%s)", KN_PARQUET.name, e)
 
     def translate_to_english(
         self, text: str, source_lang: str = "auto"

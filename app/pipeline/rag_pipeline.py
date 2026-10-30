@@ -13,7 +13,22 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List, Optional
 
-from app.config import EXPERIMENT_CONFIGS, FUSION_TOP_K
+from app.config import EXPERIMENT_CONFIGS, FUSION_TOP_K, SAFETY_GATE, EDUCATIONAL_DISCLAIMER
+from app.core.safety import check_query_safety, safety_message
+from app.config import EVIDENCE_GATE, EVIDENCE_MIN_COVERAGE
+import re as _re
+from app.pipeline.bm25_retriever import QUESTION_STOPWORDS
+
+# Words too generic to show that a passage addresses the question.
+_GENERIC_DOMAIN_WORDS = {
+    "ayurveda", "ayurvedic", "ancient", "traditional", "classical", "texts", "text", "role", "importance",
+    "describe", "described", "body", "health", "healthy", "human", "people", "person", "system", "systems",
+    "method", "methods", "way", "ways", "use", "used", "uses", "benefit", "benefits", "help", "helps", "good",
+    "bad", "know", "mean", "means", "meaning", "definition", "define", "significance", "related", "relation",
+    "concept", "concepts", "principle", "principles", "function", "functions", "type", "types", "kind",
+    "list", "main", "important", "work", "works", "affect", "affects", "different", "between", "hospital",
+    "hospitals", "patient", "patients", "india", "indian", "modern", "today", "daily", "life",
+}
 from app.core.language_detect import detect
 from app.core.matcher import TerminologyMatcher
 from app.core.protection import TerminologyProtector
@@ -75,6 +90,15 @@ class AyurMitraPipeline:
             effective_target_lang = target_lang.lower()
         else:
             effective_target_lang = dominant_lang if dominant_lang in ("en", "hi", "kn") else "en"
+
+        # Step 1b: Pre-retrieval safety gate (all modes; audit F15/F16).
+        # Emergencies, dosage/prescription requests, toxic-ingestion requests and
+        # cure claims are never answered from retrieved text.
+        if SAFETY_GATE and not getattr(self, "_disable_safety_gate", False):
+            safety = check_query_safety(query)
+            if safety["blocked"]:
+                return self._safety_response(query, system_mode, config, lang_info, dominant_lang,
+                                             effective_target_lang, enable_web_search, safety, start_time)
 
         # Step 2: Terminology Detection & Protection (P1/P2 only)
         detected_terms = []
@@ -174,6 +198,18 @@ class AyurMitraPipeline:
             web_passages=web_passages,
         )
 
+        # Step 7b: Evidence gate — abstain instead of answering from passages that
+        # share no content word with the question (e.g. out-of-domain queries).
+        # Retrieved passages are still returned so retrieval metrics are unaffected.
+        evidence_check = self._evidence_check(english_query, detected_terms, retrieved_passages)
+        if (EVIDENCE_GATE and not gen_res["abstained"] and not web_passages
+                and evidence_check["judgeable"] and not evidence_check["supported"]):
+            gen_res = dict(gen_res)
+            gen_res["answer"] = safety_message("insufficient_evidence", effective_target_lang)
+            gen_res["abstained"] = True
+            gen_res["reason"] = "insufficient_evidence"
+            gen_res["citations"] = []
+
         # Step 8: Output-Side Term Restoration (P1/P2 only)
         if use_terminology and placeholder_map:
             final_answer = self.protector.restore_to_language(
@@ -223,4 +259,97 @@ class AyurMitraPipeline:
             "citations": all_citations,
             "disclaimer": gen_res["disclaimer"],
             "latency_ms": elapsed_ms,
+            "backends": self.backend_info(),
+            "evidence_check": evidence_check,
+            "is_emergency": False,
+        }
+
+    @staticmethod
+    def _evidence_check(english_query: str, detected_terms, passages) -> Dict[str, Any]:
+        kws = set()
+        for t in detected_terms or []:
+            for k in (t.get("canonical_term"), t.get("matched_text")):
+                if k and len(k) >= 3:
+                    kws.add(k.lower())
+        for w in _re.findall(r"[a-zA-Z\u0900-\u097F\u0C80-\u0CFF]{3,}", (english_query or "").lower()):
+            if w not in QUESTION_STOPWORDS and w not in _GENERIC_DOMAIN_WORDS and "ayurterm" not in w:
+                kws.add(w)
+        if not kws:
+            return {"judgeable": False, "supported": True, "keywords": [], "matched": []}
+        matched = set()
+        for p in passages or []:
+            blob = (p.get("text", "") + " " + p.get("title", "")).lower()
+            for k in kws:
+                stem = k[:5] if len(k) > 5 and k.isascii() else k
+                if stem in blob:
+                    matched.add(k)
+        term_kws = {k.lower() for t in (detected_terms or []) for k in (t.get("canonical_term"), t.get("matched_text")) if k}
+        coverage = len(matched) / len(kws)
+        supported = bool(matched & term_kws) or coverage >= EVIDENCE_MIN_COVERAGE
+        return {"judgeable": True, "supported": supported, "coverage": round(coverage, 3),
+                "keywords": sorted(kws), "matched": sorted(matched)}
+
+    # ── Safety-gate response (same keys as a normal response) ────────────────
+    def _safety_response(self, query, system_mode, config, lang_info, dominant_lang,
+                         target_lang, enable_web_search, safety, start_time) -> Dict[str, Any]:
+        from app.pipeline.generator import LOCALIZED_STRINGS
+        lang = target_lang if target_lang in ("en", "hi", "kn") else "en"
+        msg = safety_message(safety["reason"], lang)
+        disclaimer = LOCALIZED_STRINGS.get(lang, LOCALIZED_STRINGS["en"])["disclaimer"]
+        use_terminology = config.get("use_terminology", True)
+        return {
+            "raw_query": query,
+            "system_mode": system_mode,
+            "detected_language": dominant_lang,
+            "dominant_language": dominant_lang,
+            "target_language": lang,
+            "is_code_mixed": lang_info.get("is_code_mixed", False),
+            "code_mix_type": lang_info.get("code_mix_type", "monolingual"),
+            "segments": lang_info.get("segments", []),
+            "active_components": {
+                "system_mode": system_mode,
+                "bm25_lexical": True,
+                "dense_semantic": config.get("use_dense", True),
+                "terminology_protection": use_terminology,
+                "terminology_preservation": use_terminology,
+                "kg_grounding": config.get("use_graph", False),
+                "knowledge_graph_grounding": config.get("use_graph", False),
+                "web_search_fallback": enable_web_search,
+                "web_search_configured": enable_web_search,
+                "web_search_triggered": False,
+                "web_search_status": "blocked_by_safety_gate",
+                "web_sources_retrieved": 0,
+                "safety_gate": True,
+            },
+            "lang_detect_meta": lang_info,
+            "translation_meta": {"method": "not_run_safety_gate", "translated_text": "", "success": True},
+            "use_terminology": use_terminology,
+            "detected_terms": [],
+            "canonical_query": "",
+            "retrieved_passages": [],
+            "web_passages": [],
+            "graph_facts": [],
+            "answer": msg,
+            "abstained": True,
+            "abstention_reason": safety["reason"],
+            "safety": safety,
+            "is_emergency": safety["severity"] == "emergency",
+            "citations": [],
+            "disclaimer": disclaimer,
+            "latency_ms": (time.time() - start_time) * 1000.0,
+            "backends": self.backend_info(),
+        }
+
+    def backend_info(self) -> Dict[str, Any]:
+        """Which backends are actually live (recorded in every trace)."""
+        dense = getattr(self.retriever, "dense", None)
+        return {
+            "translator": getattr(self.translator, "backend_used", "rules"),
+            "translator_warning": getattr(self.translator, "backend_warning", None),
+            "dense": getattr(dense, "backend_used", "tfidf"),
+            "dense_model": getattr(dense, "model_name", "tfidf_char_wb_3-5"),
+            "dense_warning": getattr(dense, "backend_warning", None),
+            "generator": getattr(self.generator, "backend_used", "extractive"),
+            "kg_version": getattr(self.kg, "version", "v1"),
+            "safety_gate": bool(SAFETY_GATE),
         }

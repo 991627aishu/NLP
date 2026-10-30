@@ -1,14 +1,34 @@
-# AyurMitra — Core Requirements
-# Verified compatible with Python 3.13 on Windows
-rank-bm25>=0.2.2
-scikit-learn>=1.5.0
-networkx>=3.0
-streamlit>=1.39.0
-pymupdf>=1.24.0
-pandas>=2.2.0
-pyarrow>=17.0.0
-openpyxl>=3.1.0
-indic-transliteration>=2.3.80
-nltk>=3.9.0
-pytest>=8.0.0
+# AyurMitra — Core Requirements (Python 3.13; Windows / Linux / macOS)
+# "==" pins = versions the full test suite was run with (2026-10-30).
+# ">=" ranges = packages that could NOT be installed in the build environment
+# (no PyPI access there); they are used by the project but were verified only
+# on the original Windows setup. See docs/KNOWN_LIMITATIONS.md.
 
+# retrieval / NLP core (tested)
+rank-bm25==0.2.2
+scikit-learn==1.9.1
+numpy==2.5.3
+scipy==1.18.1
+pandas==3.0.5
+networkx==3.7
+indic-transliteration==2.3.82
+openpyxl==3.1.5
+xlrd==2.0.2            # NAMASTE file is legacy OLE2 .xls despite .xlsx name (audit F20)
+pdfplumber==0.11.10    # PDF fallback when PyMuPDF is unavailable
+pypdf==6.17.0
+
+# API / website (tested)
+fastapi>=0.115
+starlette==1.7.0
+uvicorn==0.54.0
+pydantic==2.13.5
+python-multipart>=0.0.9
+
+# tests (tested)
+pytest==9.1.1
+
+# used, but not installable in the build environment — verify locally
+pymupdf>=1.24.0        # preferred PDF reader (falls back to pdfplumber)
+pyarrow>=17.0.0        # needed to read Data/hi.parquet, Data/kn.parquet
+streamlit>=1.39.0      # legacy UI: streamlit run web/app.py
+nltk>=3.9.0

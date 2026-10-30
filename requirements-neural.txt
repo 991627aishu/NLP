@@ -1,0 +1,10 @@
+# Optional neural backends (Phase 2). Install with:  pip install -r requirements-neural.txt
+# NOT installable in the build environment (PyPI/Hugging Face blocked) -> code paths are
+# implemented with automatic fallback but were not executed there. Verify on your machine.
+torch>=2.4                      # CPU wheels are fine
+transformers>=4.44
+sentencepiece>=0.2
+sacremoses>=0.1
+sentence-transformers>=3.0      # dense backend: paraphrase-multilingual-MiniLM-L12-v2
+IndicTransToolkit>=1.0          # AI4Bharat pre/post-processing for IndicTrans2
+anthropic>=0.40                 # optional LLM generator (needs ANTHROPIC_API_KEY)

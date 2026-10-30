@@ -187,7 +187,7 @@ class AyurKnowledgeGraph:
                 break
 
         if not matched_node:
-            return {"found": False, "concept": concept_name, "neighbors": []}
+            return {"found": False, "concept": concept_name, "attributes": {}, "connections": [], "neighbors": []}  # F10: same keys as found-case
 
         attrs = self.graph.nodes[matched_node]
         neighbors = []
@@ -218,6 +218,7 @@ class AyurKnowledgeGraph:
             "found": True,
             "concept": matched_node,
             "attributes": attrs,
-            "connections": neighbors
+            "connections": neighbors,
+            "neighbors": neighbors,  # F10: alias kept for callers of the not-found shape
         }
 

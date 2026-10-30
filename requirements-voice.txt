@@ -1,0 +1,5 @@
+# Optional server-side voice backends (Phase 5). The website ALSO works without these:
+# it falls back to the browser's Web Speech API (STT) and speechSynthesis (TTS).
+faster-whisper>=1.0     # STT (needs ffmpeg on PATH — Windows: winget install Gyan.FFmpeg)
+edge-tts>=6.1           # neural TTS (en-IN / hi-IN / kn-IN voices; needs internet)
+gTTS>=2.5               # second TTS option (needs internet)
