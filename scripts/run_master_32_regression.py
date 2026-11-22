@@ -421,7 +421,7 @@ def run_regression_suite():
                 "expected_domain": exp_route,
                 "actual_domain": actual_route,
                 "retrieved_chunks": retrieved[:3],
-                "passage_relevance": "Refusal / Safety Interception (No citations)" if not tc["is_safe"] else ("Authoritative Grounded Matches" if cit_supported else "None"),
+                "passage_relevance": "Authoritative Grounded Matches" if cit_supported else "None",
                 "llm_used": res.get("generator_used") or "evidence_grounded_engine",
                 "actual_answer": answer[:300] + ("..." if len(answer) > 300 else ""),
                 "citations": [c.get("title") or c.get("source_id") for c in citations[:3]],
@@ -465,3 +465,4 @@ def run_regression_suite():
 
 if __name__ == "__main__":
     run_regression_suite()
+
