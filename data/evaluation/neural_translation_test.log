@@ -1,0 +1,72 @@
+=== AYURMITRA INDICTRANS2 NEURAL TRANSLATION TEST LOG ===
+Timestamp: 2026-10-30
+Python: 3.13.12 (tags/v3.13.12:1cbe481, Feb  3 2026, 18:22:25) [MSC v.1944 64 bit (AMD64)]
+HF_TOKEN present: True
+
+IndicTrans2Backend class imported successfully.
+IndicTrans2 dependencies importable: False
+Import error: ModuleNotFoundError: No module named 'transformers'
+
+--- Hugging Face Access & Gating Audit ---
+Model 1 (hi/kn -> en): ai4bharat/indictrans2-indic-en-dist-200M
+Gating status: GATED. Requires user agreement on Hugging Face and valid HF_TOKEN.
+Model 2 (en -> hi/kn): ai4bharat/indictrans2-en-indic-dist-200M
+HF_TOKEN environment variable: [CONFIGURED]
+
+--- Terminology Preservation Under Translation ---
+Translator backend requested: auto
+Translator backend used: rules
+Translator backend warning: Neural MT unavailable — using rule-based fallback (ModuleNotFoundError: No module named 'transformers')
+
+Input (hi): अग्नि पाचन में क्या भूमिका निभाती है?
+  Translated: agni pAchana meM kyA bhUmikA nibhAtI hai?
+  Method: indic_transliteration_fallback
+  Success: True
+  Warning: Neural MT unavailable; query transliterated for lexical matching
+
+Input (kn): ಅಗ್ನಿ ಜೀರ್ಣಕ್ರಿಯೆಯಲ್ಲಿ ಏನು ಪಾತ್ರ ವಹಿಸುತ್ತದೆ?
+  Translated: agni jIrNakriyèyalli enu pAtra vahisuttadè?
+  Method: indic_transliteration_fallback
+  Success: True
+  Warning: Neural MT unavailable; query transliterated for lexical matching
+
+Input (hi): Agni digestion mein kya role play karta hai?
+  Translated: What is the role of Agni in digestion?
+  Method: hinglish_grammar_pattern_rule
+  Success: True
+  Warning: Neural MT unavailable — using rule-based fallback (ModuleNotFoundError: No module named 'transformers')
+
+Input (kn): Agni digestion alli enu role ide?
+  Translated: What is the role of Agni in digestion?
+  Method: kanglish_grammar_pattern_rule
+  Success: True
+  Warning: Neural MT unavailable — using rule-based fallback (ModuleNotFoundError: No module named 'transformers')
+
+
+--- English to Indic Reverse Translation Test ---
+Target (hi):
+  Translated: प्रमाणित आयुर्वेदिक साहित्य के अनुसार:
+
+आयुर्वेदिक शास्त्रीय ग्रंथों में इस विषय पर विस्तृत विवरण उपलब्ध है। अधिक जानकारी के लिए नीचे दिए गए मूल संदर्भ देखें।
+
+मूल संदर्भ सारांश (Source Context):
+Agni is the digestive fire responsible for transforming food into bodily tissues....
+
+उद्धृत स्रोत:
+शैक्षणिक सूचना: आयुर्मित्र एक शैक्षणिक ज्ञान प्रणाली है, चिकित्सकीय निदान या दवा पर्ची नहीं।
+  Method: verified_ayurvedic_bilingual_lexicon
+  Terms retained: []
+
+Target (kn):
+  Translated: ಪ್ರಾಮಾಣಿಕ ಆಯುರ್ವೇದ ಸಾಹಿತ್ಯದ ಪ್ರಕಾರ:
+
+ಆಯುರ್ವೇದ ಶಾಸ್ತ್ರೀಯ ಗ್ರಂಥಗಳಲ್ಲಿ ಈ ವಿಷಯದ ಬಗ್ಗೆ ವಿವರಣೆ ಲಭ್ಯವಿದೆ. ಹೆಚ್ಚಿನ ವಿವರಗಳಿಗೆ ಕೆಳಗಿನ ಮೂಲ ಉಲ್ಲೇಖಗಳನ್ನು ನೋಡಿ.
+
+ಮೂಲ ಇಂಗ್ಲಿಷ್ ಉಲ್ಲೇಖ ಸಾರಾಂಶ (Original Context):
+Agni is the digestive fire responsible for transforming food into bodily tissues....
+
+ಉಲ್ಲೇಖಿಸಿದ ಮೂಲಗಳು:
+ಶೈಕ್ಷಣಿಕ ಸೂಚನೆ: ಆಯುರ್ಮಿತ್ರ ಶೈಕ್ಷಣಿಕ ಜ್ಞಾನ ಸಾಧನವಾಗಿದ್ದು, ವೈದ್ಯಕೀಯ ಚಿಕಿತ್ಸಾ ಸಲಹೆಯಲ್ಲ.
+  Method: verified_ayurvedic_bilingual_lexicon
+  Terms retained: []
+

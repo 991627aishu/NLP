@@ -68,6 +68,7 @@
           <button class="chip-btn" data-ql="hi" aria-pressed="false">हिन्दी</button>
           <button class="chip-btn" data-ql="kn" aria-pressed="false">ಕನ್ನಡ</button>
           <button class="chip-btn" data-ql="hinglish" aria-pressed="false">Hinglish</button>
+          <button class="chip-btn" data-ql="kanglish" aria-pressed="false">Kanglish</button>
         </div>
         <div id="thread" class="thread" aria-live="polite" aria-relevant="additions"></div>
         <div id="starters-wrap"><small data-i18n="starters">Try one of these</small><div class="starters" id="starters"></div></div>
@@ -81,7 +82,8 @@
                 <option value="B1">B1 — hybrid, no term protection</option><option value="B0">B0 — BM25 only</option></select></label>
             <label class="field"><span data-i18n="answer_lang">Answer language</span>
               <select id="opt-lang" class="select"><option value="auto" data-i18n="auto">Same as question</option>
-                <option value="en">English</option><option value="hi">हिन्दी</option><option value="kn">ಕನ್ನಡ</option></select></label>
+                <option value="en">English</option><option value="hi">हिन्दी</option><option value="kn">ಕನ್ನಡ</option>
+                <option value="hinglish">Hinglish</option><option value="kanglish">Kanglish</option></select></label>
             <label class="field"><span data-i18n="generator">Answer writer</span>
               <select id="opt-gen" class="select"><option value="extractive" data-i18n="extractive">Quote sources (default)</option>
                 <option value="llm" data-i18n="llm">Language model, sources only</option></select></label>
@@ -98,11 +100,53 @@
           <span class="meter" aria-hidden="true"><i id="rec-level"></i></span>
           <button class="btn ghost" id="rec-cancel" data-i18n="cancel">Cancel</button>
         </div>
-        <form class="composer" id="composer">
+        <div class="composer-toolbar" style="display:none">
+          <select id="voice-lang-legacy"></select>
+          <select id="opt-lang-quick-legacy"></select>
+        </div>
+        <form class="rag-composer-card" id="composer">
+          <!-- Row 1: Language Controls -->
+          <div class="rag-composer-toolbar">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="muted" style="font-weight:600;font-size:.85rem">🎤 Voice Input Language:</span>
+              <select id="voice-lang" class="select" style="min-height:36px;padding:4px 10px;font-size:.85rem" aria-label="Microphone input language">
+                <option value="auto">Auto-detect (EN / हिन्दी / ಕನ್ನಡ / Hinglish / Kanglish)</option>
+                <option value="en-IN">English (en-IN)</option>
+                <option value="hi-IN">हिन्दी / Hinglish (hi-IN)</option>
+                <option value="kn-IN">ಕನ್ನಡ / Kanglish (kn-IN)</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="muted" style="font-weight:600;font-size:.85rem">Response Language:</span>
+              <select id="opt-lang-quick" class="select" style="min-height:36px;padding:4px 10px;font-size:.85rem" aria-label="Response language">
+                <option value="auto">Auto (Match Question)</option>
+                <option value="en">English</option>
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                <option value="hinglish">Hinglish (Hindi in Roman script)</option>
+                <option value="kanglish">Kanglish (Kannada in Roman script)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Large Multiline Textarea -->
           <label for="q" class="sr">Question</label>
-          <textarea id="q" rows="1" data-i18n-ph="placeholder" placeholder="Type a question, or tap the microphone…" maxlength="1000"></textarea>
-          <button type="button" class="mic" id="mic" aria-label="Speak your question (Alt+M)" aria-pressed="false"><svg><use href="#i-mic"/></svg></button>
-          <button type="submit" class="btn primary" id="send"><svg width="18" height="18"><use href="#i-send"/></svg><span data-i18n="send">Ask</span></button>
+          <textarea id="q" class="rag-composer-textarea" rows="3" data-i18n-ph="placeholder" placeholder="Ask a question about Ayurveda (e.g., What is the role of Agni in digestion?)..." maxlength="1500"></textarea>
+
+          <!-- Row 3: Action Controls -->
+          <div class="rag-composer-actions">
+            <div class="rag-action-group">
+              <button type="button" class="mic-btn-labeled" id="mic" aria-label="Speak your question (Alt+M)" aria-pressed="false">
+                <svg width="20" height="20"><use href="#i-mic"/></svg>
+                <span id="mic-label">Voice Input</span>
+              </button>
+              <span id="voice-transcript-badge" class="badge" style="display:none;background:var(--sage-wash);color:var(--sage-ink)">Transcript ready for review</span>
+            </div>
+            <button type="submit" class="btn primary" id="send" style="min-height:44px;padding:6px 22px;font-size:.95rem">
+              <svg width="18" height="18" style="margin-right:6px"><use href="#i-send"/></svg>
+              <span data-i18n="send">Get Grounded Answer</span>
+            </button>
+          </div>
         </form>
       </div>
     </section>
@@ -118,6 +162,8 @@
           <ul id="kg-ac" class="ac" role="listbox" hidden></ul></div>
         <label class="field" style="min-width:150px"><span><span data-i18n="depth">Depth</span>: <b id="kg-depth-v">1</b></span>
           <input type="range" id="kg-depth" min="1" max="3" value="1" aria-label="Depth in hops"></label>
+        <button class="btn icon" id="kg-zoomin" title="Zoom in" aria-label="Zoom in">+</button>
+        <button class="btn icon" id="kg-zoomout" title="Zoom out" aria-label="Zoom out">-</button>
         <button class="btn" id="kg-fit" data-i18n="fit">Fit</button>
         <button class="btn" id="kg-reset" data-i18n="reset">Reset</button>
         <button class="btn" id="kg-full" data-i18n="fullscreen">Full screen</button>
@@ -142,17 +188,64 @@
 
     <!-- SYMPTOMS -->
     <section class="view" id="view-symptoms" hidden aria-labelledby="sym-h">
-      <div class="column">
-        <h1 id="sym-h" data-i18n="sym_title">Symptom guidance</h1>
-        <p data-i18n="sym_sub"></p>
-        <div class="notice calm">If symptoms are sudden or severe — chest pain, trouble breathing, the worst headache of your life, fainting, heavy bleeding — contact emergency services now.</div>
-        <form class="composer" id="sym-form" style="position:static">
+      <div class="column" style="max-width:980px">
+        <h1 id="sym-h" data-i18n="sym_title">Symptom Evidence Explorer</h1>
+        <p class="lead muted" data-i18n="sym_sub">Explore how classical Ayurvedic literature (WHO Benchmarks &amp; NAMASTE) conceptualizes physical sensations into physiological tendencies. Non-diagnostic educational research tool.</p>
+        <div class="notice calm"><strong>Medical Safety Notice:</strong> If sensations are sudden, acute, or severe — chest distress, trouble breathing, thunderclap headache, fainting, heavy bleeding — contact emergency medical services immediately. AyurMitra does not manage acute emergencies.</div>
+        <form class="rag-composer-card" id="sym-form">
+          <!-- Row 1: Language Controls -->
+          <div class="rag-composer-toolbar">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="muted" style="font-weight:600;font-size:.85rem">Language mode:</span>
+              <select id="sym-lang" class="select" style="min-height:36px;padding:4px 10px;font-size:.85rem">
+                <option value="auto">Auto-detect (EN / हिन्दी / ಕನ್ನಡ / Code-mixed)</option>
+                <option value="en">English</option>
+                <option value="hi">हिन्दी (Devanagari)</option>
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="muted" style="font-weight:600;font-size:.85rem">🎤 Voice Input Language:</span>
+              <select id="sym-voice-lang" class="select" style="min-height:36px;padding:4px 10px;font-size:.85rem">
+                <option value="auto">Auto-detect (EN / हिन्दी / ಕನ್ನಡ)</option>
+                <option value="en-IN">English (en-IN)</option>
+                <option value="hi-IN">हिन्दी (hi-IN)</option>
+                <option value="kn-IN">ಕನ್ನಡ (kn-IN)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Large Multiline Textarea -->
           <label for="sym-q" class="sr">Describe your symptoms</label>
-          <textarea id="sym-q" rows="2" data-i18n-ph="sym_placeholder" maxlength="1000"></textarea>
-          <button type="button" class="mic" id="sym-mic" aria-label="Speak your symptoms"><svg><use href="#i-mic"/></svg></button>
-          <button class="btn primary" type="submit" data-i18n="sym_go">Show related concepts</button>
+          <textarea id="sym-q" class="rag-composer-textarea" rows="3" data-i18n-ph="sym_placeholder" placeholder="Describe how you are feeling or enter your question here. You can type naturally in English, Hindi, Kannada, Hinglish or Kanglish." maxlength="1500"></textarea>
+
+          <!-- Row 3: Action Controls -->
+          <div class="rag-composer-actions">
+            <div class="rag-action-group">
+              <button type="button" class="mic-btn-labeled" id="sym-mic" aria-label="Speak your symptoms">
+                <svg width="20" height="20"><use href="#i-mic"/></svg>
+                <span>Voice Input</span>
+              </button>
+              <span id="sym-transcript-badge" class="badge" style="display:none;background:var(--sage-wash);color:var(--sage-ink)">Transcript ready for review</span>
+            </div>
+            <button class="btn primary" type="submit" id="sym-submit" style="min-height:44px;padding:6px 22px;font-size:.95rem">
+              <svg width="18" height="18" style="margin-right:6px"><use href="#i-pulse"/></svg>
+              <span>Explore Evidence</span>
+            </button>
+          </div>
         </form>
-        <div id="sym-out" aria-live="polite" style="margin-top:18px"></div>
+        <div id="sym-starters-wrap" style="margin-top:12px">
+          <small data-i18n="starters" style="font-weight:600;color:var(--ink-2)">Try one of these example sensations:</small>
+          <div class="starters" id="sym-starters"></div>
+        </div>
+        <div id="sym-out" aria-live="polite" style="margin-top:20px"></div>
+        <details class="drawer" id="sym-history-drawer" style="margin-top:24px">
+          <summary style="display:flex;justify-content:space-between;align-items:center">
+            <span>Local Session Query History (Private to this Browser)</span>
+            <button type="button" class="btn ghost" id="sym-clear-history" style="font-size:.78rem;padding:2px 10px;min-height:30px">Clear History</button>
+          </summary>
+          <div id="sym-history-list" style="padding:10px 0;font-size:.88rem"></div>
+        </details>
       </div>
     </section>
 
@@ -161,15 +254,74 @@
       <h1 id="herbs-h" data-i18n="herbs_title">Herbs &amp; lifestyle</h1>
       <p class="muted" data-i18n="herbs_sub"></p>
       <div class="notice">Recorded traditional uses are not evidence that a plant is effective or safe. AyurMitra gives no doses, preparations or contraindications.</div>
+
+      <!-- Context Banner for Symptom Navigation -->
+      <div id="herb-context-banner" class="panel" hidden style="margin-bottom:16px;background:var(--sage-soft);border:1px solid var(--sage-border);border-radius:8px;padding:14px 18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <h3 style="margin:0 0 4px;font-size:1.05rem;color:var(--sage-dark)">🌿 Personalized Recommendations for: <span id="herb-context-symptom" style="color:var(--ink-1)"></span></h3>
+            <div id="herb-context-dosha-badge" style="font-size:.88rem;color:var(--ink-2)">Classical humor association: <b id="herb-context-dosha" style="color:var(--sage-dark)"></b> · Grounded in IMPPAT 2.0 &amp; WHO/NAMASTE</div>
+          </div>
+          <button type="button" class="btn" id="herb-context-clear" style="font-size:.82rem;min-height:32px">Clear Filter &amp; View All Herbs</button>
+        </div>
+      </div>
+
       <div class="cols">
         <div>
-          <div class="search" style="margin-bottom:12px"><label for="herb-q" class="sr">Search herbs</label><input id="herb-q" data-i18n-ph="herb_search" autocomplete="off"></div>
+          <form class="rag-composer-card" id="herb-search-form" onsubmit="event.preventDefault();">
+            <!-- Row 1: Voice Language & Mode Filter Tabs -->
+            <div class="rag-composer-toolbar">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="muted" style="font-weight:600;font-size:.85rem">🎤 Voice Input Language:</span>
+                <select id="herb-voice-lang" class="select" style="min-height:36px;padding:4px 10px;font-size:.85rem" aria-label="Herb voice input language">
+                  <option value="auto">Auto-detect (EN / हिन्दी / ಕನ್ನಡ)</option>
+                  <option value="en-IN">English (en-IN)</option>
+                  <option value="hi-IN">हिन्दी (hi-IN)</option>
+                  <option value="kn-IN">ಕನ್ನಡ (kn-IN)</option>
+                </select>
+              </div>
+              <div id="herb-filters" class="langs" style="margin:0" role="group" aria-label="Herb search shortcuts"></div>
+            </div>
+
+            <!-- Row 2: Large Multiline Textarea -->
+            <label for="herb-q" class="sr">Search herbs, uses, or lifestyle</label>
+            <textarea id="herb-q" class="rag-composer-textarea" rows="3" data-i18n-ph="herb_search" placeholder="Ask about an herb, traditional use, lifestyle practice or any Ayurveda-related concern (e.g., Piles, digestive discomfort, sleep, Dinacharya)..." maxlength="1500"></textarea>
+
+            <!-- Row 3: Action Controls -->
+            <div class="rag-composer-actions">
+              <div class="rag-action-group">
+                <button type="button" class="mic-btn-labeled" id="herb-mic" aria-label="Speak herb name or condition" aria-pressed="false">
+                  <svg width="20" height="20"><use href="#i-mic"/></svg>
+                  <span>Voice Input</span>
+                </button>
+                <span id="herb-transcript-badge" class="badge" style="display:none;background:var(--sage-wash);color:var(--sage-ink)">Transcript ready for review</span>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button type="button" class="btn ghost" id="herb-clear-btn" style="min-height:44px;padding:6px 14px">Clear</button>
+                <button type="submit" class="btn primary" id="herb-submit" style="min-height:44px;padding:6px 22px;font-size:.95rem">
+                  <svg width="18" height="18" style="margin-right:6px"><use href="#i-send"/></svg>
+                  <span>Search Traditional Records</span>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Herb Explanation and Results -->
+          <div id="herb-search-msg" style="margin:10px 0 16px;font-size:.92rem;color:var(--ink-2)"></div>
           <div id="herb-results" class="grid-cards" aria-live="polite"></div>
-          <h2 style="margin-top:28px" data-i18n="lifestyle">Daily life topics</h2>
+
+          <!-- Query-Driven Lifestyle RAG Output -->
+          <div id="lifestyle-search-section" style="margin-top:28px" hidden>
+            <h2 style="font-size:1.25rem;display:flex;align-items:center;gap:8px">☀️ Retrieved Classical Lifestyle Evidence</h2>
+            <div id="lifestyle-search-out" class="panel" style="margin-top:10px" aria-live="polite"></div>
+          </div>
+
+          <!-- Daily Life Topics Quick Exploration -->
+          <h2 style="margin-top:32px" data-i18n="lifestyle">Daily life topics (Quick Exploration)</h2>
           <div id="topics" class="langs"></div>
           <div id="topic-out" aria-live="polite"></div>
         </div>
-        <aside class="panel" id="herb-detail" aria-live="polite"><div class="empty">Choose a herb to see its records.</div></aside>
+        <aside class="panel" id="herb-detail" aria-live="polite"><div class="empty">Select an herb from the search results to inspect its botanical and classical Pharmacopoeia records.</div></aside>
       </div>
     </section>
 
@@ -189,8 +341,9 @@
 
     <!-- ABOUT -->
     <section class="view" id="view-about" hidden aria-labelledby="about-h">
-      <div class="column" style="max-width:900px">
-        <h1 id="about-h" data-i18n="about_title">About, sources and safety</h1>
+      <div class="column" style="max-width:1040px">
+        <h1 id="about-h" data-i18n="about_title">About, Sources &amp; Research Transparency</h1>
+        <p class="lead muted">Complete architectural transparency, peer-reviewed data provenance, live RAG pipeline inspection, and strict safety governance.</p>
         <div id="about-out"></div>
       </div>
     </section>

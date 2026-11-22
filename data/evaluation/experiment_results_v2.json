@@ -1,0 +1,2071 @@
+{
+ "meta": {
+  "split": "test",
+  "n_seeds": 175,
+  "n_answerable_seeds": 173,
+  "n_gold_resolved_seeds": 173,
+  "gold_methods": {
+   "question_text_in_chunk": 36,
+   "namaste_code_in_chunk": 32,
+   "parallel_question_text_in_chunk": 105,
+   "unanswerable": 2
+  },
+  "languages": [
+   "english",
+   "hindi",
+   "kannada",
+   "romanized"
+  ],
+  "n_bootstrap": 2000,
+  "random_seed": 20261030,
+  "ci_method": "percentile bootstrap, 2000 resamples of seed questions (all language variants together)",
+  "backends": {
+   "translator": "rules",
+   "dense": "tfidf",
+   "dense_model": "tfidf_char_wb_3-5",
+   "generator": "extractive",
+   "kg_version": "v2"
+  },
+  "web_search": false,
+  "generator": "extractive (fixed across systems)",
+  "hindi_variants_with_latin_terms": 68,
+  "kannada_variants_with_latin_terms": 71,
+  "python": "3.13.18",
+  "platform": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
+  "runtime_seconds": 567.9,
+  "date": "2026-10-30",
+  "summary": "P1 − B1 Recall@5 = +0.7 pts (95% CI -0.6 to +2.0); measured with translator='rules', dense='tfidf'."
+ },
+ "systems": {
+  "B0": {
+   "kind": "main",
+   "description": "translation + BM25, no term protection",
+   "mode": "B0",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.7687861271676301,
+     "ci": [
+      0.7369942196531792,
+      0.8005853861406103
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7386078998073218,
+     "ci": [
+      0.7066843715393134,
+      0.7714642915154367
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7376604358094075,
+     "ci": [
+      0.7062607344516647,
+      0.7694178627282959
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.6965317919075145,
+     "ci": [
+      0.6642329089815557,
+      0.73
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.2514450867052023,
+     "ci": [
+      0.2138728323699422,
+      0.29022988505747127
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.37789017341040465,
+     "ci": [
+      0.3642787524366472,
+      0.391904761904762
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7471098265895953,
+     "ci": [
+      0.7090583075335397,
+      0.7844877416782937
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 4.3275999999999994,
+     "ci": [
+      3.9894978571428563,
+      4.736183214285713
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9826589595375722,
+     "mrr": 0.9739884393063584,
+     "ndcg_at_5": 0.9762588974607768,
+     "answer_with_gold_evidence": 0.9826589595375722,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.535645472061657,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9421965317919075,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 3.6260000000000003
+    },
+    "hindi": {
+     "recall_at_5": 0.5028901734104047,
+     "mrr": 0.4330443159922928,
+     "ndcg_at_5": 0.42264089037397234,
+     "answer_with_gold_evidence": 0.3352601156069364,
+     "false_abstention_rate": 0.47398843930635837,
+     "citation_gold_precision": 0.12524084778420036,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.4913294797687861,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 5.823028571428572
+    },
+    "kannada": {
+     "recall_at_5": 0.6069364161849711,
+     "mrr": 0.5734104046242775,
+     "ndcg_at_5": 0.5754830579421044,
+     "answer_with_gold_evidence": 0.48554913294797686,
+     "false_abstention_rate": 0.49710982658959535,
+     "citation_gold_precision": 0.3188824662813102,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.6127167630057804,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 3.01
+    },
+    "romanized": {
+     "recall_at_5": 0.9826589595375722,
+     "mrr": 0.9739884393063584,
+     "ndcg_at_5": 0.9762588974607768,
+     "answer_with_gold_evidence": 0.9826589595375722,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.5317919075144508,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9421965317919075,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 4.8513714285714284
+    }
+   }
+  },
+  "B1": {
+   "kind": "main",
+   "description": "translation + BM25/dense RRF, no term protection",
+   "mode": "B1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.7976878612716763,
+     "ci": [
+      0.7616959064327485,
+      0.8323940269749517
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.721266859344894,
+     "ci": [
+      0.6817614505917975,
+      0.759376044172681
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7292688852266829,
+     "ci": [
+      0.6917293443383608,
+      0.7659137707326137
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.6950867052023122,
+     "ci": [
+      0.6569675554664528,
+      0.7313218390804598
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.21965317919075145,
+     "ci": [
+      0.18570504926108375,
+      0.2557471264367816
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3713872832369942,
+     "ci": [
+      0.353437257751938,
+      0.3880098982902577
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7846820809248555,
+     "ci": [
+      0.7456395348837209,
+      0.8236994219653179
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 56.958685714285714,
+     "ci": [
+      55.39917964285714,
+      58.357540357142845
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8794797687861272,
+     "ndcg_at_5": 0.8950905160915906,
+     "answer_with_gold_evidence": 0.9364161849710982,
+     "false_abstention_rate": 0.04046242774566474,
+     "citation_gold_precision": 0.5086705202312138,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9132947976878613,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 56.98057142857142
+    },
+    "hindi": {
+     "recall_at_5": 0.5664739884393064,
+     "mrr": 0.4782273603082851,
+     "ndcg_at_5": 0.4726848752340933,
+     "answer_with_gold_evidence": 0.3699421965317919,
+     "false_abstention_rate": 0.41040462427745666,
+     "citation_gold_precision": 0.14258188824662812,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5606936416184971,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 57.92142857142857
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.642485549132948,
+     "ndcg_at_5": 0.6443061420470547,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.4046242774566474,
+     "citation_gold_precision": 0.3294797687861271,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 55.33434285714285
+    },
+    "romanized": {
+     "recall_at_5": 0.976878612716763,
+     "mrr": 0.8848747591522157,
+     "ndcg_at_5": 0.904994007533993,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840076,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9421965317919075,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 57.598399999999984
+    }
+   }
+  },
+  "P1": {
+   "kind": "main",
+   "description": "B1 + term detection, protection, canonicalisation, grounding boost",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8049132947976878,
+     "ci": [
+      0.7673410404624278,
+      0.8397132352941176
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7297206165703276,
+     "ci": [
+      0.6881024528312394,
+      0.7667145803925522
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7337533227976881,
+     "ci": [
+      0.6946231798299136,
+      0.7693607134988742
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7138728323699421,
+     "ci": [
+      0.6767241379310345,
+      0.7485714285714286
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.2023121387283237,
+     "ci": [
+      0.16860382059800663,
+      0.23970887482900136
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3774084778420038,
+     "ci": [
+      0.35973231589147286,
+      0.39452913533834577
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7890173410404624,
+     "ci": [
+      0.748546511627907,
+      0.8290229885057471
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 84.62687142857142,
+     "ci": [
+      82.0660217857143,
+      87.13449142857142
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9653179190751445,
+     "mrr": 0.8678227360308285,
+     "ndcg_at_5": 0.8895208944731683,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.510597302504817,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9248554913294798,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 82.76131428571429
+    },
+    "hindi": {
+     "recall_at_5": 0.6069364161849711,
+     "mrr": 0.5427745664739885,
+     "ndcg_at_5": 0.5213648857884341,
+     "answer_with_gold_evidence": 0.4393063583815029,
+     "false_abstention_rate": 0.3699421965317919,
+     "citation_gold_precision": 0.1705202312138728,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5895953757225434,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 86.41628571428572
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.6434489402697495,
+     "ndcg_at_5": 0.6392775183020499,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.3988439306358382,
+     "citation_gold_precision": 0.3236994219653179,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 83.42914285714285
+    },
+    "romanized": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8648362235067438,
+     "ndcg_at_5": 0.8848499926271006,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840078,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 85.90074285714286
+    }
+   }
+  },
+  "P2": {
+   "kind": "main",
+   "description": "P1 + knowledge-graph expansion and facts",
+   "mode": "P2",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8034682080924855,
+     "ci": [
+      0.7657142857142857,
+      0.8390829804396047
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7292389210019268,
+     "ci": [
+      0.6877083333333334,
+      0.7672037572254334
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7328786141568262,
+     "ci": [
+      0.6925626537703327,
+      0.7689981712616294
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7124277456647399,
+     "ci": [
+      0.6757142857142857,
+      0.7485298392612859
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.20520231213872833,
+     "ci": [
+      0.17141917293233083,
+      0.24145794590025343
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.37668593448940263,
+     "ci": [
+      0.35842956681202043,
+      0.39365582783671066
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7875722543352601,
+     "ci": [
+      0.7456647398843931,
+      0.8280460243312273
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 86.23312857142857,
+     "ci": [
+      83.49344607142856,
+      88.9752375
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9595375722543352,
+     "mrr": 0.8628131021194604,
+     "ndcg_at_5": 0.8853967401466742,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.510597302504817,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 86.29474285714285
+    },
+    "hindi": {
+     "recall_at_5": 0.6127167630057804,
+     "mrr": 0.55,
+     "ndcg_at_5": 0.5277435545795841,
+     "answer_with_gold_evidence": 0.4393063583815029,
+     "false_abstention_rate": 0.37572254335260113,
+     "citation_gold_precision": 0.1705202312138728,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5953757225433526,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 87.59611428571428
+    },
+    "kannada": {
+     "recall_at_5": 0.6878612716763006,
+     "mrr": 0.6405587668593449,
+     "ndcg_at_5": 0.6348052315132113,
+     "answer_with_gold_evidence": 0.5260115606936416,
+     "false_abstention_rate": 0.4046242774566474,
+     "citation_gold_precision": 0.3208092485549133,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7167630057803468,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 82.81034285714284
+    },
+    "romanized": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8635838150289016,
+     "ndcg_at_5": 0.8835689303878348,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840078,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 88.23131428571429
+    }
+   }
+  },
+  "P1-input-protection-off": {
+   "kind": "ablation",
+   "description": "terms detected (boost kept) but query text NOT replaced by placeholders/canonical terms",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8063583815028902,
+     "ci": [
+      0.7687861271676301,
+      0.8411827731092437
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7326830443159923,
+     "ci": [
+      0.6925981937602627,
+      0.7697273886840299
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7361232904314581,
+     "ci": [
+      0.6970374861085674,
+      0.7711275997324527
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7153179190751445,
+     "ci": [
+      0.6795977011494253,
+      0.75
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.2023121387283237,
+     "ci": [
+      0.16860382059800663,
+      0.23970887482900136
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.37837186897880537,
+     "ci": [
+      0.36063197385225515,
+      0.3952402802693066
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7904624277456648,
+     "ci": [
+      0.75,
+      0.8304597701149425
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 78.90268571428571,
+     "ci": [
+      76.88810571428571,
+      80.70040357142857
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9653179190751445,
+     "mrr": 0.8707129094412331,
+     "ndcg_at_5": 0.8912929961863633,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.510597302504817,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9248554913294798,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 77.51228571428571
+    },
+    "hindi": {
+     "recall_at_5": 0.6127167630057804,
+     "mrr": 0.5488439306358381,
+     "ndcg_at_5": 0.5250644095027043,
+     "answer_with_gold_evidence": 0.44508670520231214,
+     "false_abstention_rate": 0.3699421965317919,
+     "citation_gold_precision": 0.17244701348747588,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5953757225433526,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 80.36068571428572
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.6434489402697495,
+     "ndcg_at_5": 0.6415136616964692,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.3988439306358382,
+     "citation_gold_precision": 0.32562620423892097,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 77.94702857142858
+    },
+    "romanized": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8677263969171484,
+     "ndcg_at_5": 0.8866220943402957,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840078,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 79.79074285714285
+    }
+   }
+  },
+  "P1-output-restoration-off": {
+   "kind": "ablation",
+   "description": "answer-side restore_to_language disabled (a no-op in the extractive path, audit F24)",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8049132947976878,
+     "ci": [
+      0.7673410404624278,
+      0.8397132352941176
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7297206165703276,
+     "ci": [
+      0.6881024528312394,
+      0.7667145803925522
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7337533227976881,
+     "ci": [
+      0.6946231798299136,
+      0.7693607134988742
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7138728323699421,
+     "ci": [
+      0.6767241379310345,
+      0.7485714285714286
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.2023121387283237,
+     "ci": [
+      0.16860382059800663,
+      0.23970887482900136
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3774084778420038,
+     "ci": [
+      0.35973231589147286,
+      0.39452913533834577
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7890173410404624,
+     "ci": [
+      0.748546511627907,
+      0.8290229885057471
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 83.63851428571428,
+     "ci": [
+      81.16350142857142,
+      85.96867964285714
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9653179190751445,
+     "mrr": 0.8678227360308285,
+     "ndcg_at_5": 0.8895208944731683,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.510597302504817,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9248554913294798,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 81.958
+    },
+    "hindi": {
+     "recall_at_5": 0.6069364161849711,
+     "mrr": 0.5427745664739885,
+     "ndcg_at_5": 0.5213648857884341,
+     "answer_with_gold_evidence": 0.4393063583815029,
+     "false_abstention_rate": 0.3699421965317919,
+     "citation_gold_precision": 0.1705202312138728,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5895953757225434,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 85.05091428571428
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.6434489402697495,
+     "ndcg_at_5": 0.6392775183020499,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.3988439306358382,
+     "citation_gold_precision": 0.3236994219653179,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 82.27222857142857
+    },
+    "romanized": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8648362235067438,
+     "ndcg_at_5": 0.8848499926271006,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840078,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 85.27291428571428
+    }
+   }
+  },
+  "P1-alias-suffix-off": {
+   "kind": "ablation",
+   "description": "only exact canonical / exact native forms detected (no aliases, no Kannada suffix stripping)",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8049132947976878,
+     "ci": [
+      0.7673410404624278,
+      0.8397132352941176
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7311657032755299,
+     "ci": [
+      0.6900464285714285,
+      0.768372523005116
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7346393736542857,
+     "ci": [
+      0.6950963459684292,
+      0.770238420918835
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7138728323699421,
+     "ci": [
+      0.6767241379310345,
+      0.7485714285714286
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.203757225433526,
+     "ci": [
+      0.16954022988505746,
+      0.24128033001747548
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3774084778420038,
+     "ci": [
+      0.35973231589147286,
+      0.39452913533834577
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7890173410404624,
+     "ci": [
+      0.748546511627907,
+      0.8290229885057471
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 82.41358571428572,
+     "ci": [
+      80.07407500000001,
+      84.62381285714285
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9653179190751445,
+     "mrr": 0.8707129094412331,
+     "ndcg_at_5": 0.8912929961863633,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.510597302504817,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9248554913294798,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 81.68320000000001
+    },
+    "hindi": {
+     "recall_at_5": 0.6069364161849711,
+     "mrr": 0.5427745664739885,
+     "ndcg_at_5": 0.5213648857884341,
+     "answer_with_gold_evidence": 0.4393063583815029,
+     "false_abstention_rate": 0.3699421965317919,
+     "citation_gold_precision": 0.1705202312138728,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5895953757225434,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 83.99394285714286
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.6434489402697495,
+     "ndcg_at_5": 0.6392775183020499,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.4046242774566474,
+     "citation_gold_precision": 0.3236994219653179,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 80.26914285714285
+    },
+    "romanized": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8677263969171484,
+     "ndcg_at_5": 0.8866220943402957,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840078,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 83.70805714285714
+    }
+   }
+  },
+  "P1-grounding-boost-off": {
+   "kind": "ablation",
+   "description": "term protection kept, but the +0.05/term RRF re-ranking boost removed (isolates protection)",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.796242774566474,
+     "ci": [
+      0.7602324306405548,
+      0.8309248554913294
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7192919075144508,
+     "ci": [
+      0.6799356511182393,
+      0.757659655089363
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7277623744263791,
+     "ci": [
+      0.6901024929275598,
+      0.7639528328179277
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7008670520231214,
+     "ci": [
+      0.6627906976744186,
+      0.7369942196531792
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.203757225433526,
+     "ci": [
+      0.1700566860465116,
+      0.24128033001747548
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3740366088631985,
+     "ci": [
+      0.3557468113530953,
+      0.3917648744269483
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7832369942196532,
+     "ci": [
+      0.7441528239202658,
+      0.8226789867109634
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 83.39,
+     "ci": [
+      80.94957107142857,
+      85.77027964285715
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8765895953757226,
+     "ndcg_at_5": 0.8929173977101099,
+     "answer_with_gold_evidence": 0.9364161849710982,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.5067437379576109,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9132947976878613,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 83.08822857142856
+    },
+    "hindi": {
+     "recall_at_5": 0.5606936416184971,
+     "mrr": 0.4770712909441233,
+     "ndcg_at_5": 0.4713137901891841,
+     "answer_with_gold_evidence": 0.3930635838150289,
+     "false_abstention_rate": 0.37572254335260113,
+     "citation_gold_precision": 0.15703275529865124,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5549132947976878,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 84.55588571428571
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.642485549132948,
+     "ndcg_at_5": 0.6443061420470547,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.3988439306358382,
+     "citation_gold_precision": 0.3294797687861271,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 80.7214857142857
+    },
+    "romanized": {
+     "recall_at_5": 0.976878612716763,
+     "mrr": 0.8810211946050097,
+     "ndcg_at_5": 0.9025121677591681,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5028901734104047,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9421965317919075,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 85.1944
+    }
+   }
+  },
+  "P1-bm25-only": {
+   "kind": "ablation",
+   "description": "P1 with the dense branch off",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.7658959537572254,
+     "ci": [
+      0.7328546798029557,
+      0.7991329479768786
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7366811175337187,
+     "ci": [
+      0.7044713980219193,
+      0.7695864927302725
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7357723236759065,
+     "ci": [
+      0.7042973406415052,
+      0.7677268347998017
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.6994219653179191,
+     "ci": [
+      0.6657142857142857,
+      0.7340116279069767
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.23699421965317918,
+     "ci": [
+      0.19999281609195405,
+      0.27586958700882114
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3802986512524084,
+     "ci": [
+      0.36642609413707683,
+      0.39463601532567044
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7442196531791907,
+     "ci": [
+      0.7066473988439307,
+      0.7818232592518768
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 31.86157142857143,
+     "ci": [
+      30.265841785714287,
+      33.55565142857142
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9826589595375722,
+     "mrr": 0.9739884393063584,
+     "ndcg_at_5": 0.9762588974607768,
+     "answer_with_gold_evidence": 0.9826589595375722,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.535645472061657,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9421965317919075,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 31.27365714285714
+    },
+    "hindi": {
+     "recall_at_5": 0.4913294797687861,
+     "mrr": 0.4253371868978805,
+     "ndcg_at_5": 0.4150884418399681,
+     "answer_with_gold_evidence": 0.3468208092485549,
+     "false_abstention_rate": 0.4277456647398844,
+     "citation_gold_precision": 0.1348747591522158,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.4797687861271676,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 33.163828571428574
+    },
+    "kannada": {
+     "recall_at_5": 0.6069364161849711,
+     "mrr": 0.5734104046242775,
+     "ndcg_at_5": 0.5754830579421044,
+     "answer_with_gold_evidence": 0.48554913294797686,
+     "false_abstention_rate": 0.48554913294797686,
+     "citation_gold_precision": 0.3188824662813102,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.6127167630057804,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 29.675542857142855
+    },
+    "romanized": {
+     "recall_at_5": 0.9826589595375722,
+     "mrr": 0.9739884393063584,
+     "ndcg_at_5": 0.9762588974607768,
+     "answer_with_gold_evidence": 0.9826589595375722,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.5317919075144508,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9421965317919075,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 33.33325714285715
+    }
+   }
+  },
+  "P1-dense-only": {
+   "kind": "ablation",
+   "description": "P1 with the BM25 branch off",
+   "mode": "P1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.7297687861271677,
+     "ci": [
+      0.6838984951166035,
+      0.7744252873563219
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.6501445086705202,
+     "ci": [
+      0.5980592038539554,
+      0.6979762076796036
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.6652251429006769,
+     "ci": [
+      0.6159250548834186,
+      0.7113837360373079
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.630057803468208,
+     "ci": [
+      0.5809119680221748,
+      0.6752980295566502
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.22832369942196531,
+     "ci": [
+      0.19475936692506463,
+      0.26445086705202314
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3480250481695568,
+     "ci": [
+      0.32190311986863707,
+      0.3735607594546759
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7471098265895953,
+     "ci": [
+      0.699992816091954,
+      0.7919197681100631
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 80.12577142857143,
+     "ci": [
+      77.58816249999998,
+      82.5955567857143
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.8959537572254336,
+     "mrr": 0.8027938342967245,
+     "ndcg_at_5": 0.8237847674108382,
+     "answer_with_gold_evidence": 0.838150289017341,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.47206165703275527,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.8728323699421965,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 79.81485714285715
+    },
+    "hindi": {
+     "recall_at_5": 0.5375722543352601,
+     "mrr": 0.47456647398843926,
+     "ndcg_at_5": 0.47310148304282457,
+     "answer_with_gold_evidence": 0.3988439306358382,
+     "false_abstention_rate": 0.43352601156069365,
+     "citation_gold_precision": 0.18882466281310215,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5953757225433526,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 80.34937142857143
+    },
+    "kannada": {
+     "recall_at_5": 0.6242774566473989,
+     "mrr": 0.5359344894026975,
+     "ndcg_at_5": 0.5579882606945048,
+     "answer_with_gold_evidence": 0.4624277456647399,
+     "false_abstention_rate": 0.4277456647398844,
+     "citation_gold_precision": 0.27842003853564545,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.6705202312138728,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 79.52142857142857
+    },
+    "romanized": {
+     "recall_at_5": 0.861271676300578,
+     "mrr": 0.7872832369942195,
+     "ndcg_at_5": 0.8060260604545402,
+     "answer_with_gold_evidence": 0.8208092485549133,
+     "false_abstention_rate": 0.03468208092485549,
+     "citation_gold_precision": 0.45279383429672454,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.8497109826589595,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 80.81742857142858
+    }
+   }
+  },
+  "P2-expansion-off": {
+   "kind": "ablation",
+   "description": "P2 graph facts kept, query expansion removed",
+   "mode": "P2",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8049132947976878,
+     "ci": [
+      0.7673410404624278,
+      0.8397132352941176
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7297206165703276,
+     "ci": [
+      0.6881024528312394,
+      0.7667145803925522
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.7337533227976881,
+     "ci": [
+      0.6946231798299136,
+      0.7693607134988742
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.7138728323699421,
+     "ci": [
+      0.6767241379310345,
+      0.7485714285714286
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.2023121387283237,
+     "ci": [
+      0.16860382059800663,
+      0.23970887482900136
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3774084778420038,
+     "ci": [
+      0.35973231589147286,
+      0.39452913533834577
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.7890173410404624,
+     "ci": [
+      0.748546511627907,
+      0.8290229885057471
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 84.1973,
+     "ci": [
+      81.42978214285715,
+      86.81031999999999
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9653179190751445,
+     "mrr": 0.8678227360308285,
+     "ndcg_at_5": 0.8895208944731683,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.017341040462427744,
+     "citation_gold_precision": 0.510597302504817,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9248554913294798,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 83.45800000000001
+    },
+    "hindi": {
+     "recall_at_5": 0.6069364161849711,
+     "mrr": 0.5427745664739885,
+     "ndcg_at_5": 0.5213648857884341,
+     "answer_with_gold_evidence": 0.4393063583815029,
+     "false_abstention_rate": 0.3699421965317919,
+     "citation_gold_precision": 0.1705202312138728,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.5895953757225434,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 85.18942857142856
+    },
+    "kannada": {
+     "recall_at_5": 0.6936416184971098,
+     "mrr": 0.6434489402697495,
+     "ndcg_at_5": 0.6392775183020499,
+     "answer_with_gold_evidence": 0.5317919075144508,
+     "false_abstention_rate": 0.3988439306358382,
+     "citation_gold_precision": 0.3236994219653179,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7225433526011561,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 81.88217142857143
+    },
+    "romanized": {
+     "recall_at_5": 0.953757225433526,
+     "mrr": 0.8648362235067438,
+     "ndcg_at_5": 0.8848499926271006,
+     "answer_with_gold_evidence": 0.9421965317919075,
+     "false_abstention_rate": 0.023121387283236993,
+     "citation_gold_precision": 0.5048169556840078,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.9190751445086706,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 86.25959999999999
+    }
+   }
+  },
+  "native-crosslingual": {
+   "kind": "baseline",
+   "description": "no translation, no term handling: dense retrieval directly on the untranslated query",
+   "mode": "B1",
+   "n_records": 700,
+   "n_seeds": 175,
+   "metrics": {
+    "recall_at_5": {
+     "mean": 0.8540462427745664,
+     "ci": [
+      0.809584411547251,
+      0.8938953488372093
+     ],
+     "n": 692
+    },
+    "mrr": {
+     "mean": 0.7773843930635839,
+     "ci": [
+      0.7250221364608394,
+      0.8256760416666666
+     ],
+     "n": 692
+    },
+    "ndcg_at_5": {
+     "mean": 0.6909747389082916,
+     "ci": [
+      0.6466338775055481,
+      0.7328766495521498
+     ],
+     "n": 692
+    },
+    "answer_with_gold_evidence": {
+     "mean": 0.8179190751445087,
+     "ci": [
+      0.7685714285714286,
+      0.8642857142857143
+     ],
+     "n": 692
+    },
+    "false_abstention_rate": {
+     "mean": 0.08236994219653179,
+     "ci": [
+      0.058569131161236423,
+      0.10919540229885058
+     ],
+     "n": 692
+    },
+    "citation_gold_precision": {
+     "mean": 0.3800578034682081,
+     "ci": [
+      0.3516377649325626,
+      0.40944227127765603
+     ],
+     "n": 692
+    },
+    "citation_in_retrieved": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "n": 692
+    },
+    "concept_match_recall_at_5": {
+     "mean": 0.8338150289017341,
+     "ci": [
+      0.7861271676300579,
+      0.8801327132486388
+     ],
+     "n": 692
+    },
+    "abstention_accuracy": {
+     "mean": 1.0,
+     "ci": [
+      0.0,
+      1.0
+     ],
+     "n": 8
+    },
+    "latency_ms": {
+     "mean": 49.40935714285714,
+     "ci": [
+      48.11218107142857,
+      50.61444071428571
+     ],
+     "n": 700
+    }
+   },
+   "by_language": {
+    "english": {
+     "recall_at_5": 0.9017341040462428,
+     "mrr": 0.8085741811175337,
+     "ndcg_at_5": 0.8295651142316475,
+     "answer_with_gold_evidence": 0.8439306358381503,
+     "false_abstention_rate": 0.06358381502890173,
+     "citation_gold_precision": 0.47591522157996136,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.8786127167630058,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 48.816285714285705
+    },
+    "hindi": {
+     "recall_at_5": 0.8208092485549133,
+     "mrr": 0.755587668593449,
+     "ndcg_at_5": 0.5661380551697828,
+     "answer_with_gold_evidence": 0.7976878612716763,
+     "false_abstention_rate": 0.03468208092485549,
+     "citation_gold_precision": 0.2909441233140655,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.8034682080924855,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 49.643714285714275
+    },
+    "kannada": {
+     "recall_at_5": 0.8265895953757225,
+     "mrr": 0.7523121387283236,
+     "ndcg_at_5": 0.5563893789563871,
+     "answer_with_gold_evidence": 0.8034682080924855,
+     "false_abstention_rate": 0.18497109826589594,
+     "citation_gold_precision": 0.29672447013487474,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.7976878612716763,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 49.94257142857143
+    },
+    "romanized": {
+     "recall_at_5": 0.8670520231213873,
+     "mrr": 0.7930635838150288,
+     "ndcg_at_5": 0.8118064072753494,
+     "answer_with_gold_evidence": 0.8265895953757225,
+     "false_abstention_rate": 0.046242774566473986,
+     "citation_gold_precision": 0.45664739884393063,
+     "citation_in_retrieved": 1.0,
+     "concept_match_recall_at_5": 0.8554913294797688,
+     "abstention_accuracy": 1.0,
+     "latency_ms": 49.23485714285714
+    }
+   }
+  }
+ },
+ "paired": {
+  "P1 vs B1": {
+   "recall_at_5": {
+    "diff": 0.0072254335260115606,
+    "ci": [
+     -0.005814803481572147,
+     0.020234154456244102
+    ]
+   },
+   "mrr": {
+    "diff": 0.008453757225433723,
+    "ci": [
+     -0.004624879576107963,
+     0.021242834078281037
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": 0.004484437571005595,
+    "ci": [
+     -0.007991517740357765,
+     0.016300287839266493
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": -0.017341040462427744,
+    "ci": [
+     -0.027298850574712645,
+     -0.008619458128078824
+    ]
+   },
+   "verdict": "no clear difference (CI includes 0)"
+  },
+  "B1 vs B0": {
+   "recall_at_5": {
+    "diff": 0.028901734104046242,
+    "ci": [
+     0.008540966386554624,
+     0.04885057471264368
+    ]
+   },
+   "mrr": {
+    "diff": -0.01734104046242791,
+    "ci": [
+     -0.04348747941591607,
+     0.005897137779794431
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": -0.008391550582724788,
+    "ci": [
+     -0.031208390657258205,
+     0.012295880943696096
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": -0.031791907514450865,
+    "ci": [
+     -0.0476878612716763,
+     -0.01711869747899173
+    ]
+   },
+   "verdict": "improves (CI excludes 0)"
+  },
+  "P2 vs P1": {
+   "recall_at_5": {
+    "diff": -0.001445086705202312,
+    "ci": [
+     -0.010057471264367816,
+     0.005747126436781609
+    ]
+   },
+   "mrr": {
+    "diff": -0.00048169556840082546,
+    "ci": [
+     -0.006358056239737339,
+     0.005148609311673535
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": -0.0008747086408622322,
+    "ci": [
+     -0.006344932347735509,
+     0.004399842427987245
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": 0.002890173410404624,
+    "ci": [
+     0.0,
+     0.00872093023255814
+    ]
+   },
+   "verdict": "no clear difference (CI includes 0)"
+  },
+  "P1 vs P1-grounding-boost-off": {
+   "recall_at_5": {
+    "diff": 0.008670520231213872,
+    "ci": [
+     -0.004335260115606936,
+     0.02167630057803468
+    ]
+   },
+   "mrr": {
+    "diff": 0.010428709055876895,
+    "ci": [
+     -0.002773964354527884,
+     0.02286830357142858
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": 0.005990948371309181,
+    "ci": [
+     -0.0064278157310494665,
+     0.0180531096748633
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": -0.001445086705202312,
+    "ci": [
+     -0.0043859649122807015,
+     0.0
+    ]
+   },
+   "verdict": "no clear difference (CI includes 0)"
+  },
+  "P1 vs P1-input-protection-off": {
+   "recall_at_5": {
+    "diff": -0.001445086705202312,
+    "ci": [
+     -0.00436046511627907,
+     0.0
+    ]
+   },
+   "mrr": {
+    "diff": -0.0029624277456646742,
+    "ci": [
+     -0.007340116279069784,
+     0.0
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": -0.002369967633769825,
+    "ci": [
+     -0.0053243585724081655,
+     -3.88300719700577e-05
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ]
+   },
+   "verdict": "no clear difference (CI includes 0)"
+  },
+  "P1 vs P1-alias-suffix-off": {
+   "recall_at_5": {
+    "diff": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ]
+   },
+   "mrr": {
+    "diff": -0.001445086705202312,
+    "ci": [
+     -0.004361102611179191,
+     0.0
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": -0.000886050856597455,
+    "ci": [
+     -0.002673997823406741,
+     0.0
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": -0.001445086705202312,
+    "ci": [
+     -0.00436046511627907,
+     0.0
+    ]
+   },
+   "verdict": "no clear difference (CI includes 0)"
+  },
+  "P1 vs native-crosslingual": {
+   "recall_at_5": {
+    "diff": -0.049132947976878616,
+    "ci": [
+     -0.09615660919540231,
+     -0.0028731527093596083
+    ]
+   },
+   "mrr": {
+    "diff": -0.04766377649325628,
+    "ci": [
+     -0.09229658743605078,
+     -0.004334616707955021
+    ]
+   },
+   "ndcg_at_5": {
+    "diff": 0.0427785838893966,
+    "ci": [
+     0.00594780783900632,
+     0.07909693620050483
+    ]
+   },
+   "false_abstention_rate": {
+    "diff": 0.1199421965317919,
+    "ci": [
+     0.07614942528735633,
+     0.16618497109826588
+    ]
+   },
+   "verdict": "worse (CI excludes 0)"
+  }
+ },
+ "error_analysis": {
+  "system": "P1",
+  "stages": [
+   {
+    "stage": "safety_gate",
+    "by_language": {
+     "english": 3,
+     "hindi": 2,
+     "romanized": 3,
+     "kannada": 1
+    },
+    "total": 9,
+    "examples": [
+     "[english] Dose of VIT K is → not_run_safety_gate: ",
+     "[hindi] विटामिन के की खुराक → not_run_safety_gate: ",
+     "[romanized] Ayurveda mein: Dose of VIT K is → not_run_safety_gate: "
+    ]
+   },
+   {
+    "stage": "language_id",
+    "by_language": {
+     "romanized": 1
+    },
+    "total": 1,
+    "examples": [
+     "[romanized] Ayurveda mein: Tobacco is……poison. → identity: Ayurveda mein: Tobacco is……poison."
+    ]
+   },
+   {
+    "stage": "term_detection",
+    "by_language": {
+     "hindi": 4,
+     "kannada": 5
+    },
+    "total": 9,
+    "examples": [
+     "[hindi] जनसांख्यिकीय चक्र के किस चरण में भारत हाल ही में प्रवेश किया है? → indic_transliteration_fallback: janasAMkhyikIya chakra ke kisa charaNa meM bhArata hAla hI meM pravesh",
+     "[kannada] ಭೌಗೋಳಿಕ ಚಕ್ರದ ಯಾವ ಹಂತದಲ್ಲಿ ಭಾರತ ಇತ್ತೀಚೆಗೆ ಪ್ರವೇಶಿಸಿದೆ? → indic_transliteration_fallback: bhaugoLika chakrada yAva haMtadalli bhArata ittIchègè praveshisidè?",
+     "[hindi] भारत में विश्व स्वास्थ्य संगठन की गतिविधियाँ इस प्रकार हैं: → indic_transliteration_fallback: bhArata meM vishva svAsthya saMgaThana kI gatividhiyA.N isa prakAra ha"
+    ]
+   },
+   {
+    "stage": "suffix_normalization",
+    "by_language": {
+     "kannada": 1
+    },
+    "total": 1,
+    "examples": [
+     "[kannada] ಎರಡು ಸ್ನೆಹಗಳ ಸಂಯೋಜನೆಯನ್ನು ಹೀಗೆ ಕರೆಯಲಾಗುತ್ತದೆ → indic_transliteration_fallback: èraDu snèhagaLa saMyojanèyannu hIgè karèyalAguttadè"
+    ]
+   },
+   {
+    "stage": "translation",
+    "by_language": {
+     "hindi": 40,
+     "kannada": 45,
+     "romanized": 4
+    },
+    "total": 89,
+    "examples": [
+     "[hindi] नाल की वह लंबाई जिसे काटा जाना है, वह 4 अंगुल होगी। → indic_transliteration_fallback: nAla kI vaha laMbAI jise kATA jAnA hai, vaha 4 aMgula hogI|",
+     "[kannada] ಕತ್ತರಿಸಬೇಕಾದ ನಾಳದ ಉದ್ದ 4 ಅಂಗುಲಗಳಾಗಿರಬೇಕು. → indic_transliteration_fallback: kattarisabekAda nALada udda 4 aMgulagaLAgirabeku.",
+     "[kannada] ಅಮಾಜೀರ್ಣದ ಚಿಕಿತ್ಸೆ ಹೀಗಿದೆ -- -- .. → indic_transliteration_fallback: amAjIrNada chikitsè hIgidè -- -- .."
+    ]
+   },
+   {
+    "stage": "retrieval",
+    "by_language": {
+     "hindi": 22,
+     "english": 3,
+     "kannada": 1
+    },
+    "total": 26,
+    "examples": [
+     "[hindi] ekAntaH की परिभाषा और आयुर्वेदिक महत्व क्या है? → ayurvedic_grammar_pattern_rule: What is ekAntaH की परिभाषा और आयुर्वेदिक महत्व?",
+     "[hindi] anumataH की परिभाषा और आयुर्वेदिक महत्व क्या है? → ayurvedic_grammar_pattern_rule: What is anumataH की परिभाषा और आयुर्वेदिक महत्व?",
+     "[hindi] आमाजेर्ना का उपचार इस प्रकार है -- -- → ayurvedic_grammar_pattern_rule: How to balance and treat Amaाजेर्ना?"
+    ]
+   },
+   {
+    "stage": "graph",
+    "by_language": {},
+    "total": 0,
+    "examples": [],
+    "note": "P1 has no graph stage; see P2 vs P1 paired difference"
+   },
+   {
+    "stage": "generation_abstained",
+    "by_language": {
+     "hindi": 25,
+     "kannada": 24
+    },
+    "total": 49,
+    "examples": [
+     "[hindi] विसर्प को आंतरिक रूप से विकसित किया गया है --------- → indic_transliteration_fallback: visarpa ko AMtarika rUpa se vikasita kiyA gayA hai ---------",
+     "[hindi] तुंडिकेरी रोग को आचार्य ………. द्वारा तालुरोग में शामिल किया गया। → indic_transliteration_fallback: tuMDikerI roga ko AchArya ………. dvArA tAluroga meM shAmila kiyA gayA|",
+     "[kannada] ತುಂಡಿಕೆರಿ ರೋಗವನ್ನು ತಾಲುರೋಗದಲ್ಲಿ ಸೇರಿಸಲಾಯಿತು, ಇದನ್ನು ಆಚಾರ್ಯರು ವಿವರಿಸಿದರು. → indic_transliteration_fallback: tuMDikèri rogavannu tAlurogadalli serisalAyitu, idannu AchAryaru vivar"
+    ]
+   },
+   {
+    "stage": "generation_citation",
+    "by_language": {
+     "kannada": 4,
+     "english": 4,
+     "romanized": 2,
+     "hindi": 4
+    },
+    "total": 14,
+    "examples": [
+     "[kannada] ಕರ್ಮಕಾತವನ ಪ್ರಕಾರ, ಆಚಾರ್ಯ ಸುಶ್ರುತರು ಹೇಳಿದಂತೆ, ಅಲ್ಲಿ ... ಸ್ಥಾವರ ಸ್ನೇಹಸಾಯವಿದೆ. → indic_transliteration_fallback: karmakAtavana prakAra, AchArya sushrutaru heLidaMtè, alli ... sthAvara",
+     "[english] Treatment of Aamaajeerna' is -- -- .. → identity: Treatment of Aamaajeerna' is -- -- ..",
+     "[romanized] Ayurveda mein: Treatment of Aamaajeerna' is -- -- .. → identity: Ayurveda mein: Treatment of Aamaajeerna' is -- -- .."
+    ]
+   },
+   {
+    "stage": "restoration",
+    "by_language": {},
+    "total": 0,
+    "examples": [],
+    "note": "extractive answers contain no placeholders, so output restoration cannot fail (audit F24); measured only with neural answer MT"
+   },
+   {
+    "stage": "success",
+    "by_language": {
+     "english": 163,
+     "hindi": 76,
+     "kannada": 92,
+     "romanized": 163
+    },
+    "total": 494,
+    "examples": []
+   }
+  ]
+ },
+ "limitations": [
+  "Pilot scale: 175 seed questions on the test split; CIs are wide.",
+  "Translation backend in this run: rules. IndicTrans2 was NOT available, so Hindi/Kannada queries were translated by rules/transliteration; results do not test the paper's IndicTrans2 pipeline.",
+  "Dense backend in this run: tfidf (tfidf_char_wb_3-5). This is character n-gram TF-IDF, not a neural embedding model.",
+  "68 Hindi and 71 Kannada variants contain the Ayurvedic term in Latin script, so they do not exercise native-script term protection (audit F19).",
+  "Many benchmark questions are taken from records that are themselves in the indexed corpus (QA rows, BhashaBench rows), so English retrieval is close to a lookup (audit F25).",
+  "Some 'Hindi'/'Kannada' variants are English text with a short native-script prefix (audit F26); several gold_concept values are topic labels such as 'General' (audit F27). All 250 seeds are still review_status=pending_review.",
+  "No human ratings exist yet; answer quality and citation faithfulness need the two-rater kit in docs/human_eval/."
+ ]
+}

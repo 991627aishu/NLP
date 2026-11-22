@@ -21,6 +21,8 @@ SPOKEN_DISCLAIMER = {
     "en": "AyurMitra is for education only and is not medical advice.",
     "hi": "आयुर्मित्र केवल शैक्षिक जानकारी देता है, यह चिकित्सकीय सलाह नहीं है।",
     "kn": "ಆಯುರ್ಮಿತ್ರ ಕೇವಲ ಶೈಕ್ಷಣಿಕ ಮಾಹಿತಿ ನೀಡುತ್ತದೆ, ಇದು ವೈದ್ಯಕೀಯ ಸಲಹೆಯಲ್ಲ.",
+    "hinglish": "AyurMitra keval educational information deta hai, ye medical advice nahi hai.",
+    "kanglish": "AyurMitra kevala educational information needutte, idu medical advice alla.",
 }
 
 _ID_RX = re.compile(r"\b(WHO_CHUNK|QA_PASSAGE|HI_QA|KN_QA|NAMASTE_CHUNK|IMPPAT_\w*|API_\w*|CHUNK)_?[A-Z0-9_]*\d+\b")

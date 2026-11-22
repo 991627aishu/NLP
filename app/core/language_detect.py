@@ -56,6 +56,14 @@ KANNADA_ROMAN_GRAMMAR = {
 }
 
 
+UNSUPPORTED_FOREIGN_WORDS = {
+    "bonjour", "comment", "ca", "va", "merci", "oui", "non", "s'il", "vous", "plait",
+    "hola", "como", "estas", "gracias", "por", "favor", "buenos", "dias",
+    "guten", "tag", "wie", "geht", "danke", "bitte", "ich", "bin",
+    "ciao", "come", "stai", "grazie", "prego", "ola", "obrigado", "tutto", "bene"
+}
+
+
 def segment_text_by_script(text: str) -> List[Dict[str, str]]:
     """
     Splits text into contiguous script segments (Devanagari, Kannada, Latin, Other).
@@ -206,8 +214,10 @@ def detect(text: str) -> Dict[str, Any]:
     en_cnt = len(words_all.intersection(ENGLISH_FUNCTIONAL_WORDS))
     hi_cnt = len(words_all.intersection(HINDI_ROMAN_GRAMMAR))
     kn_cnt = len(words_all.intersection(KANNADA_ROMAN_GRAMMAR))
+    foreign_cnt = len(words_all.intersection(UNSUPPORTED_FOREIGN_WORDS))
 
     is_romanized = False
+    is_unsupported = foreign_cnt > 0 and en_cnt == 0 and hi_cnt == 0 and kn_cnt == 0 and dev_chars == 0 and kn_chars == 0
 
     if kn_ratio > 0.40 or (kn_chars > 0 and kn_chars >= dev_chars and en_cnt == 0):
         dominant_lang = "kn"
@@ -261,11 +271,95 @@ def detect(text: str) -> Dict[str, Any]:
         "is_romanized": is_romanized,
         "is_code_mixed": is_code_mixed,
         "code_mix_type": code_mix_type,
+        "is_unsupported": is_unsupported,
         "detected_languages": sorted(list(detected_languages)) if detected_languages else [dominant_lang],
         "segments": classified_segments,
         "confidence": confidence,
         "confidence_level": conf_level,
         "method": method
+    }
+
+
+def resolve_target_language(query: str, requested_lang: str = "auto") -> Dict[str, Any]:
+    """
+    Authoritative language resolver for AyurMitra multilingual consistency.
+    Guarantees that whatever language/script the user types or speaks,
+    the system resolves the exact target mode:
+      - 'en': English
+      - 'hi': Hindi (Devanagari script)
+      - 'kn': Kannada (Kannada script)
+      - 'hinglish': Hinglish (Hindi in Roman script)
+      - 'kanglish': Kanglish (Kannada in Roman script)
+      - 'unsupported': Unsupported language (e.g. French, German)
+    """
+    req = (requested_lang or "auto").strip().lower()
+    if req in ("en", "hi", "kn", "hinglish", "kanglish"):
+        return {
+            "mode": req,
+            "display": {"en": "English", "hi": "हिन्दी", "kn": "ಕನ್ನಡ", "hinglish": "Hinglish", "kanglish": "Kanglish"}[req],
+            "script": "devanagari" if req == "hi" else ("kannada" if req == "kn" else "latin"),
+            "tts_lang": "hi-IN" if req in ("hi", "hinglish") else ("kn-IN" if req in ("kn", "kanglish") else "en-IN"),
+            "is_supported": True,
+            "detected_info": detect(query) if query else {}
+        }
+
+    info = detect(query)
+    if info.get("is_unsupported"):
+        return {
+            "mode": "unsupported",
+            "display": "Unsupported Language",
+            "script": info.get("script", "latin"),
+            "tts_lang": "en-IN",
+            "is_supported": False,
+            "detected_info": info
+        }
+
+    script = info.get("script", "latin")
+    dominant = info.get("dominant_lang", "en")
+    is_rom = info.get("is_romanized", False)
+    cm_type = info.get("code_mix_type", "")
+
+    if script == "devanagari":
+        mode = "hi"
+    elif script == "kannada":
+        mode = "kn"
+    elif cm_type == "kanglish_romanized" or (dominant == "kn" and (script == "latin" or is_rom)):
+        # By default, Romanized Kannada (Kanglish) queries receive proper Kannada script explanations
+        mode = "kn"
+    elif cm_type == "hinglish_romanized" or (dominant == "hi" and (script == "latin" or is_rom)):
+        # By default, Romanized Hindi (Hinglish) queries receive proper Hindi Devanagari explanations
+        mode = "hi"
+    elif is_rom:
+        mode = "kn" if dominant == "kn" else "hi"
+    elif dominant == "kn":
+        mode = "kn"
+    elif dominant == "hi":
+        mode = "hi"
+    else:
+        mode = "en"
+
+    display_map = {
+        "en": "English",
+        "hi": "हिन्दी",
+        "kn": "ಕನ್ನಡ",
+        "hinglish": "Hinglish",
+        "kanglish": "Kanglish"
+    }
+    tts_map = {
+        "en": "en-IN",
+        "hi": "hi-IN",
+        "kn": "kn-IN",
+        "hinglish": "hi-IN",
+        "kanglish": "kn-IN"
+    }
+
+    return {
+        "mode": mode,
+        "display": display_map.get(mode, "English"),
+        "script": "devanagari" if mode == "hi" else ("kannada" if mode == "kn" else "latin"),
+        "tts_lang": tts_map.get(mode, "en-IN"),
+        "is_supported": True,
+        "detected_info": info
     }
 
 

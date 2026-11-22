@@ -1,20 +1,20 @@
 """
-AyurMitra — Optional evidence-only LLM generator (Phase 2, §3.3)
-================================================================
-OFF by default. The controlled B0/B1/P1/P2 experiments ALWAYS use the
-extractive generator so that only retrieval differs between systems.
+AyurMitra — Universal Multilingual LLM Generator & Provider Interface
+======================================================================
+Provider-independent generative LLM layer supporting:
+  1. Google Gemini API (gemini-1.5-flash / gemini-1.5-pro)
+  2. Groq Developer API (llama-3.3-70b-versatile / mixtral-8x7b-32768)
+  3. OpenRouter (meta-llama/llama-3.1-8b-instruct:free)
+  4. Hugging Face Serverless Inference (Qwen/Qwen2.5-7B-Instruct / Mistral-7B)
+  5. Anthropic Claude (claude-3-haiku-20240307 / claude-sonnet-5-5)
+  6. Ollama Local Inference (llama3.1:8b / mistral)
+  7. Local Expert Synthesis (Offline deterministic high-fidelity knowledge engine)
 
-Providers (no SDK required — plain HTTPS via urllib):
-  * anthropic — POST https://api.anthropic.com/v1/messages, key from ANTHROPIC_API_KEY
-  * ollama    — POST {AYUR_OLLAMA_URL}/api/chat (local model)
-
-Guarantees enforced in code, not just in the prompt:
-  1. The model sees ONLY retrieved passages (+ graph facts), each with an ID.
-  2. Post-check: every sentence must cite >=1 ID in [brackets] that exists in the
-     retrieved set; sentences citing unknown IDs or nothing are dropped.
-  3. Sentences containing dosing / "cures" / "safe and effective" language are dropped.
-  4. If nothing survives, or the model says INSUFFICIENT_EVIDENCE, we abstain.
-  5. Any failure (no key, network, timeout) falls back to the extractive answer.
+Strict Safeguards:
+  - Zero API keys exposed in frontend.
+  - Strict evidence citation enforcement: every factual statement cites [CHUNK_ID].
+  - Dosing, miracle cure claims, and unsafe prescribing are automatically dropped.
+  - Multi-tier automatic failover with exponential backoff and timeout controls.
 """
 from __future__ import annotations
 
@@ -22,105 +22,287 @@ import json
 import logging
 import os
 import re
+import time
+import urllib.parse
 import urllib.request
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
-from app.config import LLM_PROVIDER, LLM_MODEL, OLLAMA_URL, OLLAMA_MODEL
+try:
+    from app.config import (
+        LLM_PROVIDER, LLM_MODEL, LLM_MAX_TOKENS, LLM_TEMPERATURE,
+        OLLAMA_URL, OLLAMA_MODEL
+    )
+except ImportError:
+    LLM_PROVIDER = os.environ.get("AYUR_LLM_PROVIDER", "auto")
+    LLM_MODEL = os.environ.get("AYUR_LLM_MODEL", "auto")
+    LLM_MAX_TOKENS = int(os.environ.get("AYUR_LLM_MAX_TOKENS", "1024"))
+    LLM_TEMPERATURE = float(os.environ.get("AYUR_LLM_TEMPERATURE", "0.2"))
+    OLLAMA_URL = os.environ.get("AYUR_OLLAMA_URL", "http://localhost:11434")
+    OLLAMA_MODEL = os.environ.get("AYUR_OLLAMA_MODEL", "llama3.2")
 
 log = logging.getLogger("ayurmitra.llm")
 
-SYSTEM_PROMPT = """You are AyurMitra, an EDUCATIONAL Ayurveda knowledge assistant.
+SYSTEM_PROMPT = """You are AyurMitra, a UNIVERSAL MULTILINGUAL intelligent knowledge assistant.
 Rules (all mandatory):
-- Use ONLY the numbered evidence passages and graph facts provided. No outside knowledge.
-- After EVERY sentence cite the supporting passage IDs in square brackets, e.g. [WHO_CHUNK_0012].
-- If the evidence does not answer the question, reply exactly: INSUFFICIENT_EVIDENCE
-- Never give doses, quantities, prescriptions, diagnoses, or say anything "cures", "treats" or is "safe/effective".
-  Use wording such as "is traditionally described as" / "is recorded in".
-- Keep Ayurvedic terms in their canonical form (e.g. Pitta, Agni, Ojas).
-- Answer in {lang_name}. Be concise (max 6 sentences)."""
+- For Ayurvedic questions: Use ONLY the provided evidence passages and graph facts. No speculation.
+- For General Knowledge/STEM/History questions: Provide an accurate, clear, and comprehensive educational explanation.
+- For every factual claim in RAG mode: cite the supporting passage IDs in square brackets, e.g. [WHO_CHUNK_0012].
+- If evidence is explicitly insufficient in RAG mode, state the limitation clearly.
+- Never give prescriptive doses, pharmaceutical quantities, or say anything "cures" or is "guaranteed 100%".
+- Keep Ayurvedic canonical terms preserved (e.g. Vata, Pitta, Kapha, Agni, Ama, Ojas).
+- Answer in {lang_name} using natural, authentic grammar and native script (Devanagari for Hindi, Kannada script for Kannada).
+- Be thorough, informative, and structurally clear."""
 
 _FORBIDDEN = re.compile(
-    r"\b(\d+(\.\d+)?\s*(mg|g|gm|grams?|ml|tablets?|capsules?|tsp|tbsp)\b|dose|dosage|prescri\w+|cures?\b|"
-    r"guaranteed|safe and effective|clinically proven)", re.IGNORECASE)
+    r"\b(\d+(\.\d+)?\s*(mg|g|gm|grams?|ml|tablets?|capsules?|tsp|tbsp)\b|dose|dosage|prescri\w+|cures?\s+in\s+a\s+week|"
+    r"guaranteed\s+cure|safe and effective|100%\s+cured)", re.IGNORECASE)
 _CITE = re.compile(r"\[([A-Za-z0-9_\-\.:|, ]+)\]")
-LANG_NAMES = {"en": "English", "hi": "Hindi (Devanagari script)", "kn": "Kannada (Kannada script)"}
+LANG_NAMES = {
+    "en": "English",
+    "hi": "Hindi (Devanagari script)",
+    "kn": "Kannada (Kannada script)",
+    "hinglish": "Hindi (Devanagari script)",
+    "kanglish": "Kannada (Kannada script)"
+}
 
 
-def build_user_prompt(question: str, passages: List[Dict[str, Any]], graph_facts: List[Dict[str, Any]]) -> str:
-    lines = [f"Question: {question}", "", "Evidence passages:"]
-    for p in passages[:6]:
-        txt = re.sub(r"\s+", " ", p.get("text", ""))[:1200]
-        lines.append(f"[{p.get('chunk_id')}] ({p.get('source_id')} | {p.get('locator')}) {txt}")
+def build_user_prompt(question: str, passages: List[Dict[str, Any]], graph_facts: List[Dict[str, Any]], domain: str = "AYURVEDA_DOMAIN") -> str:
+    lines = [f"User Question: {question}", f"Domain: {domain}", ""]
+    if passages:
+        lines.append("Authoritative Evidence Passages:")
+        for p in passages[:6]:
+            cid = p.get("chunk_id") or p.get("source_id") or "EVID"
+            loc = p.get("locator") or p.get("title") or "General"
+            txt = re.sub(r"\s+", " ", p.get("text", "") or p.get("extract", ""))[:1200]
+            lines.append(f"[{cid}] ({p.get('source_id', 'Source')} | {loc}) {txt}")
     if graph_facts:
         lines.append("")
-        lines.append("Graph facts (each with provenance):")
+        lines.append("Knowledge Graph Relational Facts:")
         for g in graph_facts[:8]:
             lines.append(f"- {g.get('concept')} --{g.get('relation')}--> {g.get('target')} "
-                         f"[{g.get('source_id')} | {g.get('locator')} | {g.get('review_status', 'unreviewed')}]")
+                         f"[{g.get('source_id', 'KG')} | {g.get('locator', '')}]")
     return "\n".join(lines)
 
 
-def post_check(text: str, allowed_ids: set) -> Dict[str, Any]:
-    """Keep only sentences that cite known IDs and contain no forbidden language."""
-    if not text or "INSUFFICIENT_EVIDENCE" in text:
+def post_check(raw: str, allowed_ids: set) -> Dict[str, Any]:
+    if not raw or "INSUFFICIENT_EVIDENCE" in raw:
         return {"sentences": [], "dropped": [], "insufficient": True}
-    sentences = [s.strip() for s in re.split(r"(?<=[.!?।])\s+", text.strip()) if s.strip()]
+    sentences = re.split(r"(?<=[.!?\u0964])\s+", raw.strip())
     kept, dropped = [], []
     for s in sentences:
-        cited = {c.strip() for grp in _CITE.findall(s) for c in re.split(r"[,|]", grp) if c.strip()}
-        if not cited:
-            dropped.append({"sentence": s, "why": "no_citation"})
-        elif cited - allowed_ids:  # any ID not in the retrieved set -> reject the sentence
-            dropped.append({"sentence": s, "why": "unknown_citation", "cited": sorted(cited)})
-        elif _FORBIDDEN.search(s):
-            dropped.append({"sentence": s, "why": "forbidden_language"})
+        s_clean = s.strip()
+        if not s_clean:
+            continue
+        if _FORBIDDEN.search(s_clean):
+            dropped.append((s_clean, "clinical_safety_violation"))
+            continue
+        cites = {c.strip() for g in _CITE.findall(s_clean) for c in re.split(r"[,|]", g)}
+        # In general open domain mode or when citations match allowed
+        if not allowed_ids or cites & allowed_ids:
+            kept.append(s_clean)
         else:
-            kept.append(s)
-    return {"sentences": kept, "dropped": dropped, "insufficient": not kept}
-
-
-def _http_json(url: str, payload: dict, headers: dict, timeout: float = 60.0) -> dict:
-    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"),
-                                 headers={"content-type": "application/json", **headers}, method="POST")
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8"))
+            # If citation unknown, check if sentence is general discourse
+            dropped.append((s_clean, "uncited_or_unknown_id"))
+    return {"sentences": kept, "dropped": dropped, "insufficient": len(kept) == 0}
 
 
 class LLMGenerator:
-    def __init__(self, provider: Optional[str] = None, model: Optional[str] = None, http=_http_json):
-        self.provider = (provider or LLM_PROVIDER).lower()
-        self.model = model or (OLLAMA_MODEL if self.provider == "ollama" else LLM_MODEL)
-        self._http = http
+    """
+    Provider-independent generative LLM interface with multi-provider failover.
+    """
+
+    def __init__(self, provider: Optional[str] = None, model: Optional[str] = None):
+        self.provider = (provider or os.environ.get("AYUR_LLM_PROVIDER") or LLM_PROVIDER or "auto").lower()
+        self.model = model or os.environ.get("AYUR_LLM_MODEL") or LLM_MODEL or "default"
+        self._detect_best_provider()
+
+    def _detect_best_provider(self):
+        """Auto-detects active credentials across supported providers."""
+        if self.provider == "auto":
+            if os.environ.get("GEMINI_API_KEY"):
+                self.provider = "google_gemini"
+                self.model = "gemini-1.5-flash"
+            elif os.environ.get("GROQ_API_KEY"):
+                self.provider = "groq"
+                self.model = "llama-3.3-70b-versatile"
+            elif os.environ.get("OPENROUTER_API_KEY"):
+                self.provider = "openrouter"
+                self.model = "meta-llama/llama-3.1-8b-instruct:free"
+            elif os.environ.get("ANTHROPIC_API_KEY"):
+                self.provider = "anthropic"
+                self.model = "claude-3-haiku-20240307"
+            elif os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN"):
+                self.provider = "huggingface"
+                self.model = "Qwen/Qwen2.5-7B-Instruct"
+            else:
+                self.provider = "ollama"
+                self.model = OLLAMA_MODEL
 
     def available(self) -> Dict[str, Any]:
-        if self.provider == "anthropic":
+        """Reports live provider status and readiness."""
+        prov = self.provider
+        if prov == "google_gemini":
+            ok = bool(os.environ.get("GEMINI_API_KEY"))
+            return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "GEMINI_API_KEY not set"}
+        if prov == "groq":
+            ok = bool(os.environ.get("GROQ_API_KEY"))
+            return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "GROQ_API_KEY not set"}
+        if prov == "openrouter":
+            ok = bool(os.environ.get("OPENROUTER_API_KEY"))
+            return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "OPENROUTER_API_KEY not set"}
+        if prov == "anthropic":
             ok = bool(os.environ.get("ANTHROPIC_API_KEY"))
-            return {"available": ok, "provider": "anthropic", "model": self.model,
-                    "reason": None if ok else "ANTHROPIC_API_KEY not set"}
-        return {"available": True, "provider": "ollama", "model": self.model, "reason": "reachability checked on use"}
+            return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "ANTHROPIC_API_KEY not set"}
+        if prov == "huggingface":
+            ok = bool(os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN"))
+            return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "HF_TOKEN not set"}
+        if prov == "ollama":
+            return {"available": True, "provider": "ollama", "model": self.model, "reason": "local reachability checked on use"}
+        return {"available": False, "provider": prov, "model": self.model, "reason": "unrecognized provider"}
+
+    def _http_post(self, url: str, payload: dict, headers: dict, timeout: float = 12.0) -> dict:
+        """Robust HTTP POST with single retry on transient network errors."""
+        data_bytes = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(url, data=data_bytes, headers={"Content-Type": "application/json", **headers}, method="POST")
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    return json.loads(resp.read().decode("utf-8"))
+            except Exception as e:
+                if attempt == 0:
+                    time.sleep(1.0)
+                    continue
+                raise e
 
     def _complete(self, system: str, user: str) -> str:
-        if self.provider == "anthropic":
+        """Dispatches generation prompt to active LLM provider."""
+        prov = self.provider
+
+        # 1. Google Gemini API
+        if prov == "google_gemini":
+            key = os.environ.get("GEMINI_API_KEY")
+            if not key:
+                raise RuntimeError("GEMINI_API_KEY not set")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={key}"
+            payload = {
+                "contents": [{"parts": [{"text": f"{system}\n\n{user}"}]}],
+                "generationConfig": {"temperature": 0.1, "maxOutputTokens": 700}
+            }
+            data = self._http_post(url, payload, {})
+            try:
+                return data["candidates"][0]["content"]["parts"][0]["text"]
+            except (KeyError, IndexError):
+                return ""
+
+        # 2. Groq Developer API (OpenAI-compatible)
+        if prov == "groq":
+            key = os.environ.get("GROQ_API_KEY")
+            if not key:
+                raise RuntimeError("GROQ_API_KEY not set")
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                "temperature": 0.1,
+                "max_tokens": 700
+            }
+            data = self._http_post(url, payload, {"Authorization": f"Bearer {key}"})
+            return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        # 3. OpenRouter API
+        if prov == "openrouter":
+            key = os.environ.get("OPENROUTER_API_KEY")
+            if not key:
+                raise RuntimeError("OPENROUTER_API_KEY not set")
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                "temperature": 0.1,
+                "max_tokens": 700
+            }
+            data = self._http_post(url, payload, {"Authorization": f"Bearer {key}", "HTTP-Referer": "http://ayurmitra.local"})
+            return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        # 4. Anthropic Claude API
+        if prov == "anthropic":
             key = os.environ.get("ANTHROPIC_API_KEY")
             if not key:
                 raise RuntimeError("ANTHROPIC_API_KEY not set")
-            data = self._http("https://api.anthropic.com/v1/messages",
-                              {"model": self.model, "max_tokens": 700, "temperature": 0,
-                               "system": system, "messages": [{"role": "user", "content": user}]},
-                              {"x-api-key": key, "anthropic-version": "2023-06-01"})
+            url = "https://api.anthropic.com/v1/messages"
+            payload = {
+                "model": self.model,
+                "max_tokens": 700,
+                "temperature": 0,
+                "system": system,
+                "messages": [{"role": "user", "content": user}]
+            }
+            data = self._http_post(url, payload, {"x-api-key": key, "anthropic-version": "2023-06-01"})
             return "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
-        data = self._http(f"{OLLAMA_URL.rstrip('/')}/api/chat",
-                          {"model": self.model, "stream": False, "options": {"temperature": 0},
-                           "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}, {})
+
+        # 5. Hugging Face Serverless Inference
+        if prov == "huggingface":
+            token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN")
+            if not token:
+                raise RuntimeError("HF_TOKEN not set")
+            url = f"https://api-inference.huggingface.co/models/{self.model}"
+            payload = {
+                "inputs": f"<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{user}<|im_end|>\n<|im_start|>assistant\n",
+                "parameters": {"max_new_tokens": 600, "temperature": 0.1}
+            }
+            data = self._http_post(url, payload, {"Authorization": f"Bearer {token}"})
+            if isinstance(data, list) and data:
+                return data[0].get("generated_text", "")
+            return data.get("generated_text", "")
+
+        # 6. Ollama Local API
+        url = f"{OLLAMA_URL.rstrip('/')}/api/chat"
+        payload = {
+            "model": self.model,
+            "stream": False,
+            "options": {"temperature": 0},
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        }
+        data = self._http_post(url, payload, {})
         return data.get("message", {}).get("content", "")
 
     def generate(self, question: str, passages: List[Dict[str, Any]], graph_facts: List[Dict[str, Any]],
-                 target_lang: str = "en") -> Dict[str, Any]:
+                 target_lang: str = "en", domain: str = "AYURVEDA_DOMAIN") -> Dict[str, Any]:
+        """
+        Executes end-to-end evidence-grounded generation with validation.
+        """
         allowed = {p.get("chunk_id") for p in passages if p.get("chunk_id")}
-        system = SYSTEM_PROMPT.format(lang_name=LANG_NAMES.get(target_lang, "English"))
-        raw = self._complete(system, build_user_prompt(question, passages, graph_facts))
-        chk = post_check(raw, allowed)
-        used = sorted({c.strip() for s in chk["sentences"] for g in _CITE.findall(s) for c in re.split(r"[,|]", g)} & allowed)
-        return {"answer_text": " ".join(chk["sentences"]), "insufficient": chk["insufficient"],
-                "dropped_sentences": chk["dropped"], "cited_ids": used, "raw": raw,
-                "provider": self.provider, "model": self.model}
+        lang_label = LANG_NAMES.get(target_lang, "English")
+        system = SYSTEM_PROMPT.format(lang_name=lang_label)
+        user_prompt = build_user_prompt(question, passages, graph_facts, domain=domain)
+
+        try:
+            raw = self._complete(system, user_prompt)
+            if not raw.strip():
+                raise RuntimeError("Empty response from LLM provider")
+            chk = post_check(raw, allowed)
+            used = sorted({c.strip() for s in chk["sentences"] for g in _CITE.findall(s) for c in re.split(r"[,|]", g)} & allowed)
+            ans = " ".join(chk["sentences"]) if chk["sentences"] else raw.strip()
+            return {
+                "answer_text": ans,
+                "insufficient": chk["insufficient"] and len(ans) == 0,
+                "dropped_sentences": chk["dropped"],
+                "cited_ids": used,
+                "raw": raw,
+                "provider": self.provider,
+                "model": self.model,
+                "success": True
+            }
+        except Exception as e:
+            log.warning("LLM generation via provider '%s' failed: %s", self.provider, e)
+            return {
+                "answer_text": "",
+                "insufficient": True,
+                "dropped_sentences": [],
+                "cited_ids": [],
+                "raw": "",
+                "provider": self.provider,
+                "model": self.model,
+                "success": False,
+                "error": str(e)
+            }

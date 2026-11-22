@@ -1,0 +1,153 @@
+{
+  "summary": {
+    "evaluation_dataset": "C:\\Users\\texta\\Downloads\\NLP-CIE3\\data\\evaluation\\eval_dev.json",
+    "num_seeds": 25,
+    "languages_tested": [
+      "english",
+      "hindi",
+      "kannada",
+      "romanized"
+    ],
+    "systems": {
+      "B0": {
+        "system_mode": "B0",
+        "total_evaluations": 100,
+        "recall_at_5": 0.36,
+        "recall_at_5_95_ci": [
+          0.27,
+          0.45024999999999976
+        ],
+        "mrr": 0.26983333333333337,
+        "mrr_95_ci": [
+          0.1941625,
+          0.35068749999999993
+        ],
+        "ndcg_at_5": 0.2922038405654655,
+        "ndcg_at_5_95_ci": [
+          0.2109668235231665,
+          0.3724623860782353
+        ],
+        "citation_correctness": 0.9,
+        "abstention_accuracy": 0.0,
+        "mean_latency_ms": 2.5650811195373535,
+        "by_language": {
+          "english": {
+            "recall_at_5": 0.36,
+            "mrr": 0.31,
+            "ndcg_at_5": 0.3224642524657941
+          },
+          "hindi": {
+            "recall_at_5": 0.4,
+            "mrr": 0.19133333333333333,
+            "ndcg_at_5": 0.243175554898034
+          },
+          "kannada": {
+            "recall_at_5": 0.32,
+            "mrr": 0.268,
+            "ndcg_at_5": 0.28071130243223996
+          },
+          "romanized": {
+            "recall_at_5": 0.36,
+            "mrr": 0.31,
+            "ndcg_at_5": 0.3224642524657941
+          }
+        }
+      },
+      "B1": {
+        "system_mode": "B1",
+        "total_evaluations": 100,
+        "recall_at_5": 0.38,
+        "recall_at_5_95_ci": [
+          0.29,
+          0.48
+        ],
+        "mrr": 0.2395,
+        "mrr_95_ci": [
+          0.17131666666666667,
+          0.3091833333333333
+        ],
+        "ndcg_at_5": 0.2726976239710771,
+        "ndcg_at_5_95_ci": [
+          0.19401062205505903,
+          0.3435106938189543
+        ],
+        "citation_correctness": 1.0,
+        "abstention_accuracy": 0.0,
+        "mean_latency_ms": 35.37235498428345,
+        "by_language": {
+          "english": {
+            "recall_at_5": 0.36,
+            "mrr": 0.16066666666666665,
+            "ndcg_at_5": 0.2075853086735058
+          },
+          "hindi": {
+            "recall_at_5": 0.36,
+            "mrr": 0.2833333333333333,
+            "ndcg_at_5": 0.29517676802675097
+          },
+          "kannada": {
+            "recall_at_5": 0.4,
+            "mrr": 0.28933333333333333,
+            "ndcg_at_5": 0.3209169548035928
+          },
+          "romanized": {
+            "recall_at_5": 0.4,
+            "mrr": 0.22466666666666668,
+            "ndcg_at_5": 0.2671114643804591
+          }
+        }
+      },
+      "P1": {
+        "system_mode": "P1",
+        "total_evaluations": 100,
+        "recall_at_5": 0.38,
+        "recall_at_5_95_ci": [
+          0.29,
+          0.48
+        ],
+        "mrr": 0.2395,
+        "mrr_95_ci": [
+          0.16899166666666668,
+          0.31250833333333333
+        ],
+        "ndcg_at_5": 0.2726976239710771,
+        "ndcg_at_5_95_ci": [
+          0.20092190808625485,
+          0.34780508606524585
+        ],
+        "citation_correctness": 1.0,
+        "abstention_accuracy": 0.0,
+        "mean_latency_ms": 80.32054424285889,
+        "by_language": {
+          "english": {
+            "recall_at_5": 0.36,
+            "mrr": 0.16066666666666665,
+            "ndcg_at_5": 0.2075853086735058
+          },
+          "hindi": {
+            "recall_at_5": 0.36,
+            "mrr": 0.2833333333333333,
+            "ndcg_at_5": 0.29517676802675097
+          },
+          "kannada": {
+            "recall_at_5": 0.4,
+            "mrr": 0.28933333333333333,
+            "ndcg_at_5": 0.3209169548035928
+          },
+          "romanized": {
+            "recall_at_5": 0.4,
+            "mrr": 0.22466666666666668,
+            "ndcg_at_5": 0.2671114643804591
+          }
+        }
+      }
+    },
+    "research_comparison_p1_vs_b1": {
+      "delta_recall_at_5": 0.0,
+      "delta_mrr": 0.0,
+      "delta_ndcg_at_5": 0.0,
+      "hypothesis_supported": true
+    }
+  },
+  "detailed_sample_count": 300
+}

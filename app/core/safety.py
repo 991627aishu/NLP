@@ -105,6 +105,12 @@ MESSAGES: Dict[str, Dict[str, str]] = {
         "kn": ("ಆಯುರ್ಮಿತ್ರವು ಡೋಸ್, ಪ್ರಮಾಣ ಅಥವಾ ಔಷಧಿ ಚೀಟಿಯನ್ನು ನೀಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಡೋಸ್ ವ್ಯಕ್ತಿ, ಔಷಧ ತಯಾರಿಕೆ ಮತ್ತು ಆರೋಗ್ಯ "
                "ಸ್ಥಿತಿಯನ್ನು ಅವಲಂಬಿಸಿರುತ್ತದೆ; ನಿಮ್ಮನ್ನು ಪರೀಕ್ಷಿಸಿದ ಅರ್ಹ ಆಯುರ್ವೇದ ವೈದ್ಯರು (BAMS) ಅಥವಾ ವೈದ್ಯರು ಮಾತ್ರ ಇದನ್ನು "
                "ನಿರ್ಧರಿಸಬೇಕು. ಸಂಬಂಧಿತ ಆಯುರ್ವೇದ ಪರಿಕಲ್ಪನೆಗಳನ್ನು ನಾನು ಸಾಮಾನ್ಯ, ಶೈಕ್ಷಣಿಕ ರೂಪದಲ್ಲಿ ವಿವರಿಸಬಲ್ಲೆ."),
+        "hinglish": ("AyurMitra dosage, quantity ya dawa ka prescription nahi de sakta. Dosage vyakti, aushadhi-nirman "
+                     "aur health condition par depend karti hai, aur ise aapki jaanch karne wale qualified Ayurveda doctor (BAMS) "
+                     "ko hi decide karna chahiye. Main related Ayurvedic concepts ko general, educational roop mein samjha sakta hoon."),
+        "kanglish": ("AyurMitra dose, pramana athava prescription needalu sadhyavilla. Dose vyakthi, aushadha thayarike mathu "
+                     "aarogya sthitiyannu avalambisiruttade; nimmannu pareekshisida qualified Ayurveda doctor (BAMS) mathra idannu "
+                     "nirdharisabeku. Sambandhisida Ayurvedic conceptsannu naanu samanya, educational roopadalli vivarisaballe."),
     },
     "toxic_substance_request": {
         "en": ("AyurMitra will not give guidance on ingesting mercury, arsenic, lead or other toxic substances. Raw heavy "
@@ -113,6 +119,10 @@ MESSAGES: Dict[str, Dict[str, str]] = {
                "विषैली होती हैं। यदि किसी ने इन्हें निगल लिया है, तो तुरंत आपातकालीन सेवा या विष-नियंत्रण केंद्र से संपर्क करें।"),
         "kn": ("ಪಾದರಸ, ಆರ್ಸೆನಿಕ್, ಸೀಸ ಅಥವಾ ಇತರ ವಿಷಕಾರಿ ವಸ್ತುಗಳನ್ನು ಸೇವಿಸುವ ಬಗ್ಗೆ ಆಯುರ್ಮಿತ್ರ ಯಾವುದೇ ಮಾರ್ಗದರ್ಶನ ನೀಡುವುದಿಲ್ಲ. "
                "ಕಚ್ಚಾ ಭಾರ ಲೋಹಗಳು ವಿಷಕಾರಿ. ಯಾರಾದರೂ ಅವನ್ನು ನುಂಗಿದ್ದರೆ, ತಕ್ಷಣ ತುರ್ತು ಸೇವೆ ಅಥವಾ ವಿಷ ನಿಯಂತ್ರಣ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ."),
+        "hinglish": ("AyurMitra parad (mercury), arsenic, lead ya anya toxic padarth khane ke bare mein koi guidance nahi dega. "
+                     "Kacchi heavy metals poisonous hoti hain. Agar kisi ne inhe nigal liya hai, toh turant poison control centre ya emergency services se contact karein."),
+        "kanglish": ("AyurMitra parad (mercury), arsenic, lead athava ithara vishakari vastugalannu sevisuva bagge yavude guidance needuvudilla. "
+                     "Kachha heavy metals vishakari. Yaradaru avannu nungiddare, thakshana emergency hospital athava poison control centre samparkisi."),
     },
     "unsupported_cure_claim": {
         "en": ("AyurMitra cannot say that any herb, food or practice cures this condition. Traditional records describe "
@@ -124,6 +134,12 @@ MESSAGES: Dict[str, Dict[str, str]] = {
         "kn": ("ಯಾವುದೇ ಗಿಡಮೂಲಿಕೆ, ಆಹಾರ ಅಥವಾ ಪದ್ಧತಿ ಈ ಕಾಯಿಲೆಯನ್ನು ಗುಣಪಡಿಸುತ್ತದೆ ಎಂದು ಆಯುರ್ಮಿತ್ರ ಹೇಳಲಾರದು. ಸಾಂಪ್ರದಾಯಿಕ "
                "ದಾಖಲೆಗಳು ಐತಿಹಾಸಿಕ ಬಳಕೆಯನ್ನು ವಿವರಿಸುತ್ತವೆ; ಅವು ಪರಿಣಾಮಕಾರಿತ್ವ ಅಥವಾ ಸುರಕ್ಷತೆಯ ಪುರಾವೆಯಲ್ಲ. ಗಂಭೀರ ಕಾಯಿಲೆಗಳಿಗೆ "
                "ಅರ್ಹ ವೈದ್ಯರಿಂದ ಚಿಕಿತ್ಸೆ ಪಡೆಯಿರಿ."),
+        "hinglish": ("AyurMitra ye daawa nahi kar sakta ki koi herb ya diet is serious bimari ko jad se theek ya cure kar degi. "
+                     "Traditional texts historical upayog batate hain, jo clinical efficacy ya safety ka proof nahi hain. "
+                     "Gambhir bimariyon ke liye qualified doctor se treatment lein. Main Ayurvedic concepts ko educational tareeqe se samjha sakta hoon."),
+        "kanglish": ("AyurMitra yavude herb athava diet ee rogavannu sampoornavagi cure maduthe endu helalardu. "
+                     "Traditional granthagalu aitihasika upayogavannu vivarisuttave; avu clinical proof alla. "
+                     "Gambhira samasyegalige qualified doctor inda chikitse padeyiri. Naanu Ayurvedic conceptsannu educational aagi vivarisaballe."),
     },
     "insufficient_evidence": {
         "en": ("I could not find passages in AyurMitra's sources that address this question, so I won't guess. "
@@ -132,6 +148,10 @@ MESSAGES: Dict[str, Dict[str, str]] = {
                "आयुर्वेदिक अवधारणा के साथ प्रश्न दोबारा पूछें, या योग्य चिकित्सक से परामर्श लें।"),
         "kn": ("ಆಯುರ್ಮಿತ್ರದ ಮೂಲಗಳಲ್ಲಿ ಈ ಪ್ರಶ್ನೆಗೆ ಸಂಬಂಧಿಸಿದ ಭಾಗಗಳು ಸಿಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ನಾನು ಊಹಿಸುವುದಿಲ್ಲ. ನಿರ್ದಿಷ್ಟ "
                "ಆಯುರ್ವೇದ ಪರಿಕಲ್ಪನೆಯೊಂದಿಗೆ ಮತ್ತೆ ಕೇಳಿ, ಅಥವಾ ಅರ್ಹ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ."),
+        "hinglish": ("AyurMitra ke verified sources mein is question se related passages nahi mile, isliye bina evidence ke anuman nahi lagaya jayega. "
+                     "Kisi specific Ayurvedic concept ke sath sawal dobara poochein, ya qualified practitioner se consult karein."),
+        "kanglish": ("AyurMitra da verified moolagalalli ee prashnege sambandhisida passages sigalilla, aadrinda naanu guess maduvudilla. "
+                     "Nirdishta Ayurvedic concept jothege prashneyannu matthe keli, athava qualified doctor annu samparkisi."),
     },
 }
 
@@ -172,7 +192,11 @@ def check_query_safety(query: str) -> Dict[str, Any]:
 
 
 def safety_message(reason: str, lang: str = "en") -> str:
-    lang = lang if lang in ("en", "hi", "kn") else "en"
+    target = (lang or "en").lower().strip()
+    if target not in ("en", "hi", "kn", "hinglish", "kanglish"):
+        target = "en"
     if reason == "emergency_symptom_detected":
-        return EMERGENCY_ADVISORIES.get(lang, EMERGENCY_ADVISORIES["en"])
-    return MESSAGES.get(reason, MESSAGES["insufficient_evidence"]).get(lang, MESSAGES["insufficient_evidence"]["en"])
+        em_key = "hi_roman" if target == "hinglish" else ("kn_roman" if target == "kanglish" else target)
+        return EMERGENCY_ADVISORIES.get(em_key, EMERGENCY_ADVISORIES.get(target, EMERGENCY_ADVISORIES["en"]))
+    msg_dict = MESSAGES.get(reason, MESSAGES["insufficient_evidence"])
+    return msg_dict.get(target, msg_dict.get("en", ""))

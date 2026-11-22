@@ -676,3 +676,102 @@ def test_four_key_ayurvedic_queries_end_to_end():
     assert "Pitta" in [t["canonical_term"] for t in r4["detected_terms"]]
     assert not r4["abstained"]
     assert len(r4["citations"]) > 0
+
+
+def test_target_ayurvedic_rag_queries_regression():
+    """Verify core natural-language and multilingual target queries produce clean definitions with zero promotional leakage."""
+    from app.pipeline.rag_pipeline import AyurMitraPipeline
+    pipe = AyurMitraPipeline()
+
+    targets = [
+        ("What is Ayurveda?", "Ayurveda", ["ancient", "system", "medicine", "health", "balance"]),
+        ("What is Agni?", "Agni", ["vitality", "perception", "fire", "digest"]),
+        ("What are the three doshas?", "Tridosha", ["vata", "pitta", "kapha"]),
+        ("What is the role of Vata?", "Vata", ["movement", "respiration", "nervous", "vata"]),
+        ("पित्त दोष के कार्य क्या हैं?", "Pitta", ["पित्त", "दोष", "अग्नि", "pitta"]),
+        ("ಆಯುರ್ವೇದ ಎಂದರೇನು?", "Ayurveda", ["ಆಯುರ್ವೇದ", "ಆರೋಗ್ಯ", "ayurveda"]),
+        ("Agni digestion alli enu role ide?", "Agni", ["ಅಗ್ನಿ", "ಜೀರ್ಣಕ್ರಿಯೆ", "agni", "digestion"]),
+    ]
+
+    for query, term_hint, expected_keywords in targets:
+        res = pipe.process_query(query, system_mode="P2")
+        ans = res.get("answer", "")
+        citations = res.get("citations", [])
+        retrieved = res.get("retrieved_passages", [])
+
+        # 1. Pipeline must not abstain on core foundational concepts
+        assert not res.get("abstained"), f"Query '{query}' unexpectedly abstained: {res.get('abstention_reason')}"
+
+        # 2. Answer must not leak promotional clinic text, phone numbers, or URLs
+        assert "http://" not in ans and "https://" not in ans and "www." not in ans, f"URL found in answer for '{query}'"
+        assert "varicose veins" not in ans.lower(), f"Unrelated varicose veins treatment text leaked into '{query}'"
+        for promo in ["contact us", "book an appointment", "call today", "dr. sharda"]:
+            assert promo not in ans.lower(), f"Promotional snippet '{promo}' found in '{query}'"
+
+        # 3. Citations must match retrieved chunks
+        retrieved_ids = {p.get("chunk_id") for p in retrieved}
+        for c in citations:
+            assert c.get("chunk_id") in retrieved_ids, f"Citation {c.get('chunk_id')} not in retrieved passages for '{query}'"
+
+        # 4. Answer must contain relevant conceptual content
+        ans_lower = ans.lower()
+        assert any(k.lower() in ans_lower for k in expected_keywords), (
+            f"None of {expected_keywords} found in answer for '{query}'. Answer snippet: {ans[:200]}"
+        )
+
+
+def test_rag_symptom_and_transparency_redesign():
+    """Regression test verifying the RAG-powered Symptom Guidance and Transparency endpoints."""
+    from app.core.symptom_mapper import EducationalSymptomMapper
+    from app.pipeline.rag_pipeline import AyurMitraPipeline
+    pipe = AyurMitraPipeline()
+    mapper = EducationalSymptomMapper(kg=pipe.kg, retriever=pipe.retriever)
+
+    # 1. Non-acute Kannada queries do not falsely abstain
+    r_kn1 = mapper.analyze_symptoms("ತಲೆನೋವು.")
+    assert not r_kn1.get("abstained"), "Kannada headache query falsely abstained"
+    assert "Vata" in r_kn1["primary_conceptual_tendency"]
+    assert "understood" in r_kn1 and "concepts" in r_kn1 and "evidence" in r_kn1
+    assert "graph_connections" in r_kn1 and "limitations" in r_kn1
+    assert len(r_kn1["evidence"]) > 0
+
+    r_kn2 = mapper.analyze_symptoms("ಊಟದ ನಂತರ ಹೊಟ್ಟೆ ಭಾರವಾಗುತ್ತದೆ.")
+    assert not r_kn2.get("abstained"), "Kannada postprandial heaviness query falsely abstained"
+    assert "Kapha" in r_kn2["primary_conceptual_tendency"]
+
+    # 2. English non-acute symptoms return structured 5-part payload
+    r_en = mapper.analyze_symptoms("I have dry skin and stiff joints.")
+    assert not r_en.get("abstained")
+    assert len(r_en["concepts"]) >= 2
+    assert len(r_en["evidence"]) >= 1
+    assert len(r_en["graph_connections"]) >= 1
+    # Evidence chunks must have valid locators and chunk IDs
+    for ev in r_en["evidence"]:
+        assert ev["chunk_id"] and ev["source_id"] and ev["locator"]
+
+    # 3. Ambiguous queries abstain gracefully with educational guidance
+    r_amb = mapper.analyze_symptoms("I feel slightly purple and vibrating today.")
+    assert r_amb.get("abstained")
+    assert "WHO Benchmark" in (r_amb.get("message") or "") or "verified" in (r_amb.get("message") or "").lower()
+
+    # 4. Emergency queries trigger immediate red-flag triage
+    r_emg = mapper.analyze_symptoms("Severe crushing chest pain and sudden shortness of breath")
+    assert r_emg.get("reason") == "emergency_symptom_detected"
+    assert r_emg.get("is_emergency")
+
+    # 5. API Transparency endpoints
+    from api.main import about, research_trace, STATE
+    STATE["pipeline"] = pipe
+    STATE["kg"] = pipe.kg
+    about_data = about()
+    assert len(about_data["sources"]) == 8
+    assert len(about_data["architecture_stages"]) == 11
+    assert len(about_data["safety_cases"]) == 4
+    assert "localStorage" in about_data["privacy"]
+
+    trace_data = research_trace(query="What is Ayurveda?")
+    assert trace_data["ok"]
+    assert len(trace_data["trace_steps"]) == 7
+    assert len(trace_data["retrieved_passages"]) > 0
+
+

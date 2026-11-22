@@ -25,8 +25,16 @@ VOICES = {
     "en": {"female": "en-IN-NeerjaNeural", "male": "en-IN-PrabhatNeural"},
     "hi": {"female": "hi-IN-SwaraNeural", "male": "hi-IN-MadhurNeural"},
     "kn": {"female": "kn-IN-SapnaNeural", "male": "kn-IN-GaganNeural"},
+    "hinglish": {"female": "hi-IN-SwaraNeural", "male": "hi-IN-MadhurNeural"},
+    "kanglish": {"female": "kn-IN-SapnaNeural", "male": "kn-IN-GaganNeural"},
 }
-BROWSER_LANG = {"en": "en-IN", "hi": "hi-IN", "kn": "kn-IN"}
+BROWSER_LANG = {
+    "en": "en-IN",
+    "hi": "hi-IN",
+    "kn": "kn-IN",
+    "hinglish": "hi-IN",
+    "kanglish": "kn-IN",
+}
 
 
 def _have(mod: str) -> bool:
@@ -57,12 +65,15 @@ def _edge_tts_mp3(text: str, voice: str, rate: str = "+0%") -> bytes:
             if chunk["type"] == "audio":
                 buf += chunk["data"]
         return buf
+    async def _runner() -> bytes:
+        return await asyncio.wait_for(run(), timeout=4.0)
+
     try:
-        return asyncio.run(run())
+        return asyncio.run(_runner())
     except RuntimeError:  # already inside an event loop (e.g. FastAPI): run in a fresh loop
         loop = asyncio.new_event_loop()
         try:
-            return loop.run_until_complete(run())
+            return loop.run_until_complete(_runner())
         finally:
             loop.close()
 
@@ -81,19 +92,20 @@ def synthesize(text: str, lang: str = "en", voice: str = "female", clean: bool =
     spoken = clean_for_tts(text, lang, add_disclaimer=add_disclaimer) if clean else text
     chunks = chunk_for_tts(spoken)
     errors = []
+    gtts_lang = "hi" if lang in ("hi", "hinglish") else ("kn" if lang in ("kn", "kanglish") else "en")
     for b in (backends or available_backends()):
         if b == "browser":
             break
         try:
             audio_parts = []
             for c in chunks:
-                vname = VOICES[lang].get(voice, VOICES[lang]["female"]) if b == "edge_tts" else lang
+                vname = VOICES[lang].get(voice, VOICES[lang]["female"]) if b == "edge_tts" else gtts_lang
                 key = hashlib.sha256(f"{b}|{vname}|{c}".encode("utf-8")).hexdigest()
                 path = TTS_CACHE_DIR / f"{key}.mp3"
                 if path.exists():
                     data = path.read_bytes()
                 else:
-                    data = _edge_tts_mp3(c, vname) if b == "edge_tts" else _gtts_mp3(c, lang)
+                    data = _edge_tts_mp3(c, vname) if b == "edge_tts" else _gtts_mp3(c, gtts_lang)
                     if not data:
                         raise RuntimeError("empty audio")
                     TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)

@@ -87,11 +87,17 @@ class HybridRetriever:
                 if t.get("matched_text"):
                     target_keywords.add(t["matched_text"].lower())
 
+            is_definitional = any(q_word in query.lower() for q_word in ["what is", "define", "meaning", "definition", "concept"])
+
             for cid, chunk in chunk_lookup.items():
                 chunk_str = (chunk.get("text", "") + " " + chunk.get("title", "")).lower()
                 matched_count = sum(1 for kw in target_keywords if len(kw) >= 3 and kw in chunk_str)
                 if matched_count > 0:
                     rrf_scores[cid] = rrf_scores.get(cid, 0.0) + (0.05 * matched_count)
+                    # Authoritative definition boost for WHO / NAMASTE standardized compendia
+                    src = str(chunk.get("source_id", "")).lower()
+                    if is_definitional and ("who" in src or "namaste" in src):
+                        rrf_scores[cid] = rrf_scores.get(cid, 0.0) + 0.08
 
         sorted_cids = sorted(rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True)[:top_k]
 

@@ -1,0 +1,41 @@
+=== AYURMITRA LLM GENERATOR & SAFETY POST-CHECK LOG ===
+Timestamp: 2026-10-30
+
+--- 1. Provider Availability Check ---
+Anthropic Provider: {'available': False, 'provider': 'anthropic', 'model': 'claude-sonnet-5-5', 'reason': 'ANTHROPIC_API_KEY not set'}
+Ollama Provider: {'available': True, 'provider': 'ollama', 'model': 'llama3.1:8b', 'reason': 'reachability checked on use'}
+
+--- 2. Citation Post-Check & Safety Gate Tests ---
+Test A (Valid citation):
+  Input: Agni is described in Ayurvedic texts as the bodily fire responsible for digestion and metabolism [WHO_CHUNK_0012].
+  Kept: ['Agni is described in Ayurvedic texts as the bodily fire responsible for digestion and metabolism [WHO_CHUNK_0012].']
+  Dropped: []
+  Insufficient: False
+
+Test B (Uncited hallucination):
+  Input: Agni also cures cardiovascular diseases and lowers blood cholesterol.
+  Kept: []
+  Dropped: [{'sentence': 'Agni also cures cardiovascular diseases and lowers blood cholesterol.', 'why': 'no_citation'}]
+  Insufficient: True
+
+Test C (Fabricated citation):
+  Input: Agni regulates circadian rhythms [FABRICATED_CHUNK_9999].
+  Kept: []
+  Dropped: [{'sentence': 'Agni regulates circadian rhythms [FABRICATED_CHUNK_9999].', 'why': 'unknown_citation', 'cited': ['FABRICATED_CHUNK_9999']}]
+  Insufficient: True
+
+Test D (Dosage and cure claim):
+  Input: Take 500 mg twice daily as it cures acute digestive disorders [WHO_CHUNK_0012].
+  Kept: []
+  Dropped: [{'sentence': 'Take 500 mg twice daily as it cures acute digestive disorders [WHO_CHUNK_0012].', 'why': 'forbidden_language'}]
+  Insufficient: True
+
+Test E (Abstention):
+  Input: INSUFFICIENT_EVIDENCE
+  Insufficient: True
+
+--- 3. Extractive Grounded Generator Fallback ---
+Extractive answer generated:
+  Answer: '**Answer:** Based on curated Ayurvedic literature regarding this topic: Agni refers to the biological fire responsible f'...
+  Citations: [{'chunk_id': 'WHO_CHUNK_0012', 'source_id': 'WHO_Benchmark', 'locator': 'Section 2.1', 'title': 'Reference', 'citation_tag': 'WHO_Benchmark | Section 2.1', 'is_web': False}]
+  Language: None

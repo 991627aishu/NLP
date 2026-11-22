@@ -1,8 +1,15 @@
-// Minimal dependency-free force-directed graph on <canvas> (≤ 300 nodes).
+// Minimal dependency-free force-directed graph on <canvas> (<= 300 nodes).
 (function () {
   const TYPE_COLORS = {
-    Dosha: "#B8860B", Concept: "#4F6F52", WHOTerm: "#2F6F8F", WHOSection: "#7FA3B5", NAMASTETerm: "#6B5B95",
-    Plant: "#3E8E5A", Formulation: "#8A5A44", TherapeuticUse: "#9AA39C", SymptomPhrase: "#34477A",
+    Dosha: "#d97706",        // Warm amber / terracotta
+    Concept: "#1b4332",      // Deep classical forest green
+    WHOTerm: "#2563eb",      // WHO standard blue
+    WHOSection: "#475569",   // Slate gray
+    NAMASTETerm: "#7c3aed",  // Rich violet
+    Plant: "#15803d",        // Emerald botanical green
+    Formulation: "#9f1239",  // Plum / medicinal wine
+    TherapeuticUse: "#0d9488", // Deep cyan / wellness teal
+    SymptomPhrase: "#b45309", // Warm ochre
   };
   window.KG_TYPE_COLORS = TYPE_COLORS;
 
@@ -22,7 +29,7 @@
     setData(nodes, edges, center) {
       const prev = this.byId; this.byId = {};
       this.nodes = nodes.map((n, i) => {
-        const p = prev[n.id]; const a = (i / Math.max(1, nodes.length)) * Math.PI * 2, rad = 40 + 30 * (n.hop || 1);
+        const p = prev[n.id]; const a = (i / Math.max(1, nodes.length)) * Math.PI * 2, rad = 45 + 35 * (n.hop || 1);
         const o = Object.assign({}, n, { x: p ? p.x : Math.cos(a) * rad, y: p ? p.y : Math.sin(a) * rad, vx: 0, vy: 0 });
         if (n.id === center) { o.x = 0; o.y = 0; o.fixed = true; }
         this.byId[n.id] = o; return o;
@@ -42,7 +49,7 @@
       }
       for (const e of this.edges) {
         const s = this.byId[e.source], t = this.byId[e.target]; const dx = t.x - s.x, dy = t.y - s.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
-        const k = (d - 70) * 0.04 * a; s.vx += dx / d * k; s.vy += dy / d * k; t.vx -= dx / d * k; t.vy -= dy / d * k;
+        const k = (d - 75) * 0.04 * a; s.vx += dx / d * k; s.vy += dy / d * k; t.vx -= dx / d * k; t.vy -= dy / d * k;
       }
       for (const n of N) { n.vx -= n.x * 0.004 * a; n.vy -= n.y * 0.004 * a; if (!n.fixed && n !== this.drag) { n.x += n.vx; n.y += n.vy; } n.vx *= 0.6; n.vy *= 0.6; }
       this.alpha *= 0.985;
@@ -53,39 +60,91 @@
     draw() {
       const ctx = this.ctx; if (!this.w) return; ctx.clearRect(0, 0, this.w, this.h);
       const ink = this._css("--ink"), line = this._css("--line"), clay = this._css("--clay"), focus = this._css("--focus");
+      const turmeric = this._css("--turmeric") || "#b37400";
       ctx.lineWidth = 1;
       for (const e of this.edges) {
         const s = this.byId[e.source], t = this.byId[e.target]; const [x1, y1] = this._toScreen(s), [x2, y2] = this._toScreen(t);
         const hl = this.highlight.has(e.source + "|" + e.target) || this.highlight.has(e.target + "|" + e.source);
         const sel = this.selected && (e.source === this.selected.id || e.target === this.selected.id);
-        ctx.strokeStyle = hl ? focus : e.verified ? (sel ? ink : line) : clay; ctx.globalAlpha = hl || sel ? 1 : 0.75;
-        ctx.lineWidth = hl ? 3 : sel ? 1.6 : 1; ctx.setLineDash(e.verified ? [] : [4, 3]);
+        const isAuto = e.review_status === "auto_matched_by_code";
+        const isUnreviewed = !e.verified && !isAuto;
+
+        ctx.strokeStyle = hl ? focus : e.verified ? (sel ? ink : line) : isAuto ? turmeric : clay;
+        ctx.globalAlpha = hl || sel ? 1 : e.verified ? 0.8 : 0.65;
+        ctx.lineWidth = hl ? 3 : sel ? 1.8 : 1.2;
+        ctx.setLineDash(e.verified ? [] : isAuto ? [5, 4] : [2, 3]);
+
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+
+        // Directional arrow towards target
+        const dx = x2 - x1, dy = y2 - y1;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 30) {
+          const targetR = ((t.id === this.center ? 10 : 6) * Math.max(0.7, Math.min(1.4, this.view.k))) + 3;
+          const arrowX = x2 - (dx / dist) * targetR;
+          const arrowY = y2 - (dy / dist) * targetR;
+          const angle = Math.atan2(dy, dx);
+          const arrowSize = Math.max(5, Math.min(8, 5.5 * this.view.k));
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.beginPath();
+          ctx.moveTo(arrowX, arrowY);
+          ctx.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6));
+          ctx.lineTo(arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6));
+          ctx.closePath();
+          ctx.fill();
+        }
       }
       ctx.setLineDash([]); ctx.globalAlpha = 1;
-      const showLabels = this.view.k > 0.7 || this.nodes.length < 60;
+      const showLabels = this.view.k > 0.65 || this.nodes.length < 70;
       for (const n of this.nodes) {
-        const [x, y] = this._toScreen(n); const r = (n.id === this.center ? 9 : 5 + Math.min(4, Math.log2(1 + (n.degree || 1)) / 2)) * Math.max(0.7, Math.min(1.4, this.view.k));
-        ctx.fillStyle = TYPE_COLORS[n.node_type] || "#888"; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-        if (n === this.selected || n === this.hover || this.highlight.has(n.id)) { ctx.strokeStyle = focus; ctx.lineWidth = 2.5; ctx.stroke(); }
-        if (showLabels || n === this.hover || n === this.selected || n.id === this.center) {
-          ctx.fillStyle = ink; ctx.font = (n.id === this.center ? "600 " : "") + "12px " + this._css("--sans");
-          const lab = (n.label_en || n.id).slice(0, 34); ctx.fillText(lab, x + r + 4, y + 4);
+        const [x, y] = this._toScreen(n);
+        const isCenter = n.id === this.center;
+        const r = (isCenter ? 10 : 5 + Math.min(4, Math.log2(1 + (n.degree || 1)) / 2)) * Math.max(0.7, Math.min(1.4, this.view.k));
+
+        // Outer halo on select/hover
+        if (n === this.selected || n === this.hover || this.highlight.has(n.id)) {
+          ctx.fillStyle = focus; ctx.globalAlpha = 0.2;
+          ctx.beginPath(); ctx.arc(x, y, r + 5, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = focus; ctx.lineWidth = 2.5; ctx.stroke();
+        }
+
+        ctx.fillStyle = TYPE_COLORS[n.node_type] || "#6b7280";
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+        // Inner center ring
+        if (isCenter) {
+          ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        }
+
+        if (showLabels || n === this.hover || n === this.selected || isCenter) {
+          ctx.fillStyle = ink;
+          ctx.font = (isCenter ? "600 " : "") + Math.round(12 * Math.max(0.9, Math.min(1.2, this.view.k))) + "px " + this._css("--sans");
+          const lab = (n.label_en || n.id).slice(0, 36);
+          // Label background for legibility
+          const textW = ctx.measureText(lab).width;
+          ctx.fillStyle = this._css("--surface"); ctx.globalAlpha = 0.85;
+          ctx.fillRect(x + r + 3, y - 9, textW + 6, 17);
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = ink;
+          ctx.fillText(lab, x + r + 6, y + 4);
         }
       }
     }
     fit() {
       if (!this.nodes.length) return; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
       for (const n of this.nodes) { x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x); y1 = Math.max(y1, n.y); }
-      const k = Math.min(2, 0.85 * Math.min(this.w / (x1 - x0 + 120), this.h / (y1 - y0 + 60)));
+      const k = Math.min(2.2, 0.82 * Math.min(this.w / (x1 - x0 + 130), this.h / (y1 - y0 + 70)));
       this.view = { k, x: -((x0 + x1) / 2) * k, y: -((y0 + y1) / 2) * k }; this.draw();
     }
-    reset() { this.view = { x: 0, y: 0, k: 1 }; this.selected = null; this.highlight = new Set(); this.draw(); }
+    reset() { this.view = { x: 0, y: 0, k: 1 }; this.selected = null; this.highlight = new Set(); this.fit(); }
+    zoomIn() { this.view.k = Math.min(4, this.view.k * 1.3); this.draw(); }
+    zoomOut() { this.view.k = Math.max(0.2, this.view.k / 1.3); this.draw(); }
     select(id) { this.selected = this.byId[id] || null; this.draw(); }
     highlightPath(nodeIds) {
       this.highlight = new Set(nodeIds); for (let i = 0; i + 1 < nodeIds.length; i++) this.highlight.add(nodeIds[i] + "|" + nodeIds[i + 1]); this.draw();
     }
-    _hit(px, py) { let best = null, bd = 196; for (const n of this.nodes) { const [x, y] = this._toScreen(n); const d = (x - px) ** 2 + (y - py) ** 2; if (d < bd) { bd = d; best = n; } } return best; }
+    _hit(px, py) { let best = null, bd = 225; for (const n of this.nodes) { const [x, y] = this._toScreen(n); const d = (x - px) ** 2 + (y - py) ** 2; if (d < bd) { bd = d; best = n; } } return best; }
     _bind() {
       const c = this.c; let panning = null, moved = false; const pts = new Map();
       c.addEventListener("pointerdown", e => {
@@ -119,7 +178,12 @@
     }
     toPNG() {
       const tmp = document.createElement("canvas"); tmp.width = this.c.width; tmp.height = this.c.height; const t = tmp.getContext("2d");
-      t.fillStyle = this._css("--surface") || "#fff"; t.fillRect(0, 0, tmp.width, tmp.height); t.drawImage(this.c, 0, 0); return tmp.toDataURL("image/png");
+      t.fillStyle = this._css("--surface") || "#fff"; t.fillRect(0, 0, tmp.width, tmp.height); t.drawImage(this.c, 0, 0);
+      // Add watermark brand at bottom-right
+      t.font = "14px " + this._css("--serif");
+      t.fillStyle = this._css("--ink-3") || "#888";
+      t.fillText("AyurMitra Knowledge Graph — " + (this.center || ""), 20, tmp.height - 20);
+      return tmp.toDataURL("image/png");
     }
   }
   window.ForceGraph = ForceGraph;

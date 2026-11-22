@@ -1,0 +1,6 @@
+term_id,canonical_term,sanskrit_deva,kannada_script,category
+TERM_001,Vata,वात,ವಾತ,Dosha
+TERM_002,Pitta,पित्त,ಪಿತ್ತ,Dosha
+TERM_003,Kapha,कफ,ಕಫ,Dosha
+TERM_004,Agni,अग्नि,ಅಗ್ನಿ,Metabolic Principle
+TERM_005,Roga,रोग,ರೋಗ,Pathology

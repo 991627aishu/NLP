@@ -1,0 +1,5 @@
+﻿from app.pipeline.translator import MultilingualTranslator
+
+tr = MultilingualTranslator()
+print("HI ML:", tr.translate_to_english("मशीन लर्निंग क्या है?", source_lang="hi"))
+print("KN ML:", tr.translate_to_english("ಯಂತ್ರ ಕಲಿಕೆ ಎಂದರೇನು?", source_lang="kn"))

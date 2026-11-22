@@ -36,6 +36,45 @@ class KnowledgeGraphV2:
     def __init__(self, path: Path = KG_V2_PKL):
         with open(path, "rb") as f:
             self.graph: nx.DiGraph = pickle.load(f)
+
+        # Synchronize symptom catalog items into in-memory graph
+        try:
+            from app.core.symptom_mapper import CLASSICAL_SYMPTOM_CATALOG
+            for item in CLASSICAL_SYMPTOM_CATALOG:
+                key = item["concept_key"]
+                nid = f"SYMPTOM:{key}"
+                target = f"CONCEPT:{item['dosha']}"
+                if nid not in self.graph:
+                    pats = item.get("patterns", {})
+                    self.graph.add_node(
+                        nid,
+                        node_type="SymptomPhrase",
+                        type="SymptomPhrase",
+                        label_en=(pats.get("en") or [key])[0],
+                        label_hi=(pats.get("hi") or [None])[0],
+                        label_kn=(pats.get("kn") or [None])[0],
+                        label_roman=(pats.get("hi_roman") or [None])[0],
+                        aliases=[p for ps in pats.values() for p in ps],
+                        source_id="AyurMitra_symptom_mapper",
+                        locator=f"app/core/symptom_mapper.py CLASSICAL_SYMPTOM_CATALOG['{key}']",
+                        review_status="project_mapping_unreviewed",
+                        confidence=0.4,
+                        note_en=item.get("notes", {}).get("en")
+                    )
+                if target in self.graph and (nid, target) not in self.graph.edges:
+                    self.graph.add_edge(
+                        nid, target,
+                        relation="may_be_associated_with_dosha",
+                        source_id="AyurMitra_symptom_mapper",
+                        locator=None,
+                        review_status="project_mapping_unreviewed",
+                        confidence=0.4,
+                        claimed_locator=f"{item.get('source_id')} {item.get('locator')}",
+                        claimed_locator_verdict="not verified (audit F4: claimed page does not support the relation)"
+                    )
+        except Exception:
+            pass
+
         self._ug = None
         self._index: Dict[str, List[str]] = {}
         for n, d in self.graph.nodes(data=True):

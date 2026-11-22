@@ -95,8 +95,55 @@ In retrieval configuration P2, the query is expanded with top graph neighbors.
 
 ---
 
-## 6. Recommendations for Human Expert Review
+## 6. Complete Register of All 37 Auto-Matched Relationships (`auto_matched_by_code`)
 
-1. **Native Review:** A qualified Ayurvedic physician (BAMS / MD Ayur) must inspect the 37 `auto_matched_by_code` links to confirm Sanskrit polysemies (e.g. distinguishing `Dhatu` as body tissue vs geological mineral).
+The following 37 edges connect canonical project concepts to specific nodes in the WHO Benchmarks or IMPPAT/NAMASTE datasets via deterministic code/alias matching. Each requires human domain sign-off before being promoted to `verified`.
+
+| # | Source Concept | Relation | Target Authority Node | Source Dataset | Authoritative Locator | Conf. |
+|---|---|---|---|---|---|---|
+| 1 | `CONCEPT:Amalaki` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID002318` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 2319 (`IMPPAT3_PLTID002318`) | 0.8 |
+| 2 | `CONCEPT:Ashwagandha` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID003254` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 3255 (`IMPPAT3_PLTID003254`) | 0.8 |
+| 3 | `CONCEPT:Asthi` | `described_in` | `WHO:ITA-2.2.10` | WHO_9789240064935 | ITA-2.2.10, PDF p.55 (printed p.37) | 0.8 |
+| 4 | `CONCEPT:Asthi` | `described_in` | `WHO:ITA-3.13.1` | WHO_9789240064935 | ITA-3.13.1, PDF p.104 (printed p.86) | 0.8 |
+| 5 | `CONCEPT:Brahmi` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID000393` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 394 (`IMPPAT3_PLTID000393`) | 0.8 |
+| 6 | `CONCEPT:Dhatu` | `described_in` | `WHO:ITA-2.2.1` | WHO_9789240064935 | ITA-2.2.1, PDF p.54 (printed p.36) | 0.8 |
+| 7 | `CONCEPT:Dhatu` | `described_in` | `WHO:ITA-7.2.5.1` | WHO_9789240064935 | ITA-7.2.5.1, PDF p.413 (printed p.395) | 0.8 |
+| 8 | `CONCEPT:Dosha` | `described_in` | `WHO:ITA-2.1.1` | WHO_9789240064935 | ITA-2.1.1, PDF p.51 (printed p.33) | 0.8 |
+| 9 | `CONCEPT:Guggulu` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID000802` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 803 (`IMPPAT3_PLTID000802`) | 0.8 |
+| 10 | `CONCEPT:Haritaki` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID003058` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 3059 (`IMPPAT3_PLTID003058`) | 0.8 |
+| 11 | `CONCEPT:Kapha` | `described_in` | `WHO:ITA-2.1.3.1` | WHO_9789240064935 | ITA-2.1.3.1, PDF p.53 (printed p.35) | 0.8 |
+| 12 | `CONCEPT:Kapha` | `described_in` | `WHO:SEC-2.1.3` | WHO_9789240064935 | section 2.1.3, PDF p.53 (printed p.35) | 0.8 |
+| 13 | `CONCEPT:Kasa` | `described_in` | `WHO:ITA-5.18.1` | WHO_9789240064935 | ITA-5.18.1, PDF p.194 (printed p.176) | 0.8 |
+| 14 | `CONCEPT:Majja` | `described_in` | `WHO:ITA-2.2.16` | WHO_9789240064935 | ITA-2.2.16, PDF p.56 (printed p.38) | 0.8 |
+| 15 | `CONCEPT:Mamsa` | `described_in` | `WHO:ITA-2.2.8` | WHO_9789240064935 | ITA-2.2.8, PDF p.55 (printed p.37) | 0.8 |
+| 16 | `CONCEPT:Neem` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID000388` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 389 (`IMPPAT3_PLTID000388`) | 0.8 |
+| 17 | `CONCEPT:Ojas` | `described_in` | `WHO:ITA-2.2.25` | WHO_9789240064935 | ITA-2.2.25, PDF p.57 (printed p.39) | 0.8 |
+| 18 | `CONCEPT:Panchakarma` | `described_in` | `WHO:ITA-9.2.2` | WHO_9789240064935 | ITA-9.2.2, PDF p.434 (printed p.416) | 0.8 |
+| 19 | `CONCEPT:Pitta` | `described_in` | `WHO:ITA-2.1.2.1` | WHO_9789240064935 | ITA-2.1.2.1, PDF p.52 (printed p.34) | 0.8 |
+| 20 | `CONCEPT:Pitta` | `described_in` | `WHO:SEC-2.1.2` | WHO_9789240064935 | section 2.1.2, PDF p.52 (printed p.34) | 0.8 |
+| 21 | `CONCEPT:Prameha` | `described_in` | `WHO:ITA-5.41.1` | WHO_9789240064935 | ITA-5.41.1, PDF p.235 (printed p.217) | 0.8 |
+| 22 | `CONCEPT:Prana` | `described_in` | `WHO:ITA-2.1.1.2` | WHO_9789240064935 | ITA-2.1.1.2, PDF p.51 (printed p.33) | 0.8 |
+| 23 | `CONCEPT:Rakta` | `described_in` | `WHO:ITA-2.2.5` | WHO_9789240064935 | ITA-2.2.5, PDF p.55 (printed p.37) | 0.8 |
+| 24 | `CONCEPT:Rasa` | `described_in` | `WHO:ITA-2.2.4` | WHO_9789240064935 | ITA-2.2.4, PDF p.55 (printed p.37) | 0.8 |
+| 25 | `CONCEPT:Rasa` | `described_in` | `WHO:ITA-6.2.1.1` | WHO_9789240064935 | ITA-6.2.1.1, PDF p.386 (printed p.368) | 0.8 |
+| 26 | `CONCEPT:Rasa` | `described_in` | `WHO:ITA-8.3.50` | WHO_9789240064935 | ITA-8.3.50, PDF p.428 (printed p.410) | 0.8 |
+| 27 | `CONCEPT:Rasa` | `described_in` | `NAMASTE:SAT-A.132` | NAMASTE_ayu-sat-table-a | ayu-sat-table-a.xlsx row 134 (Code SAT-A.132, t_id 133) | 0.7 |
+| 28 | `CONCEPT:Rasayana` | `described_in` | `WHO:ITA-9.1.35` | WHO_9789240064935 | ITA-9.1.35, PDF p.432 (printed p.414) | 0.8 |
+| 29 | `CONCEPT:Shatavari` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID000359` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 360 (`IMPPAT3_PLTID000359`) | 0.8 |
+| 30 | `CONCEPT:Shwasa` | `described_in` | `WHO:ITA-5.20.1` | WHO_9789240064935 | ITA-5.20.1, PDF p.198 (printed p.180) | 0.8 |
+| 31 | `CONCEPT:Srotas` | `described_in` | `WHO:SEC-2.5` | WHO_9789240064935 | section 2.5, PDF p.59 (printed p.41) | 0.8 |
+| 32 | `CONCEPT:Tridosha` | `described_in` | `WHO:ITA-2.1.2` | WHO_9789240064935 | ITA-2.1.2, PDF p.51 (printed p.33) | 0.8 |
+| 33 | `CONCEPT:Tulsi` | `refers_to_plant` | `PLANT:IMPPAT3_PLTID002171` | API_SingleHerbalFormulations | Plant_Information_IMPPAT.tsv row 2172 (`IMPPAT3_PLTID002171`) | 0.8 |
+| 34 | `CONCEPT:Vata` | `described_in` | `WHO:ITA-2.1.1.1` | WHO_9789240064935 | ITA-2.1.1.1, PDF p.51 (printed p.33) | 0.8 |
+| 35 | `CONCEPT:Vata` | `described_in` | `WHO:ITA-2.1.1.2` | WHO_9789240064935 | ITA-2.1.1.2, PDF p.51 (printed p.33) | 0.8 |
+| 36 | `CONCEPT:Vata` | `described_in` | `WHO:SEC-2.1.1` | WHO_9789240064935 | section 2.1.1, PDF p.51 (printed p.33) | 0.8 |
+| 37 | `CONCEPT:Vata` | `described_in` | `NAMASTE:SAT-A.182` | NAMASTE_ayu-sat-table-a | ayu-sat-table-a.xlsx row 184 (Code SAT-A.182, t_id 183) | 0.7 |
+
+---
+
+## 7. Recommendations for Human Expert Review
+
+1. **Native Review:** A qualified Ayurvedic physician (BAMS / MD Ayur) must inspect the 37 `auto_matched_by_code` links above to confirm Sanskrit polysemies (e.g. distinguishing `Rasa` as taste vs primary body nutrient fluid in rows 24-27).
 2. **Promotion Gate:** An unreviewed edge must NOT be promoted to `verified` until cited against an exact Shloka locator in Charaka Samhita, Sushruta Samhita, or Ashtanga Hridaya.
+
 

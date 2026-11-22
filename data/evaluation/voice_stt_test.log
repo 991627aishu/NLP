@@ -1,0 +1,38 @@
+=== AYURMITRA VOICE SUBSYSTEM AUDIT LOG ===
+Timestamp: 2026-10-30
+
+--- 1. Voice Subsystem Configuration & Status ---
+FFmpeg available: True (C:\ProgramData\chocolatey\bin\ffmpeg.EXE)
+Faster-Whisper importable: False
+Server STT active: False
+Model size configured: small
+Browser STT fallback: client-side (Chrome/Edge)
+
+--- 2. Ayurvedic Terminology Normalization on Speech Transcripts ---
+Raw Speech: 'what is the role of agney in digestion'
+  Normalized: 'what is the role of agney in digestion'
+  Corrections: []
+
+Raw Speech: 'difference between wata and pita dosha'
+  Normalized: 'difference between wata and Pitta dosha'
+  Corrections: [{'from': 'pita', 'to': 'Pitta'}]
+
+Raw Speech: 'benefits of ashwaganda and shatavary'
+  Normalized: 'benefits of Ashwagandha and Shatavari'
+  Corrections: [{'from': 'ashwaganda', 'to': 'Ashwagandha'}, {'from': 'shatavary', 'to': 'Shatavari'}]
+
+Raw Speech: 'excess kapha in chest causes congestion'
+  Normalized: 'excess kapha in chest causes congestion'
+  Corrections: []
+
+--- 3. STT Verification Pipeline (Mock Transcriber Test) ---
+Mock STT transcription:
+  Result text: 'what is agney role in digestion'
+  Confidence: 0.917
+  Needs confirmation: False
+  Corrections applied: []
+
+--- 4. Neural Edge-TTS Synthesis Verification ---
+TTS Backend: auto
+Available Backends: ['edge_tts', 'browser']
+Voices tested: en-IN-NeerjaNeural (EN), hi-IN-SwaraNeural (HI), kn-IN-SapnaNeural (KN)

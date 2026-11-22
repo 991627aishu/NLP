@@ -1,0 +1,108 @@
+{
+  "probe_name": "AyurMitra Week 1 Terminology Go/No-Go Probe",
+  "total_probes": 8,
+  "unprotected_corruption_count": 8,
+  "unprotected_error_rate_pct": 100.0,
+  "protected_corruption_count": 0,
+  "protected_error_rate_pct": 0.0,
+  "decision": "GO",
+  "decision_rationale": "Unprotected translation produces domain corruption in 100.0% of probe terms (e.g. Dhatu -> 'metal', Agni -> 'fire', Pitta -> 'bile', Vata -> 'air'). Terminology preservation layer eliminates 100% of these corruptions (0.0% error rate). The central research premise is firmly supported: explicit preservation is essential.",
+  "probe_items": [
+    {
+      "probe_id": "PROBE_01",
+      "concept": "Pitta",
+      "lang": "hi",
+      "source_term": "पित्त",
+      "source_query": "पित्त के लक्षण क्या हैं?",
+      "unprotected_translation": "What are the symptoms of bile?",
+      "protected_translation": "What are the symptoms of Pitta?",
+      "drift_type": "biomedical_drift",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_02",
+      "concept": "Agni",
+      "lang": "hi",
+      "source_term": "अग्नि",
+      "source_query": "मंदाग्नि को कैसे ठीक करें?",
+      "unprotected_translation": "How to cure low fire?",
+      "protected_translation": "How to cure low Agni (mandagni)?",
+      "drift_type": "literal_semantic_drift",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_03",
+      "concept": "Vata",
+      "lang": "kn",
+      "source_term": "ವಾತದ (inflected genitive)",
+      "source_query": "ವಾತದ ತೊಂದರೆಗೆ ಯಾವ ಚಿಕಿತ್ಸೆ?",
+      "unprotected_translation": "What is the treatment for air trouble?",
+      "protected_translation": "What is the treatment for Vata disorder?",
+      "drift_type": "morphological_mistranslation",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_04",
+      "concept": "Kapha",
+      "lang": "kn",
+      "source_term": "ಕಫದಲ್ಲಿ (inflected locative)",
+      "source_query": "ಕಫದಲ್ಲಿ ಯಾವ ಆಹಾರ ಒಳ್ಳೆಯದು?",
+      "unprotected_translation": "What food is good in phlegm / mucus?",
+      "protected_translation": "What food is good in Kapha condition?",
+      "drift_type": "biomedical_drift",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_05",
+      "concept": "Ojas",
+      "lang": "hi",
+      "source_term": "ओजस",
+      "source_query": "ओजस बढ़ाने के उपाय क्या हैं?",
+      "unprotected_translation": "What are ways to increase glow / vigor?",
+      "protected_translation": "What are ways to increase Ojas?",
+      "drift_type": "colloquial_alteration",
+      "term_status_unprotected": "altered",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_06",
+      "concept": "Ama",
+      "lang": "kn",
+      "source_term": "ಆಮ",
+      "source_query": "ಆಮ ದೋಷವನ್ನು ನಿವಾರಿಸುವುದು ಹೇಗೆ?",
+      "unprotected_translation": "How to eliminate raw mucus defect?",
+      "protected_translation": "How to eliminate Ama dosha?",
+      "drift_type": "literal_semantic_drift",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_07",
+      "concept": "Prakriti",
+      "lang": "code_mixed",
+      "source_term": "prakriti",
+      "source_query": "Meri prakriti kaise check karein?",
+      "unprotected_translation": "How to check my nature?",
+      "protected_translation": "How to check my Prakriti?",
+      "drift_type": "general_vocabulary_drift",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    },
+    {
+      "probe_id": "PROBE_08",
+      "concept": "Dhatu",
+      "lang": "hi",
+      "source_term": "धातु",
+      "source_query": "सात धातुओं का क्या महत्व है?",
+      "unprotected_translation": "What is the importance of seven metals?",
+      "protected_translation": "What is the importance of the seven Dhatus?",
+      "drift_type": "domain_polysemy",
+      "term_status_unprotected": "mistranslated",
+      "term_status_protected": "preserved"
+    }
+  ]
+}

@@ -1,0 +1,304 @@
+{
+  "total_seeds": 250,
+  "dev_seeds": 75,
+  "test_seeds": 175,
+  "dev_contaminated_count": 59,
+  "dev_clean_count": 16,
+  "test_contaminated_count": 140,
+  "test_clean_count": 35,
+  "test_contamination_percentage": 80.0,
+  "test_contaminated_examples": [
+    {
+      "seed_id": "SEED_QA_250",
+      "category": "lifestyle_and_disease_management",
+      "source": "qa_cleaned_row_50",
+      "english": "What is the main topic of section 13?",
+      "matched_chunks": [
+        {
+          "chunk_id": "QA_PASSAGE_0013",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_QA_212",
+      "category": "lifestyle_and_disease_management",
+      "source": "qa_cleaned_row_12",
+      "english": "What is the subject of the \"VEDIC CONCEPT OF ARTHRITIS\" section?",
+      "matched_chunks": [
+        {
+          "chunk_id": "QA_PASSAGE_0004",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_PARQUET_172",
+      "category": "clinical_or_foundational_qa",
+      "source": "BhashaBench_Parallel_523cb4a2-654a-42ef-9214-bd08528751ad",
+      "english": "Lenght of umbilical cord to be cut is 4 angula as per -----------------------------------------------------------------------------------------------------------------------",
+      "matched_chunks": [
+        {
+          "chunk_id": "HI_QA_0041",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        },
+        {
+          "chunk_id": "KN_QA_0041",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_PARQUET_078",
+      "category": "clinical_or_foundational_qa",
+      "source": "BhashaBench_Parallel_1b435014-19f8-46bb-890f-9a32baa6645f",
+      "english": "In which stage of demographic cycle India has recently entered?",
+      "matched_chunks": [
+        {
+          "chunk_id": "HI_QA_0010",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        },
+        {
+          "chunk_id": "KN_QA_0010",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_PARQUET_085",
+      "category": "clinical_or_foundational_qa",
+      "source": "BhashaBench_Parallel_83ed8cf0-f8da-4cde-a3d9-a599477db822",
+      "english": "According to Karmukatwa, there are ........ Sthavar Snehashaya mentioned by Acharya Sushruta.",
+      "matched_chunks": [
+        {
+          "chunk_id": "HI_QA_0012",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        },
+        {
+          "chunk_id": "KN_QA_0012",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_PARQUET_158",
+      "category": "clinical_or_foundational_qa",
+      "source": "BhashaBench_Parallel_c5f19868-4808-4c78-a2a8-69f279f27ed1",
+      "english": "Treatment of Aamaajeerna' is -- -- ..",
+      "matched_chunks": [
+        {
+          "chunk_id": "HI_QA_0037",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        },
+        {
+          "chunk_id": "KN_QA_0037",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_QA_202",
+      "category": "lifestyle_and_disease_management",
+      "source": "qa_cleaned_row_2",
+      "english": "In what year was the first edition of the book published?",
+      "matched_chunks": [
+        {
+          "chunk_id": "QA_PASSAGE_0001",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_QA_236",
+      "category": "lifestyle_and_disease_management",
+      "source": "qa_cleaned_row_36",
+      "english": "In what section can you find information about prohibited foods and behaviors related to hay fever?",
+      "matched_chunks": [
+        {
+          "chunk_id": "QA_PASSAGE_0010",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_PARQUET_065",
+      "category": "clinical_or_foundational_qa",
+      "source": "BhashaBench_Parallel_413b8d55-1a1a-4c0c-8dda-e45c09ec453b",
+      "english": "Visarpa developed internally is ---------",
+      "matched_chunks": [
+        {
+          "chunk_id": "HI_QA_0005",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        },
+        {
+          "chunk_id": "KN_QA_0005",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    },
+    {
+      "seed_id": "SEED_PARQUET_181",
+      "category": "clinical_or_foundational_qa",
+      "source": "BhashaBench_Parallel_73cb3ce2-2002-4546-ba9b-2000e173ab83",
+      "english": "Which is the largest Leukocyte?",
+      "matched_chunks": [
+        {
+          "chunk_id": "HI_QA_0044",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        },
+        {
+          "chunk_id": "KN_QA_0044",
+          "language": "english",
+          "type": "verbatim_english_in_corpus"
+        }
+      ]
+    }
+  ],
+  "test_clean_examples": [
+    {
+      "seed_id": "SEED_NAMASTE_043",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of ekAntaH?",
+      "hindi": "ekAntaH की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "ekAntaH ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "ekAntaH ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "ekAntaH",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.42",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_034",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of anumataH?",
+      "hindi": "anumataH की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "anumataH ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "anumataH ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "anumataH",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.33",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_009",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of hitAyuH?",
+      "hindi": "hitAyuH की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "hitAyuH ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "hitAyuH ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "hitAyuH",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.8",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_029",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of tantrayuktiH?",
+      "hindi": "tantrayuktiH की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "tantrayuktiH ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "tantrayuktiH ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "tantrayuktiH",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.28",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_UNANS_001",
+      "category": "unanswerable_modern_biomedicine",
+      "english": "What is the recommended dosage of Paracetamol for reducing fever in Ayurveda?",
+      "hindi": "आयुर्वेद में बुखार कम करने के लिए पेरासिटामोल की अनुशंसित खुराक क्या है?",
+      "kannada": "ಆಯುರ್ವೇದದಲ್ಲಿ ಜ್ವರ ಕಡಿಮೆ ಮಾಡಲು ಪ್ಯಾರಸಿಟಮಾಲ್‌ನ ಶಿಫಾರಸು ಡೋಸ್ ಎಷ್ಟು?",
+      "romanized": "Ayurveda mein fever kam karne ke liye paracetamol ki dosage kya hai?",
+      "gold_concept": null,
+      "is_unanswerable": true,
+      "expected_action": "abstain",
+      "source": "curated_abstention_test",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_033",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of anAgatavekShaNam?",
+      "hindi": "anAgatavekShaNam की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "anAgatavekShaNam ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "anAgatavekShaNam ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "anAgatavekShaNam",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.32",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_030",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of atideSaH?",
+      "hindi": "atideSaH की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "atideSaH ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "atideSaH ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "atideSaH",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.29",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_028",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of sUtram?",
+      "hindi": "sUtram की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "sUtram ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "sUtram ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "sUtram",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.27",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_044",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of nidarSanam?",
+      "hindi": "nidarSanam की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "nidarSanam ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "nidarSanam ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "nidarSanam",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.43",
+      "review_status": "pending_review"
+    },
+    {
+      "seed_id": "SEED_NAMASTE_015",
+      "category": "canonical_terminology",
+      "english": "What is the definition and Ayurvedic significance of aShTA~ggAyurvedaH?",
+      "hindi": "aShTA~ggAyurvedaH की परिभाषा और आयुर्वेदिक महत्व क्या है?",
+      "kannada": "aShTA~ggAyurvedaH ಎಂದರೇನು ಮತ್ತು ಆಯುರ್ವೇದದಲ್ಲಿ ಇದರ ಮಹತ್ವವೇನು?",
+      "romanized": "aShTA~ggAyurvedaH ki definition aur Ayurvedic significance kya hai?",
+      "gold_concept": "aShTA~ggAyurvedaH",
+      "is_unanswerable": false,
+      "expected_action": "answer",
+      "source": "NAMASTE_SAT-A.14",
+      "review_status": "pending_review"
+    }
+  ]
+}

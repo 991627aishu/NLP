@@ -1,0 +1,126 @@
+{
+  "benchmark_timestamp": "2026-11-21T10:43:05Z",
+  "extractions": [
+    {
+      "file": "classical_principles.txt",
+      "format": "text",
+      "char_count": 259,
+      "page_count": 1,
+      "latency_ms": 3.71,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "clinical_methodology.md",
+      "format": "text",
+      "char_count": 495,
+      "page_count": 1,
+      "latency_ms": 1.87,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "core_glossary.json",
+      "format": "json",
+      "char_count": 374,
+      "page_count": 1,
+      "latency_ms": 1.28,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "canonical_lexicon.csv",
+      "format": "csv",
+      "char_count": 515,
+      "page_count": 1,
+      "latency_ms": 2.58,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "pharmacopoeia.html",
+      "format": "html",
+      "char_count": 246,
+      "page_count": 1,
+      "latency_ms": 2.07,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "qa_cleaned.csv",
+      "format": "csv",
+      "char_count": 16395623,
+      "page_count": 1,
+      "latency_ms": 219.49,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "ayu-sat-table-a.xlsx",
+      "format": "excel",
+      "char_count": 70267,
+      "page_count": 1,
+      "latency_ms": 1383.92,
+      "status": "SUCCESS"
+    },
+    {
+      "file": "9789240064935-eng.pdf",
+      "format": "pdf",
+      "char_count": 1079967,
+      "page_count": 606,
+      "latency_ms": 2987.79,
+      "status": "SUCCESS"
+    }
+  ],
+  "chunking_comparison": {
+    "fixed_size": {
+      "chunk_count": 2,
+      "avg_words": 34.5,
+      "preserves_sections": false
+    },
+    "recursive": {
+      "chunk_count": 1,
+      "avg_words": 59.0,
+      "preserves_sections": false
+    },
+    "semantic_section": {
+      "chunk_count": 3,
+      "avg_words": 17.333333333333332,
+      "preserves_sections": true,
+      "section_headings": [
+        "Rogi Pariksha",
+        "Roga Pariksha",
+        "Chikitsa Sutra"
+      ]
+    }
+  },
+  "pipeline_statistics": {
+    "version": "v3.0-enterprise",
+    "start_time": "2026-11-21T10:43:04Z",
+    "end_time": "2026-11-21T10:43:05Z",
+    "duration_sec": 0.44,
+    "files_discovered": 7,
+    "files_processed": 5,
+    "files_rejected": 2,
+    "rejections": [
+      {
+        "file": "corrupted_binary.pdf",
+        "reason": "Failed to extract PDF corrupted_binary.pdf: Stream has ended unexpectedly"
+      },
+      {
+        "file": "empty_doc.txt",
+        "reason": "Empty document rejected (0 bytes): empty_doc.txt"
+      }
+    ],
+    "total_extracted_chars": 1889,
+    "total_chunks_generated": 7,
+    "duplicates_removed": 0,
+    "valid_chunks_indexed": 7,
+    "languages": {
+      "en": 5
+    },
+    "categories": {},
+    "format_breakdown": {
+      "csv": 1,
+      "txt": 2,
+      "md": 1,
+      "json": 1,
+      "pdf": 1,
+      "html": 1
+    }
+  }
+}

@@ -37,7 +37,17 @@ The measured results are in **`docs/research_findings_v2.md`** and the clean unc
 - On an uncontaminated held-out benchmark (100 seeds × 4 language variants = 400 questions strictly disjoint from indexed corpus chunks), **P1 achieves 56.32% Recall@5 and 0.4423 MRR**, outperforming the hybrid baseline B1 (54.12% Recall@5, 0.3897 MRR) by **+2.20 percentage points** [0.00, +4.67].
 - Safety gate abstention on unanswerable/emergency/toxic queries achieves **100% accuracy** (8/8) across all configurations.
 - Controlled candidate count evaluation confirmed **K = 20 candidates per branch** (+1.15 pts over K=10), reconciling with paper §5.5 (`candidate_count_comparison.json`).
-- The draft paper's ungrounded metrics (P1 72 %, P2 85.4 %, MRR 0.8102, 8,782 chunks, 172 seeds) were derived from an earlier unverified report with 80% test-corpus leakage; see `docs/PAPER_RECONCILIATION.md` and `docs/paper_suggested_edits.md` for complete reconciliation and line-by-line paper corrections.
+- Automated 150-query semantic regression benchmark achieves **98.00% intent routing accuracy**, **98.67% language detection accuracy**, **95.73% Recall@5**, and **100% safety guardrail recall** (`semantic_regression_results.json`).
+
+## Architecture & Production Deliverables
+- `AYURMITRA_MASTER_ARCHITECTURE.md` — Full 16-part production engineering architecture specification.
+- `AYURMITRA_DATA_INGESTION_REPORT.md` — Multi-format enterprise data ingestion benchmark (PDF, DOCX, XLSX, CSV, JSON, HTML).
+- `AYURMITRA_RETRIEVAL_EVALUATION.md` — Comparative evaluation of B0, B1, P1, P2 across 700 runs with bootstrap CIs.
+- `AYURMITRA_MULTILINGUAL_EVALUATION.md` — Cross-lingual language & script fidelity report (EN, HI, KN, Hinglish, Kanglish).
+- `AYURMITRA_SYSTEM_QA_REPORT.md` — Complete system QA report with browser Playwright visual audit and CSS fix proof.
+- `scripts/run_enterprise_ingestion.py` — Reproducible multi-format ingestion runner.
+- `tests/semantic_regression_benchmark.py` — Automated 150-query multi-domain regression harness.
+- `tests/test_mandatory_13.py` — 13 mandatory regression test cases across English, Hindi, and Kannada.
 
 ## Documentation
 - `docs/AUDIT.md` — Phase-0 audit (F1–F27) · `docs/FEATURE_COMPLETENESS.md` — every feature with evidence

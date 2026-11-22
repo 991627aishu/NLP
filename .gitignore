@@ -6,5 +6,14 @@ __pycache__/
 venv/
 node_modules/
 Data/processed/cache/
+data/processed/cache/
 Data/processed/feedback.jsonl
-tests/audio_samples/*.mp3
+data/processed/feedback.jsonl
+data/processed/_*backup*/
+Data/processed/_*backup*/
+scratch/
+*.whl
+*.mp3
+*.sqlite
+*.sqlite3
+*.sqlite-journal

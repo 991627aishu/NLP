@@ -342,6 +342,187 @@ CLASSICAL_SYMPTOM_CATALOG: List[Dict[str, Any]] = [
             "hi_roman": "Phlegm aur mucus accumulation classically Kapha dosha ke increase ko darshata hai.",
             "kn_roman": "Kaphada shekharane classically Avalambaka Kapha doshada hechhalavannu torisuttade."
         }
+    },
+
+    # ── ADDITIONAL COMMON NON-ACUTE SYMPTOMS ──────────────────────────────────
+    {
+        "concept_key": "headache_shirashoola",
+        "dosha": "Vata",
+        "source_id": "WHO_9789240064935",
+        "locator": "ITA-5.6.3 (Morbidity terms)",
+        "patterns": {
+            "en": ["headache", "head ache", "mild headache", "tension headache", "shirashoola", "shiroruk"],
+            "hi": ["सिरदर्द", "सर दर्द", "सिर में दर्द", "शिरःशूल", "शिरोवेदना", "हल्का सिरदर्द"],
+            "kn": ["ತಲೆನೋವು", "ತಲೆ ನೋವು", "ನನಗೆ ತಲೆನೋವು ಇದೆ", "ತಲೆಯ ನೋವು", "ಶಿರಃಶೂಲ", "ತಲೆನೋವು ಇದೆ"],
+            "hi_roman": ["headache", "sirdard", "sir dard", "sir me dard", "shirashoola"],
+            "kn_roman": ["headache", "tale novu", "talenovu", "shirashoola", "tale novu ide"]
+        },
+        "notes": {
+            "en": "Non-acute headache (Shirashoola) is classically associated with Vata imbalance in Shiras (head), or secondary Pitta metabolic heat.",
+            "hi": "सामान्य गैर-आपातकालीन सिरदर्द (शिरःशूल) मुख्य रूप से सिर में वात के प्रकोप अथवा पित्त की उष्णता से संबंधित माना जाता है।",
+            "kn": "ಸಾಮಾನ್ಯ ತಲೆನೋವು (ಶಿರಃಶೂಲ) ಮುಖ್ಯವಾಗಿ ಶಿರಸ್ಸಿನಲ್ಲಿ ವಾತ ದೋಷದ ಪ್ರಕೋಪ ಅಥವಾ ಪಿತ್ತದ ಉಷ್ಣತೆಗೆ ಸಂಬಂಧಿಸಿದೆ ಎಂದು ಪರಿಗಣಿಸಲಾಗುತ್ತದೆ.",
+            "hi_roman": "Non-acute headache (Shirashoola) primarily Shiras me Vata imbalance ya Pitta heat se judaa hota hai.",
+            "kn_roman": "Samanya talenovu (Shirashoola) mukhyavagi Shirasinalli Vata doshada prakopavannu suchisuttade."
+        }
+    },
+    {
+        "concept_key": "postprandial_heaviness",
+        "dosha": "Kapha",
+        "source_id": "WHO_9789240064935",
+        "locator": "page 57",
+        "patterns": {
+            "en": ["tired after eating", "heaviness after eating", "heaviness after food", "sluggish after meal", "heavy stomach after food"],
+            "hi": ["भोजन के बाद भारीपन", "खाना खाने के बाद भारीपन", "खाने के बाद सुस्ती", "भोजनोपरांत आलस्य", "भोजन के बाद थकान"],
+            "kn": ["ಊಟದ ನಂತರ ಹೊಟ್ಟೆ ಭಾರ", "ಊಟದ ನಂತರ ಹೊಟ್ಟೆ ಭಾರವಾಗುತ್ತದೆ", "ಊಟದ ನಂತರ ಸುಸ್ತು", "ಭೋಜನದ ನಂತರ ಜಡತ್ವ", "ಊಟವಾದ ಮೇಲೆ ಹೊಟ್ಟೆ ಭಾರ"],
+            "hi_roman": ["khana khane ke baad heaviness", "bhojan ke baad bharipan", "khana khane ke baad susti", "heavy after food"],
+            "kn_roman": ["oota aadmele hotte heavy", "ootada nantara hotte bhara", "oota admele susthu", "oota aadmele hotte heavy aagutte"]
+        },
+        "notes": {
+            "en": "Post-prandial heaviness and fatigue reflect sluggish metabolic fire (Manda Agni) and elevated Kledaka Kapha in the stomach.",
+            "hi": "भोजन के बाद अत्यधिक भारीपन व सुस्ती मंदाग्नि और आमाशय में क्लेदक कफ के प्रभाव को दर्शाती है।",
+            "kn": "ಊಟದ ನಂತರ ಹೊಟ್ಟೆ ಭಾರ ಮತ್ತು ಆಲಸ್ಯವು ಮಂದಾಗ್ನಿ ಮತ್ತು ಜಠರದಲ್ಲಿ ಕ್ಲೇದಕ ಕಫದ ಹೆಚ್ಚಳದ ಲಕ್ಷಣವಾಗಿದೆ.",
+            "hi_roman": "Post-prandial heaviness Manda Agni aur stomach me Kledaka Kapha ke sanchay ko reflect karta hai.",
+            "kn_roman": "Ootada nantara hotte bhara Manda Agni matte Kledaka Kapha doshada lakshana."
+        }
+    },
+    {
+        "concept_key": "bloating_adhmana",
+        "dosha": "Vata",
+        "source_id": "WHO_9789240064935",
+        "locator": "ITA-5.6.3 (Disorders)",
+        "patterns": {
+            "en": ["bloating", "bloated", "abdominal distension", "gas", "bloated stomach", "adhmana"],
+            "hi": ["पेट फूलना", "आध्मान", "गैस बनना", "पेट में गैस", "अफारा", "पेट का भारीपन"],
+            "kn": ["ಹೊಟ್ಟೆ ಉಬ್ಬರ", "ಆಧ್ಮಾನ", "ಹೊಟ್ಟೆಯಲ್ಲಿ ಗ್ಯಾಸ್", "ಹೊಟ್ಟೆ ಉಬ್ಬುವುದು", "ಹೊಟ್ಟೆಯುಬ್ಬರ"],
+            "hi_roman": ["bloating", "bloated", "pet phoolna", "adhmana", "afara", "gas"],
+            "kn_roman": ["bloating", "bloated", "hotte ubbara", "adhmana", "hotte gas"]
+        },
+        "notes": {
+            "en": "Abdominal distension and bloating (Adhmana) classically indicate upward or obstructed Samana and Apana Vata.",
+            "hi": "पेट फूलना और आध्मान समान एवं अपान वात के अवरोध व असंतुलन का शास्त्रीय संकेत है।",
+            "kn": "ಹೊಟ್ಟೆ ಉಬ್ಬರ (ಆಧ್ಮಾನ) ಸಮಾನ ಮತ್ತು ಅಪಾನ ವಾತದ ಅಸಮತೋಲನವನ್ನು ಸೂಚಿಸುತ್ತದೆ.",
+            "hi_roman": "Abdominal distension aur bloating (Adhmana) Samana aur Apana Vata imbalance ko indicate karta hai.",
+            "kn_roman": "Hotte ubbara (Adhmana) Samana matte Apana Vata doshada asamatolanavannu torisuttade."
+        }
+    },
+    {
+        "concept_key": "sleep_difficulty",
+        "dosha": "Vata",
+        "source_id": "WHO_9789240064935",
+        "locator": "page 48",
+        "patterns": {
+            "en": ["difficulty sleeping", "trouble sleeping", "cannot sleep", "poor sleep", "interrupted sleep"],
+            "hi": ["नींद नहीं आती", "नींद की समस्या", "सोने में परेशानी", "नींद न लगना", "नींद न आना"],
+            "kn": ["ನನಗೆ ನಿದ್ರೆ ಸರಿಯಾಗಿ ಬರುತ್ತಿಲ್ಲ", "ನಿದ್ರೆ ಬರುತ್ತಿಲ್ಲ", "ನಿದ್ರೆ ತೊಂದರೆ", "ನಿದ್ರೆ ಸರಿಯಾಗಿ ಬರ್ತಿಲ್ಲ", "ನಿದ್ರೆ ಬಾರದಿರುವುದು"],
+            "hi_roman": ["neend nahi aati", "neend aane me problem", "so nahi pata", "difficulty sleeping"],
+            "kn_roman": ["nidre sariyagi baradilla", "nidde baradilla", "nidre baralla", "difficulty sleeping"]
+        },
+        "notes": {
+            "en": "Difficulty initiating or maintaining sleep correlates with hyperactive Prana and Vyana Vata disturbing Manas (mind).",
+            "hi": "नींद न आना और मानसिक चंचलता प्राण वात की अधिकता और मन के रजोगुण की वृद्धि से जुड़ी है।",
+            "kn": "ನಿದ್ರೆ ಸರಿಯಾಗಿ ಬಾರದಿರುವುದು ಪ್ರಾಣ ವಾತದ ಅಸಮತೋಲನ ಮತ್ತು ಮನಸ್ಸಿನ ಚಂಚಲತೆಯನ್ನು ಪ್ರತಿಬಿಂಬಿಸುತ್ತದೆ.",
+            "hi_roman": "Difficulty sleeping hyperactive Prana Vata aur restless mind ko reflect karta hai.",
+            "kn_roman": "Nidre sariyagi baradilla Prana Vata doshada asamatolanavannu torisuttade."
+        }
+    },
+    {
+        "concept_key": "stomach_pain_udarashoola",
+        "dosha": "Vata",
+        "source_id": "WHO_9789240064935",
+        "locator": "ITA-5.6.3 (Morbidity terms)",
+        "patterns": {
+            "en": [
+                "stomach pain", "stomach ache", "stomachache", "abdominal pain", "tummy ache",
+                "pain in stomach", "pain in abdomen", "udarashoola", "shoola", "belly pain",
+                "i have stomach pain", "stomach hurts", "pain in belly"
+            ],
+            "hi": [
+                "पेट दर्द", "पेट में दर्द", "पेट का दर्द", "उदरशूल", "शूल", "पेट दुखना",
+                "मुझे पेट में दर्द है", "मुझे पेट में दर्द हो रहा है", "पेट दुख रहा है", "पेट में पीड़ा"
+            ],
+            "kn": [
+                "ಹೊಟ್ಟೆ ನೋವು", "ಹೊಟ್ಟೆನೋವು", "ಹೊಟ್ಟೆಯ ನೋವು", "ಉದರಶೂಲ", "ಶೂಲ",
+                "ನನಗೆ ಹೊಟ್ಟೆ ನೋವು ಇದೆ", "ನನಗೆ ಹೊಟ್ಟೆನೋವು ಇದೆ", "ಹೊಟ್ಟೆ ನೋಯ್ತಾ ಇದೆ"
+            ],
+            "hi_roman": [
+                "stomach pain", "pet dard", "pet me dard", "pet me dard hai", "mujhe pet me dard hai",
+                "pet dukh raha hai", "udarashoola", "shoola", "stomach ache"
+            ],
+            "kn_roman": [
+                "stomach pain", "hotte novu", "hottenovu", "hotteyalli novu", "nanage hotte novu ide",
+                "hotte novu ide", "udarashoola", "shoola", "stomach ache"
+            ]
+        },
+        "notes": {
+            "en": "Abdominal discomfort or pain (Udara-shoola) classically signifies Samana Vata or Apana Vata vitiation impairing peristalsis and digestion, often with secondary Pitta involvement if burning is present.",
+            "hi": "पेट का दर्द (उदरशूल) शास्त्रीय रूप से समान या अपान वात के असंतुलन से जुड़ा है, जो आंतों की गति और पाचन को प्रभावित करता है। जलन होने पर इसमें पित्त का भी अनुबंध माना जाता है।",
+            "kn": "ಹೊಟ್ಟೆ ನೋವು (ಉದರಶೂಲ) ಶಾಸ್ತ್ರೀಯವಾಗಿ ಸಮಾನ ಅಥವಾ ಅಪಾನ ವಾತದ ಅಸಮತೋಲನವನ್ನು ಸೂಚಿಸುತ್ತದೆ, ಉರಿ ಇದ್ದರೆ ಪಿತ್ತದ ಸಂಯೋಗವೂ ಇರುತ್ತದೆ.",
+            "hi_roman": "Pet dard (Udara-shoola) classically Samana ya Apana Vata ke imbalance aur Agni vaishamya se judaa hota hai.",
+            "kn_roman": "Hotte novu (Udara-shoola) classically Samana athava Apana Vata doshada asamatolanavannu suchisuttade."
+        }
+    },
+    {
+        "concept_key": "piles_arshas",
+        "dosha": "Vata",
+        "source_id": "WHO_9789240064935",
+        "locator": "ITA-5.6.3 (Morbidity terms, p.56)",
+        "patterns": {
+            "en": [
+                "piles", "hemorrhoids", "haemorrhoids", "arsha", "arshas",
+                "bleeding piles", "painful piles", "anal piles"
+            ],
+            "hi": [
+                "बवासीर", "अर्श", "अर्शस", "मस्से", "खूनी बवासीर", "बादी बवासीर", "बवासीर का दर्द"
+            ],
+            "kn": [
+                "ಮೂಲವ್ಯಾಧಿ", "ಅರ್ಶಸ್", "ಅರ್ಶ", "ಮೂಲ ರೋಗ", "ಮೂಲವ್ಯಾಧಿಯ ತೊಂದರೆ"
+            ],
+            "hi_roman": [
+                "piles", "bawasir", "arsha", "arshas", "masse", "khooni bawasir"
+            ],
+            "kn_roman": [
+                "piles", "moolavyadhi", "arsha", "arshas", "moola roga"
+            ]
+        },
+        "notes": {
+            "en": "Hemorrhoids (Arshas) in classical Ayurveda are traditionally regarded as a consequence of impaired digestive fire (Mandagni) leading to Apana Vata vitiation and obstruction in Guda (anal canal).",
+            "hi": "अर्श (बवासीर) को आयुर्वेद में मंदाग्नि और अपान वात के वैकृत होने से गुद प्रदेश में उत्पन्न होने वाला विकार माना गया है।",
+            "kn": "ಅರ್ಶಸ್ (ಮೂಲವ್ಯಾಧಿ) ಆಯುರ್ವೇದದಲ್ಲಿ ಮಂದಾಗ್ನಿ ಮತ್ತು ಅಪಾನ ವಾತದ ಅಸಮತೋಲನದಿಂದ ಗುದ ಪ್ರದೇಶದಲ್ಲಿ ಉಂಟಾಗುವ ಶಾಸ್ತ್ರೀಯ ವ್ಯಾಧಿಯಾಗಿದೆ.",
+            "hi_roman": "Hemorrhoids (Arshas) classically Mandagni aur Apana Vata ke imbalance se guda kshetra me manifest hote hain.",
+            "kn_roman": "Arshas (Moolavyadhi) classically Mandagni matte Apana Vata doshada asamatolanavannu suchisuttade."
+        }
+    },
+    {
+        "concept_key": "digestive_discomfort_ajirna",
+        "dosha": "Kapha",
+        "source_id": "NAMASTE_ayu-sat-table-a",
+        "locator": "Code SAT-A.2",
+        "patterns": {
+            "en": [
+                "digestive discomfort", "indigestion", "poor digestion", "digestive trouble",
+                "digestive issue", "digestive problems", "upset stomach", "indigested feeling",
+                "ajirna", "ajeerna"
+            ],
+            "hi": [
+                "पाचन में परेशानी", "पाचन संबंधी समस्या", "अजीर्ण", "अपच", "पेट की खराबी", "बदहजमी"
+            ],
+            "kn": [
+                "ಜೀರ್ಣಕ್ರಿಯೆಯ ತೊಂದರೆ", "ಅಜೀರ್ಣ", "ಹೊಟ್ಟೆಯ ಅಸ್ವಸ್ಥತೆ", "ಜೀರ್ಣವಾಗದಿರುವುದು"
+            ],
+            "hi_roman": [
+                "digestive discomfort", "indigestion", "pachan me pareshani", "badhazmi", "apach", "ajirna"
+            ],
+            "kn_roman": [
+                "digestive discomfort", "ajeerna", "jeernakriyeya tondare", "indigestion"
+            ]
+        },
+        "notes": {
+            "en": "Digestive discomfort and indigestion (Ajirna) in classical Ayurveda reflect Agnimandya (diminished digestive fire), frequently associated with excess Kapha and Ama formation.",
+            "hi": "पाचन में परेशानी और अजीर्ण (अपच) अग्निमांद्य (अग्नि की कमजोरी) और आम दोष के संचय का शास्त्रीय परिचायक है।",
+            "kn": "ಜೀರ್ಣಕ್ರಿಯೆಯ ತೊಂದರೆ ಮತ್ತು ಅಜೀರ್ಣವು ಅಗ್ನಿಮಾಂದ್ಯ (ಜೀರ್ಣಾಗ್ನಿಯ ಕೊರತೆ) ಮತ್ತು ಆಮ ದೋಷದ ಸಂಚಯವನ್ನು ಪ್ರತಿಬಿಂಬಿಸುತ್ತದೆ.",
+            "hi_roman": "Digestive discomfort aur Ajirna classically Agnimandya aur Ama formation se linked hote hain.",
+            "kn_roman": "Digestive discomfort classically Agnimandya matte Ama sanchayavannu suchisuttade."
+        }
     }
 ]
 
@@ -353,8 +534,9 @@ class EducationalSymptomMapper:
     and returns localized responses matching the user's detected language.
     """
 
-    def __init__(self, kg: Optional[AyurKnowledgeGraph] = None):
+    def __init__(self, kg: Optional[AyurKnowledgeGraph] = None, retriever: Optional[Any] = None):
         self.kg = kg or AyurKnowledgeGraph()
+        self.retriever = retriever
 
     def analyze_symptoms(self, text: str, target_lang: str = "auto") -> Dict[str, Any]:
         """
@@ -425,6 +607,7 @@ class EducationalSymptomMapper:
                 alert_msg = EMERGENCY_ADVISORIES.get(lang_key, EMERGENCY_ADVISORIES["en"])
                 return {
                     "abstained": True,
+                    "is_emergency": True,
                     "reason": "emergency_symptom_detected",
                     "detected_language": detected_lang,
                     "target_language": lang_key,
@@ -434,6 +617,7 @@ class EducationalSymptomMapper:
                     "segments": lang_info.get("segments", []),
                     "matched_red_flag": red_flag,
                     "emergency_alert": alert_msg,
+                    "educational_advisory": alert_msg,
                     "message": alert_msg,
                     "mappings": [],
                     "disclaimer": EDUCATIONAL_DISCLAIMER
@@ -494,6 +678,85 @@ class EducationalSymptomMapper:
                         matched_pattern = "मंदाग्नि"
                     elif "sluggish" in text_clean or ("slow" in text_clean and "digest" in text_clean):
                         matched_pattern = "sluggish digestion"
+                elif ckey == "headache_shirashoola":
+                    if "ತಲೆ" in text_clean and "ನೋವು" in text_clean:
+                        matched_pattern = "ತಲೆನೋವು"
+                    elif ("सिर" in text_clean or "सर" in text_clean) and "दर्द" in text_clean:
+                        matched_pattern = "सिरदर्द"
+                    elif "headache" in text_clean or ("head" in text_clean and "ache" in text_clean) or "shirashoola" in text_clean:
+                        matched_pattern = "headache"
+                    elif "tale" in text_clean and "novu" in text_clean:
+                        matched_pattern = "tale novu"
+                    elif "sir" in text_clean and "dard" in text_clean:
+                        matched_pattern = "sirdard"
+                elif ckey == "postprandial_heaviness":
+                    if ("ಊಟ" in text_clean or "ಭೋಜನ" in text_clean) and ("ಭಾರ" in text_clean or "ಸುಸ್ತು" in text_clean or "ಜಡ" in text_clean):
+                        matched_pattern = "ಊಟದ ನಂತರ ಹೊಟ್ಟೆ ಭಾರ"
+                    elif ("भोजन" in text_clean or "खाना" in text_clean) and ("भारीपन" in text_clean or "सुस्ती" in text_clean or "आलस्य" in text_clean or "थकान" in text_clean):
+                        matched_pattern = "भोजन के बाद भारीपन"
+                    elif ("eat" in text_clean or "food" in text_clean or "meal" in text_clean) and ("tired" in text_clean or "heavy" in text_clean or "sluggish" in text_clean or "fatigue" in text_clean):
+                        matched_pattern = "heaviness after eating"
+                    elif ("oota" in text_clean or "ootada" in text_clean) and ("heavy" in text_clean or "bhara" in text_clean or "susthu" in text_clean):
+                        matched_pattern = "oota aadmele hotte heavy"
+                    elif ("khana" in text_clean or "bhojan" in text_clean) and ("heavy" in text_clean or "bharipan" in text_clean or "susti" in text_clean):
+                        matched_pattern = "khana khane ke baad heaviness"
+                elif ckey == "bloating_adhmana":
+                    if "ಹೊಟ್ಟೆ" in text_clean and "ಉಬ್ಬರ" in text_clean:
+                        matched_pattern = "ಹೊಟ್ಟೆ ಉಬ್ಬರ"
+                    elif "पेट" in text_clean and ("फूल" in text_clean or "गैस" in text_clean):
+                        matched_pattern = "पेट फूलना"
+                    elif "bloat" in text_clean or "distension" in text_clean:
+                        matched_pattern = "bloating"
+                    elif "hotte" in text_clean and ("ubbara" in text_clean or "gas" in text_clean):
+                        matched_pattern = "hotte ubbara"
+                    elif "pet" in text_clean and ("phool" in text_clean or "gas" in text_clean):
+                        matched_pattern = "pet phoolna"
+                elif ckey == "sleep_difficulty":
+                    if "ನಿದ್ರೆ" in text_clean and ("ಬರುತ್ತಿಲ್ಲ" in text_clean or "ಬರ್ತಿಲ್ಲ" in text_clean or "ತೊಂದರೆ" in text_clean or "ಕಡಿಮೆ" in text_clean or "ಸಾಕಾಗ" in text_clean):
+                        matched_pattern = "ನನಗೆ ನಿದ್ರೆ ಸರಿಯಾಗಿ ಬರುತ್ತಿಲ್ಲ"
+                    elif "नींद" in text_clean and ("नहीं" in text_clean or "कमी" in text_clean or "परेशानी" in text_clean or "मुश्किल" in text_clean):
+                        matched_pattern = "नींद नहीं आती"
+                    elif "sleep" in text_clean and ("difficult" in text_clean or "trouble" in text_clean or "cannot" in text_clean or "poor" in text_clean or "problem" in text_clean or "hard" in text_clean):
+                        matched_pattern = "difficulty sleeping"
+                    elif ("nidre" in text_clean or "nidde" in text_clean) and ("baradilla" in text_clean or "baralla" in text_clean or "problem" in text_clean):
+                        matched_pattern = "nidre sariyagi baradilla"
+                    elif "neend" in text_clean and ("nahi" in text_clean or "problem" in text_clean or "kam" in text_clean):
+                        matched_pattern = "neend nahi aati"
+                elif ckey == "stomach_pain_udarashoola":
+                    if "ಹೊಟ್ಟೆ" in text_clean and ("ನೋವು" in text_clean or "ನೋಯ್" in text_clean):
+                        matched_pattern = "ಹೊಟ್ಟೆ ನೋವು"
+                    elif "ಉದರ" in text_clean and "ಶೂಲ" in text_clean:
+                        matched_pattern = "ಉದರಶೂಲ"
+                    elif "पेट" in text_clean and ("दर्द" in text_clean or "पीड़ा" in text_clean or "दुख" in text_clean):
+                        matched_pattern = "पेट दर्द"
+                    elif "उदर" in text_clean and "शूल" in text_clean:
+                        matched_pattern = "उदरशूल"
+                    elif ("stomach" in text_clean or "belly" in text_clean or "abdominal" in text_clean or "abdomen" in text_clean or "tummy" in text_clean) and ("pain" in text_clean or "ache" in text_clean or "hurt" in text_clean or "cramp" in text_clean or "discomfort" in text_clean):
+                        matched_pattern = "stomach pain"
+                    elif "udarashoola" in text_clean or "udarashula" in text_clean or "shoola" in text_clean or "shula" in text_clean:
+                        matched_pattern = "udarashoola"
+                    elif "hotte" in text_clean and "novu" in text_clean:
+                        matched_pattern = "hotte novu"
+                    elif "pet" in text_clean and "dard" in text_clean:
+                        matched_pattern = "pet dard"
+                elif ckey == "piles_arshas":
+                    if "ಮೂಲವ್ಯಾಧಿ" in text_clean or "ಅರ್ಶ" in text_clean:
+                        matched_pattern = "ಮೂಲವ್ಯಾಧಿ"
+                    elif "बवासीर" in text_clean or "अर्श" in text_clean or "मस्से" in text_clean:
+                        matched_pattern = "बवासीर"
+                    elif "pile" in text_clean or "hemorrhoid" in text_clean or "haemorrhoid" in text_clean or "arsha" in text_clean:
+                        matched_pattern = "piles"
+                    elif "bawasir" in text_clean or "moolavyadhi" in text_clean:
+                        matched_pattern = "piles"
+                elif ckey == "digestive_discomfort_ajirna":
+                    if "ಅಜೀರ್ಣ" in text_clean or "ಜೀರ್ಣ" in text_clean:
+                        matched_pattern = "ಅಜೀರ್ಣ"
+                    elif "अजीर्ण" in text_clean or "अपच" in text_clean or "बदहजमी" in text_clean or ("पाचन" in text_clean and "परेशानी" in text_clean):
+                        matched_pattern = "पाचन में परेशानी"
+                    elif "digest" in text_clean or "indigestion" in text_clean or "upset" in text_clean or "ajirna" in text_clean or "ajeerna" in text_clean:
+                        matched_pattern = "digestive discomfort"
+                    elif "badhazmi" in text_clean or "apach" in text_clean:
+                        matched_pattern = "digestive discomfort"
 
             if matched_pattern:
                 dosha = item["dosha"]
@@ -513,7 +776,99 @@ class EducationalSymptomMapper:
                     "caution": "Provisional educational correlation; classical literature does not provide algorithmic diagnostic symptom-to-dosha mappings.",
                 })
 
-        # 4. SAFE ABSTENTION ON AMBIGUOUS / UNVERIFIED SYMPTOMS
+        # 4. RAG RETRIEVAL FALLBACK (if exact catalog keyword heuristic found no mapping)
+        if not detected_mappings:
+            # Check whether the query contains any physical sensation / clinical symptom cues
+            symptom_cues = (
+                # English
+                "pain", "ache", "hurt", "cramp", "burn", "stiff", "itch", "dry", "heavy", "tired",
+                "weak", "swell", "cold", "cough", "fever", "breath", "sleep", "sweat", "rash",
+                "stool", "constipat", "digest", "nausea", "vomit", "reflux", "acid", "throat",
+                "gas", "bloat", "appetite", "thirst", "dizz", "headache", "spasm", "shoola", "daha",
+                "pile", "piles", "hemorrhoid", "hemorrhoids", "arsha", "arshas", "discomfort",
+                "hair", "skin", "joint", "fatigue", "exhaust", "indigestion", "trouble", "bleeding",
+                # Hindi
+                "दर्द", "पीड़ा", "जलन", "सूजन", "खांसी", "कफ", "बुखार", "थकान", "कमजोरी", "नींद",
+                "प्यास", "भूख", "पेट", "सिर", "गला", "छाती", "मल", "कब्ज", "अपच", "गैस", "डकार", "भारीपन",
+                "बवासीर", "अर्श", "मस्से", "बाल", "त्वचा", "जोड़", "कमर", "बदहजमी",
+                # Kannada
+                "ನೋವು", "ಉರಿ", "ಊತ", "ಕೆಮ್ಮು", "ಕಫ", "ಜ್ವರ", "ಸುಸ್ತು", "ದಣಿವು", "ನಿದ್ರೆ", "ಬಾಯಾರಿಕೆ",
+                "ಹಸಿವು", "ಹೊಟ್ಟೆ", "ತಲೆ", "ಗಂಟಲು", "ಎದೆ", "ಮಲಬದ್ಧತೆ", "ಅಜೀರ್ಣ", "ಗ್ಯಾಸ್", "ತೇಗು", "ಭಾರ",
+                "ಮೂಲವ್ಯಾಧಿ", "ಅರ್ಶ", "ಕೂದಲು", "ಚರ್ಮ", "ಕೀಲು",
+                # Romanized / code-mixed
+                "dard", "novu", "uri", "jalan", "pet", "hotte", "tale", "sir", "khansi", "kemmu",
+                "susthu", "susti", "neend", "nidre", "bhook", "hasivu", "pyas", "bayarike", "ajeerna", "apach",
+                "bawasir", "moolavyadhi", "arsha", "masse", "jeerna", "pachan"
+            )
+            has_symptom_cue = any(cue in text_clean for cue in symptom_cues)
+
+            if has_symptom_cue:
+                if self.retriever is None:
+                    try:
+                        from app.pipeline.hybrid_retriever import HybridRetriever
+                        self.retriever = HybridRetriever()
+                    except Exception:
+                        self.retriever = None
+
+                rag_candidates = []
+                if self.retriever is not None and text_clean.strip():
+                    try:
+                        # Query classical corpus for educational evidence using user's words
+                        rag_hits = self.retriever.retrieve(text_clean, top_k=5)
+                        for hit in rag_hits:
+                            raw_score = hit.get("rrf_score", 0.0)
+                            chunk_text = (hit.get("text", "") + " " + hit.get("title", "")).lower()
+
+                            vata_cnt = chunk_text.count("vata") + chunk_text.count("vāta")
+                            pitta_cnt = chunk_text.count("pitta")
+                            kapha_cnt = chunk_text.count("kapha")
+                            has_dosha = (vata_cnt + pitta_cnt + kapha_cnt) > 0
+                            has_symptom_term = any(w in chunk_text for w in (
+                                "symptom", "disorder", "morbidity", "humor", "lakshana", "shoola",
+                                "agni", "ama", "prakriti", "dosha", "disease", "pain", "fever",
+                                "hemorrhoid", "arsha", "digest", "sleep", "skin", "joint"
+                            ))
+
+                            # Accept hits with genuine topical overlap or positive RRF fusion score
+                            if raw_score > 0 and (has_dosha or has_symptom_term):
+                                assigned_dosha = "Vata"
+                                if pitta_cnt > vata_cnt and pitta_cnt >= kapha_cnt:
+                                    assigned_dosha = "Pitta"
+                                elif kapha_cnt > vata_cnt and kapha_cnt >= pitta_cnt:
+                                    assigned_dosha = "Kapha"
+
+                                rag_candidates.append({
+                                    "hit": hit,
+                                    "dosha": assigned_dosha,
+                                    "score": raw_score
+                                })
+                    except Exception:
+                        rag_candidates = []
+
+                if rag_candidates:
+                    top_cand = rag_candidates[0]
+                    top_hit = top_cand["hit"]
+                    c_dosha = top_cand["dosha"]
+                    dosha_counts[c_dosha] += 1
+
+                    note_text = f"Retrieved classical passages correlate described sensations with {c_dosha} humor tendencies ({top_hit.get('title', 'Classical literature')})."
+                    if lang_key == "hi":
+                        note_text = f"पुनर्प्राप्त शास्त्रीय उद्धरण के अनुसार वर्णित लक्षण {c_dosha} दोष की शारीरिक प्रवृत्तियों से संबंधित प्रतीत होते हैं।"
+                    elif lang_key == "kn":
+                        note_text = f"ಪುನರ್ಪಡೆದ ಶಾಸ್ತ್ರೀಯ ಉಲ್ಲೇಖಗಳ ಪ್ರಕಾರ ವಿವರಿಸಿದ ಲಕ್ಷಣಗಳು {c_dosha} ದೋಷದ ದೈಹಿಕ ಪ್ರವೃತ್ತಿಗಳಿಗೆ ಸಂಬಂಧಿಸಿವೆ."
+
+                    detected_mappings.append({
+                        "symptom_phrase": text_clean[:60],
+                        "associated_dosha": c_dosha,
+                        "educational_note": note_text,
+                        "source_id": top_hit.get("source_id", "Curated Classical Corpus"),
+                        "locator": top_hit.get("locator", "Section QA"),
+                        "provenance": f"[{top_hit.get('source_id', 'Curated Classical Corpus')}, {top_hit.get('locator', 'Section QA')}]",
+                        "mapping_status": "neural_rag_retrieval",
+                        "caution": "Grounded in retrieved classical corpus passages; classical literature does not provide algorithmic diagnostic predictions.",
+                    })
+
+        # 5. SAFE ABSTENTION ON AMBIGUOUS / UNVERIFIED SYMPTOMS
         if not detected_mappings:
             abstain_msg = ABSTENTION_MESSAGES.get(lang_key, ABSTENTION_MESSAGES["en"])
             return {
@@ -526,7 +881,25 @@ class EducationalSymptomMapper:
                 "code_mix_type": lang_info.get("code_mix_type", "monolingual"),
                 "segments": lang_info.get("segments", []),
                 "message": abstain_msg,
+                "understood": {
+                    "original_text": text,
+                    "detected_language": detected_lang,
+                    "target_language": lang_key,
+                    "script": lang_info.get("script", "latin"),
+                    "is_romanized": is_romanized,
+                    "is_code_mixed": is_code_mixed,
+                    "normalized_description": text_clean,
+                    "extracted_symptoms": [],
+                    "ayurvedic_terms": []
+                },
                 "mappings": [],
+                "concepts": [],
+                "evidence": [],
+                "graph_connections": [],
+                "limitations": [
+                    "Educational reference only: The provided symptom description could not be correlated with catalogued Ayurvedic concepts in WHO Benchmark / NAMASTE.",
+                    "Traditional records disclaimer: Traditional texts describe multi-factorial patterns (Prakriti, Agni, Ama) rather than isolated symptom predictions."
+                ],
                 "disclaimer": EDUCATIONAL_DISCLAIMER
             }
 
@@ -575,6 +948,147 @@ class EducationalSymptomMapper:
                 f"This framework serves lifestyle awareness and is strictly not a clinical diagnosis or treatment."
             )
 
+        # 6. RAG RETRIEVAL: Pull actual supporting passages from the corpus
+        found_terms = []
+        try:
+            from app.core.matcher import TerminologyMatcher
+            matcher = TerminologyMatcher()
+            found_terms = matcher.find_terms(text)
+        except Exception:
+            pass
+
+        retrieval_query_parts = []
+        for m in detected_mappings:
+            retrieval_query_parts.append(m["symptom_phrase"])
+            retrieval_query_parts.append(m["associated_dosha"])
+        for t in found_terms:
+            retrieval_query_parts.append(t["canonical_term"])
+        if not retrieval_query_parts:
+            retrieval_query_parts.append(text_clean)
+
+        norm_desc = " ".join(dict.fromkeys(retrieval_query_parts))
+        retrieval_query = f"{norm_desc} symptoms"
+
+        evidence_passages = []
+        if self.retriever is None:
+            try:
+                from app.pipeline.hybrid_retriever import HybridRetriever
+                self.retriever = HybridRetriever()
+            except Exception:
+                self.retriever = None
+
+        if self.retriever is not None and retrieval_query.strip():
+            raw_hits = self.retriever.retrieve(retrieval_query, top_k=5, detected_terms=found_terms)
+            
+            # Grounded relevance filtering: do NOT pad with irrelevant chunks simply to fill 5 slots
+            relevant_keywords = set()
+            for part in retrieval_query_parts:
+                for w in part.lower().split():
+                    if len(w) >= 3 and w not in ("and", "the", "with", "have", "feel", "after", "before"):
+                        relevant_keywords.add(w)
+
+            filtered_rank = 1
+            for hit in raw_hits:
+                raw_score = hit.get("rrf_score", 0.0)
+                chunk_text = (hit.get("text", "") + " " + hit.get("title", "")).lower()
+                has_term_overlap = any(kw in chunk_text for kw in relevant_keywords) if relevant_keywords else True
+                if not has_term_overlap and raw_score < 0.035:
+                    continue  # Filter out irrelevant filler chunks that lack topical overlap
+
+                norm_score = round(min(1.0, raw_score * 25.0), 3)
+                evidence_passages.append({
+                    "chunk_id": hit.get("chunk_id", ""),
+                    "source_id": hit.get("source_id", "Curated Classical Corpus"),
+                    "title": hit.get("title", ""),
+                    "locator": hit.get("locator", ""),
+                    "text": hit.get("text", ""),
+                    "snippet": hit.get("text", "")[:240].strip().replace("\n", " ") + "...",
+                    "relevance_score": norm_score,
+                    "rank": filtered_rank
+                })
+                filtered_rank += 1
+
+        # 7. KNOWLEDGE GRAPH CONNECTIONS (Traverse v2 DiGraph for grounded concepts)
+        kg_connections = []
+        kg_obj = self.kg
+        if not hasattr(kg_obj, "node_detail"):
+            try:
+                from app.core.kg_v2 import load_kg_v2
+                kg2 = load_kg_v2()
+                if kg2 is not None:
+                    kg_obj = kg2
+            except Exception:
+                pass
+
+        if kg_obj is not None and hasattr(kg_obj, "node_detail"):
+            for m in detected_mappings:
+                dosha_node = f"CONCEPT:{m['associated_dosha']}"
+                try:
+                    det = kg_obj.node_detail(dosha_node)
+                    if det:
+                        for rel in det.get("outgoing", [])[:3]:
+                            kg_connections.append({
+                                "concept": m["associated_dosha"],
+                                "source_node": dosha_node,
+                                "relation": rel.get("relation"),
+                                "target_node": rel.get("target"),
+                                "target_label": rel.get("other", {}).get("label") or rel.get("target"),
+                                "target_type": rel.get("other", {}).get("type", "Concept"),
+                                "review_status": rel.get("review_status", "grounded_by_code_text"),
+                                "direction": "outgoing",
+                                "locator": rel.get("locator", "")
+                            })
+                        for rel in det.get("incoming", [])[:3]:
+                            kg_connections.append({
+                                "concept": m["associated_dosha"],
+                                "source_node": rel.get("source"),
+                                "relation": rel.get("relation"),
+                                "target_node": dosha_node,
+                                "target_label": rel.get("other", {}).get("label") or rel.get("source"),
+                                "target_type": rel.get("other", {}).get("type", "Concept"),
+                                "review_status": rel.get("review_status", "project_mapping_unreviewed"),
+                                "direction": "incoming",
+                                "locator": rel.get("locator", "")
+                            })
+                except Exception:
+                    pass
+
+        understood = {
+            "original_text": text,
+            "detected_language": detected_lang,
+            "target_language": lang_key,
+            "script": lang_info.get("script", "latin"),
+            "is_romanized": is_romanized,
+            "is_code_mixed": is_code_mixed,
+            "normalized_description": norm_desc,
+            "extracted_symptoms": [m["symptom_phrase"] for m in detected_mappings],
+            "ayurvedic_terms": found_terms
+        }
+
+        concepts = []
+        for m in detected_mappings:
+            concepts.append({
+                "concept_name": m["symptom_phrase"],
+                "associated_dosha": m["associated_dosha"],
+                "explanation": m["educational_note"],
+                "source_reference": f"{m['source_id']} ({m['locator']})",
+                "relevance_score": 0.85,
+                "relevance_label": "Textual & Semantic Conceptual Relevance (Non-Diagnostic)",
+                "review_status": "educational_heuristic"
+            })
+
+        limitations = [
+            "Educational reference only: These correlations reflect classical Ayurvedic literature (WHO Benchmark / NAMASTE) and do not constitute medical diagnosis or clinical treatment.",
+            "Multi-factorial constitution: Classical Ayurveda assesses individual Prakriti, Agni (digestive fire), season (Ritucharya), and diet before evaluating physiological tendencies.",
+            "Traditional records disclaimer: Traditional textual associations do not establish modern clinical efficacy or pharmaceutical safety."
+        ]
+
+        exploration_links = {
+            "herbs_query": text_clean,
+            "lifestyle_query": f"What does Ayurveda say about {text_clean}?",
+            "dosha": primary_dosha
+        }
+
         return {
             "abstained": False,
             "reason": None,
@@ -589,5 +1103,11 @@ class EducationalSymptomMapper:
             "primary_dosha_raw": primary_dosha,
             "summary": summary,
             "mappings": detected_mappings,
+            "understood": understood,
+            "concepts": concepts,
+            "evidence": evidence_passages,
+            "graph_connections": kg_connections,
+            "limitations": limitations,
+            "exploration_links": exploration_links,
             "disclaimer": EDUCATIONAL_DISCLAIMER
         }

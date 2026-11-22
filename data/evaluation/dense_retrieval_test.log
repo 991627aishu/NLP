@@ -1,0 +1,66 @@
+=== AYURMITRA DENSE RETRIEVER AUDIT & BENCHMARK LOG ===
+Timestamp: 2026-10-30
+
+--- Test 1: Requested Backend 'sentence_transformers' ---
+Requested: sentence_transformers
+Backend Used: tfidf
+Backend Warning: sentence-transformers not installed — using char-n-gram TF-IDF fallback
+Total Chunks in Index: 2887
+
+--- Test 2: Requested Backend 'tfidf' ---
+Requested: tfidf
+Backend Used: tfidf
+Backend Warning: None
+Doc Matrix Shape: (2887, 25000)
+
+--- Test 3: Retrieval Evaluation (TF-IDF Character N-Gram Backend) ---
+Query (en): What is the role of Agni in digestion?
+  Latency: 60.62 ms
+  Results returned: 5
+    [1] score=0.0000 chunk_id=QA_PASSAGE_0261 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on What is the primary symptom of an increase in Vr Ddhi (digestion)?:'
+    [2] score=0.0000 chunk_id=QA_PASSAGE_0312 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on What are some of the qualities of Agni in its higher form?: Hot, sh'
+    [3] score=0.0000 chunk_id=QA_PASSAGE_0332 source=Ayurveda_Literature_QA
+        snippet: "Ayurvedic Principle on What happens to a person's energy levels after eating?: A person be"
+
+Query (hi): अग्नि पाचन में क्या भूमिका निभाती है?
+  Latency: 60.14 ms
+  Results returned: 5
+    [1] score=0.0000 chunk_id=HI_QA_0080 source=AyurQA_Hindi_Parquet
+        snippet: '[Anatomy, Panchakarma Knowledge] Topic: Anatomy. Q (hi): अग्न्याशय का वजन: ए) 40-50 ग्राम '
+    [2] score=0.0000 chunk_id=HI_QA_0019 source=AyurQA_Hindi_Parquet
+        snippet: '[Shalya Tantra, Yoga & Naturopathy Knowledge] Topic: Shalya Tantra. Q (hi): शिवन कर्म तब न'
+    [3] score=0.0000 chunk_id=HI_QA_0184 source=AyurQA_Hindi_Parquet
+        snippet: '[Kayachikitsa Knowledge] Topic: Kayachikitsa. Q (hi): तीक्ष्ण अग्नि देखा गया... -> A: ए और'
+
+Query (kn): ಅಗ್ನಿ ಜೀರ್ಣಕ್ರಿಯೆಯಲ್ಲಿ ಏನು ಪಾತ್ರ ವಹಿಸುತ್ತದೆ?
+  Latency: 53.61 ms
+  Results returned: 5
+    [1] score=0.0000 chunk_id=KN_QA_0171 source=AyurQA_Kannada_Parquet
+        snippet: '[Panchakarma, Rasashastra Knowledge] Topic: Ayurveda. Q (kn): ರಾಷ್ಟ್ರೀಯ ನಟುರೋಪತಿ ಸಂಸ್ಥೆ ಇದ'
+    [2] score=0.0000 chunk_id=KN_QA_0227 source=AyurQA_Kannada_Parquet
+        snippet: '[Rasa Shastra, Panchakarma Knowledge] Topic: Panchakarma. Q (kn): ವಿಪತ್ತು ಸಂಭವಿಸುವ ಪ್ರಕ್ರಿ'
+    [3] score=0.0000 chunk_id=KN_QA_0009 source=AyurQA_Kannada_Parquet
+        snippet: '[Dravyaguna Vigyan, Forensic Medicine Knowledge] Topic: Forensic Medicine. Q (kn): ಗಂಡಾಶಯದ'
+
+Query (hinglish): Agni digestion mein kya role play karta hai?
+  Latency: 54.01 ms
+  Results returned: 5
+    [1] score=0.0000 chunk_id=QA_PASSAGE_0261 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on What is the primary symptom of an increase in Vr Ddhi (digestion)?:'
+    [2] score=0.0000 chunk_id=QA_PASSAGE_0252 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on When is *Pitta* dominant in the body?: *Pitta* is dominant at midda'
+    [3] score=0.0000 chunk_id=QA_PASSAGE_0312 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on What are some of the qualities of Agni in its higher form?: Hot, sh'
+
+Query (kanglish): Agni digestion alli enu role ide?
+  Latency: 50.58 ms
+  Results returned: 5
+    [1] score=0.0000 chunk_id=QA_PASSAGE_0261 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on What is the primary symptom of an increase in Vr Ddhi (digestion)?:'
+    [2] score=0.0000 chunk_id=QA_PASSAGE_0312 source=Ayurveda_Literature_QA
+        snippet: 'Ayurvedic Principle on What are some of the qualities of Agni in its higher form?: Hot, sh'
+    [3] score=0.0000 chunk_id=QA_PASSAGE_0332 source=Ayurveda_Literature_QA
+        snippet: "Ayurvedic Principle on What happens to a person's energy levels after eating?: A person be"
+

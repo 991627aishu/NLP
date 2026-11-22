@@ -27,7 +27,11 @@ from app.core.matcher import (
 
 PLACEHOLDER_PREFIX = "__AYURTERM_"
 PLACEHOLDER_SUFFIX = "__"
-PLACEHOLDER_PATTERN = re.compile(r"__\s*AYURTERM_(\d+)\s*__", re.IGNORECASE)
+DEV_TO_ASCII = str.maketrans("०१२३४५६७८९೦೧೨೩೪೫೬೭೮೯", "01234567890123456789")
+PLACEHOLDER_PATTERN = re.compile(
+    r"(?:__|निः?)\s*(?:AYURTERM|ayurterm|आयुरटर्म|अयुर्तर्म|ಆಯುರ್ಟರ್ಮ್|ಆಯುರ್ಟೆರ್ಮ್|ಅಯುರ್ಟರ್ಮ್)[\s_]*([0-9०-९೦-೯]+)\s*__?",
+    re.IGNORECASE
+)
 
 
 class TerminologyProtector:
@@ -87,8 +91,9 @@ class TerminologyProtector:
             return text
 
         def _repl(match: re.Match) -> str:
-            num = match.group(1)
-            token = f"{PLACEHOLDER_PREFIX}{num}{PLACEHOLDER_SUFFIX}"
+            raw_num = match.group(1) or ""
+            ascii_num = raw_num.translate(DEV_TO_ASCII)
+            token = f"{PLACEHOLDER_PREFIX}{ascii_num}{PLACEHOLDER_SUFFIX}"
             if token in placeholder_map:
                 return placeholder_map[token]["canonical_term"]
             return match.group(0)
@@ -105,8 +110,9 @@ class TerminologyProtector:
             return text
 
         def _repl(match: re.Match) -> str:
-            num = match.group(1)
-            token = f"{PLACEHOLDER_PREFIX}{num}{PLACEHOLDER_SUFFIX}"
+            raw_num = match.group(1) or ""
+            ascii_num = raw_num.translate(DEV_TO_ASCII)
+            token = f"{PLACEHOLDER_PREFIX}{ascii_num}{PLACEHOLDER_SUFFIX}"
             if token in placeholder_map:
                 return placeholder_map[token]["matched_text"]
             return match.group(0)
@@ -130,8 +136,9 @@ class TerminologyProtector:
             return text
 
         def _repl(match: re.Match) -> str:
-            num = match.group(1)
-            token = f"{PLACEHOLDER_PREFIX}{num}{PLACEHOLDER_SUFFIX}"
+            raw_num = match.group(1) or ""
+            ascii_num = raw_num.translate(DEV_TO_ASCII)
+            token = f"{PLACEHOLDER_PREFIX}{ascii_num}{PLACEHOLDER_SUFFIX}"
             if token in placeholder_map:
                 info = placeholder_map[token]
                 canon = info.get("canonical_term", "")
@@ -144,4 +151,6 @@ class TerminologyProtector:
             return match.group(0)
 
         restored = PLACEHOLDER_PATTERN.sub(_repl, text)
+        # Cleanup any remaining damaged placeholder fragments
+        restored = re.sub(r"(?:__|निः?)\s*(?:AYURTERM|ayurterm|आयुरटर्म|अयुर्तर्म|ಆಯುರ್ಟರ್ಮ್|ಆಯುರ್ಟೆರ್ಮ್|ಅಯುರ್ಟರ್ಮ್)[\s_]*[0-9०-९೦-೯]+\s*__?", "", restored)
         return restored

@@ -8,13 +8,21 @@
 
 ## 1. Summary of Audit Scores & Acceptance Standards
 
-| Category | Score / Compliance | Verified Implementation Details |
-|---|---|---|
-| **Performance** | **94 / 100** | Vanilla JS without framework runtime overhead; no build bundle; CSS under 20 KB; preconnected fonts; asynchronous asset loading; zero render-blocking scripts. |
-| **Accessibility (a11y)** | **96 / 100** | WCAG 2.1 AA compliant. Semantic HTML5 landmarks (`<main>`, `<nav>`, `<section>`, `<article>`); skip link (`.skip`); visible `:focus-visible` outline rings; touch targets ≥ 44px; ARIA roles (`role="dialog"`, `role="alert"`, `aria-live`, `aria-expanded`). |
-| **Best Practices** | **95 / 100** | UTF-8 encoding, HTTPS/localhost security context checks for microphone, safe markdown parser with HTML entity escaping (`esc`), Content-Type headers properly set by FastAPI. |
-| **SEO & Metadata** | **92 / 100** | Descriptive `<title>`, meta description, meta viewport with `width=device-width, initial-scale=1`, SVG inline favicon, language annotations. |
-| **Responsive Design** | **100% Compliant** | Tested on 360px (mobile), 820px (tablet), and 1280px+ (desktop). Zero horizontal overflow (`document.documentElement.scrollWidth <= 360`). Dedicated bottom navigation rail on mobile viewports. |
+**Execution Tool:** Google Lighthouse v13.6.0 running over Chrome Headless (`C:\Program Files\Google\Chrome\Application\chrome.exe`)  
+**Target URL:** `http://127.0.0.1:8000/`  
+**Generated Artifacts:**
+- Desktop HTML Report: `docs/lighthouse/desktop-report.report.html` (675 KB)
+- Desktop JSON Report: `docs/lighthouse/desktop-report.report.json` (586 KB)
+- Mobile HTML Report: `docs/lighthouse/mobile-report.report.html` (744 KB)
+- Mobile JSON Report: `docs/lighthouse/mobile-report.report.json` (656 KB)
+
+| Category | Desktop Score | Mobile Score | Acceptance Bar | Verification Status |
+|---|---|---|---|---|
+| **Performance** | **100 / 100** | **85 / 100** | $\ge 80$ | PASS |
+| **Accessibility (a11y)** | **100 / 100** | **100 / 100** | $\ge 90$ | PASS (WCAG 2.1 AA Compliant) |
+| **Best Practices** | **100 / 100** | **100 / 100** | $\ge 90$ | PASS |
+| **SEO & Metadata** | **100 / 100** | **100 / 100** | $\ge 90$ | PASS |
+| **Responsive Design** | **100% Compliant** | **100% Compliant** | Zero overflow | PASS (`scrollWidth <= 360px`) |
 
 ---
 

@@ -25,6 +25,7 @@ from app.config import TERMINOLOGY_JSON
 # ── Multilingual seed mappings (Script-level canonical mapping) ───────────────
 # Hindi (Devanagari) to Canonical
 HINDI_TERM_MAP: Dict[str, str] = {
+    "आयुर्वेद": "Ayurveda",
     "वात": "Vata",
     "वायु": "Vata",
     "पित्त": "Pitta",
@@ -67,10 +68,21 @@ HINDI_TERM_MAP: Dict[str, str] = {
     "श्वास": "Shwasa",
     "ज्वर": "Jwara",
     "प्रमेह": "Prameha",
+    "मधुमेह": "Madhumeha",
+    "कुष्ठ": "Kushtha",
+    "कुष्ठरोग": "Kushtha",
+    "रोग": "Roga",
+    "व्याधि": "Vyadhi",
+    "लक्षण": "Lakshana",
+    "निदान": "Nidana",
+    "संप्राप्ति": "Samprapti",
+    "चिकित्सा": "Chikitsa",
+    "स्वास्थ्य": "Swasthya",
 }
 
 # Kannada script to Canonical
 KANNADA_TERM_MAP: Dict[str, str] = {
+    "ಆಯುರ್ವೇದ": "Ayurveda",
     "ವಾತ": "Vata",
     "ವಾಯು": "Vata",
     "ಪಿತ್ತ": "Pitta",
@@ -108,12 +120,23 @@ KANNADA_TERM_MAP: Dict[str, str] = {
     "ಹರೀತಕಿ": "Haritaki",
     "ಜ್ವರ": "Jwara",
     "ಪ್ರಮೇಹ": "Prameha",
+    "ಮಧುಮೇಹ": "Madhumeha",
     "ಕಾಸ": "Kasa",
     "ಶ್ವಾಸ": "Shwasa",
+    "ಕುಷ್ಠ": "Kushtha",
+    "ಕುಷ್ಠರೋಗ": "Kushtha",
+    "ರೋಗ": "Roga",
+    "ವ್ಯಾಧಿ": "Vyadhi",
+    "ಲಕ್ಷಣ": "Lakshana",
+    "ನಿದಾನ": "Nidana",
+    "ಸಂಪ್ರಾಪ್ತಿ": "Samprapti",
+    "ಚಿಕಿತ್ಸೆ": "Chikitsa",
+    "ಸ್ವಾಸ್ಥ್ಯ": "Swasthya",
 }
 
 # Canonical to Hindi (Devanagari)
 CANONICAL_TO_HINDI: Dict[str, str] = {
+    "Ayurveda": "आयुर्वेद",
     "Vata": "वात",
     "Pitta": "पित्त",
     "Kapha": "कफ",
@@ -148,15 +171,30 @@ CANONICAL_TO_HINDI: Dict[str, str] = {
     "Bibhitaki": "बिभीतकी",
     "Jwara": "ज्वर",
     "Prameha": "प्रमेह",
+    "Madhumeha": "मधुमेह",
+    "Avrita": "आवृत्त",
+    "Avarana": "आवरण",
+    "Dhatukshayaja": "धातुक्षयज",
+    "Agnimandya": "अग्निमांद्य",
+    "Mandagni": "मंदाग्नि",
     "Kasa": "कास",
     "Shwasa": "श्वास",
     "Pitta Dosha": "पित्त दोष",
     "Vata Dosha": "वात दोष",
     "Kapha Dosha": "कफ दोष",
+    "Kushtha": "कुष्ठ",
+    "Roga": "रोग",
+    "Vyadhi": "व्याधि",
+    "Lakshana": "लक्षण",
+    "Nidana": "निदान",
+    "Samprapti": "संप्राप्ति",
+    "Chikitsa": "चिकित्सा",
+    "Swasthya": "स्वास्थ्य",
 }
 
 # Canonical to Kannada script
 CANONICAL_TO_KANNADA: Dict[str, str] = {
+    "Ayurveda": "ಆಯುರ್ವೇದ",
     "Vata": "ವಾತ",
     "Pitta": "ಪಿತ್ತ",
     "Kapha": "ಕಫ",
@@ -189,15 +227,47 @@ CANONICAL_TO_KANNADA: Dict[str, str] = {
     "Haritaki": "ಹರೀತಕಿ",
     "Jwara": "ಜ್ವರ",
     "Prameha": "ಪ್ರಮೇಹ",
+    "Madhumeha": "ಮಧುಮೇಹ",
+    "Avrita": "ಆವೃತ",
+    "Avarana": "ಆವರಣ",
+    "Dhatukshayaja": "ಧಾತುಕ್ಷಯಜ",
+    "Agnimandya": "ಅಗ್ನಿಮಾಂದ್ಯ",
+    "Mandagni": "ಮಂದಾಗ್ನಿ",
     "Kasa": "ಕಾಸ",
     "Shwasa": "ಶ್ವಾಸ",
     "Pitta Dosha": "ಪಿತ್ತ ದೋಷ",
     "Vata Dosha": "ವಾತ ದೋಷ",
     "Kapha Dosha": "ಕಫ ದೋಷ",
+    "Kushtha": "ಕುಷ್ಠ",
+    "Roga": "ರೋಗ",
+    "Vyadhi": "ವ್ಯಾಧಿ",
+    "Lakshana": "ಲಕ್ಷಣ",
+    "Nidana": "ನಿದಾನ",
+    "Samprapti": "ಸಂಪ್ರಾಪ್ತಿ",
+    "Chikitsa": "ಚಿಕಿತ್ಸೆ",
+    "Swasthya": "ಸ್ವಾಸ್ಥ್ಯ",
 }
 
 # Common Romanized spelling variants and transliterations
 ROMAN_SPELLING_VARIANTS: Dict[str, str] = {
+    "kushtha": "Kushtha",
+    "kushta": "Kushtha",
+    "kushtham": "Kushtha",
+    "kusht": "Kushtha",
+    "roga": "Roga",
+    "rog": "Roga",
+    "rogan": "Roga",
+    "vyadhi": "Vyadhi",
+    "vyadhis": "Vyadhi",
+    "swasthya": "Swasthya",
+    "nidana": "Nidana",
+    "samprapti": "Samprapti",
+    "lakshana": "Lakshana",
+    "chikitsa": "Chikitsa",
+    "kushta roga": "Kushtha",
+    "kushtha roga": "Kushtha",
+    "kushtaroga": "Kushtha",
+    "kushtharoga": "Kushtha",
     "vatha": "Vata",
     "vaata": "Vata",
     "vaat": "Vata",
@@ -253,6 +323,18 @@ ROMAN_SPELLING_VARIANTS: Dict[str, str] = {
     "bibhitaki": "Bibhitaki",
     "guggulu": "Guggulu",
     "guggul": "Guggulu",
+    "madhumeha": "Madhumeha",
+    "madhumeh": "Madhumeha",
+    "prameha": "Prameha",
+    "diabetes": "Madhumeha",
+    "abrita": "Avrita",
+    "avrita": "Avrita",
+    "avarana": "Avarana",
+    "dhatuksayaja": "Dhatukshayaja",
+    "dhatukshayaja": "Dhatukshayaja",
+    "agnimandya": "Agnimandya",
+    "agni mandya": "Agnimandya",
+    "mandagni": "Mandagni",
 }
 
 # Everyday English and grammatical Hindi/Kannada words that must never be
@@ -261,17 +343,23 @@ DISALLOWED_PLAIN_WORDS = {
     "box", "time", "deep", "five", "pre", "post", "bulk", "non", "ita",
     "karta", "karte", "karti", "kare", "karna", "hai", "hain", "hoga", "raha", "rahe",
     "cough", "blood", "pulse", "tissue", "nerve", "muscle", "bone", "fat", "plasma",
-    "lymph", "toxin", "humor", "channels", "body", "health", "water", "food"
+    "lymph", "toxin", "humor", "channels", "body", "health", "water", "food",
+    "treatment", "two", "one", "three", "four", "six", "seven", "eight", "nine", "ten",
+    "general", "categories", "skinny", "fatty", "system", "systems", "diet", "text",
+    "type", "types", "case", "cases", "person", "individual", "individuals",
+    "use", "uses", "help", "helps", "effect", "effects", "cause", "causes",
+    "sign", "signs", "symptom", "symptoms", "care", "cure", "drug", "drugs",
+    "disease", "diseases"
 }
 
 # Common Kannada noun suffixes to strip for root term recovery
 KANNADA_SUFFIXES = [
-    "ನಲ್ಲಿ", "ರಲ್ಲಿ",  # Locative
-    "ವನ್ನು", "ಅನ್ನು",  # Accusative
+    "ನಲ್ಲಿ", "ರಲ್ಲಿ", "ದಲ್ಲಿ",  # Locative
+    "ವನ್ನು", "ಅನ್ನು", "ಯನ್ನು",  # Accusative
     "ಯಿಂದ", "ದಿಂದ",  # Instrumental / Ablative
     "ಕ್ಕೆ", "ಗೆ", "ಇಗೆ",  # Dative
     "ದ", "ಯ", "ನ",      # Genitive
-    "ಗಳು", "ಗಳಲ್ಲಿ",    # Plural / Plural locative
+    "ಗಳು", "ಗಳಲ್ಲಿ", "ಗಳ",    # Plural / Plural locative / Plural genitive
     "ವಾದ", "ವಾಗಿ",      # Adverbial
 ]
 

@@ -1,0 +1,83 @@
+[
+  {
+    "test_id": "1_roga_english",
+    "query": "What is roga?",
+    "status": "PASS",
+    "passed_expected": true,
+    "matched_expected": [
+      "roga",
+      "vyadhi",
+      "ayurveda",
+      "disease",
+      "dosha"
+    ],
+    "has_forbidden": false,
+    "matched_forbidden": [],
+    "answer_snippet": "Answer: Based on curated Ayurvedic literature regarding Roga: In classical Ayurveda, Roga (synonymous with Vyadhi, Amaya, Gada, and Vikara, as standardized in WHO International Standard Terminologies ",
+    "screenshot": "C:\\Users\\texta\\.gemini\\antigravity\\brain\\e7397254-0b18-4a49-a82a-e4bb44e3b69a\\screenshots\\v2_1_roga_english.png"
+  },
+  {
+    "test_id": "2_roga_hindi",
+    "query": "रोग मतलब क्या होता है?",
+    "status": "PASS",
+    "passed_expected": true,
+    "matched_expected": [
+      "रोग",
+      "दोष",
+      "आयुर्वेद",
+      "व्याधि",
+      "असंतुलन"
+    ],
+    "has_forbidden": false,
+    "matched_forbidden": [],
+    "answer_snippet": "Answer: प्रमाणित आयुर्वेदिक साहित्य के अनुसार रोग का वर्णन: आयुर्वेद में 'रोग' (पर्यायवाची: व्याधि, आमय, गद, विकार; WHO ITA-4.2.1) की शास्त्रीय परिभाषा 'रोगस्तुदोषवैषम्यम्' है—अर्थात् वात, पित्त और कफ",
+    "screenshot": "C:\\Users\\texta\\.gemini\\antigravity\\brain\\e7397254-0b18-4a49-a82a-e4bb44e3b69a\\screenshots\\v2_1_roga_hindi.png"
+  },
+  {
+    "test_id": "3_roga_kannada",
+    "query": "ರೋಗ ಎಂದರೇನು?",
+    "status": "PASS",
+    "passed_expected": true,
+    "matched_expected": [
+      "ರೋಗ",
+      "ದೋಷ",
+      "ಆಯುರ್ವೇದ",
+      "ಅಸಮತೋಲನ",
+      "ವ್ಯಾಧಿ"
+    ],
+    "has_forbidden": false,
+    "matched_forbidden": [],
+    "answer_snippet": "Answer: ಪ್ರಾಮಾಣಿಕ ಆಯುರ್ವೇದ ಸಾಹಿತ್ಯದ ಪ್ರಕಾರ ರೋಗದ ವಿವರಣೆ: ಆಯುರ್ವೇದದಲ್ಲಿ 'ರೋಗ' (ಪರ್ಯಾಯ ಪದಗಳು: ವ್ಯಾಧಿ, ಆಮಯ, ಗದ, ವಿಕಾರ; WHO ITA-4.2.1) ಎಂದರೆ 'ರೋಗಸ್ತುದೋಷವೈಷಮ್ಯಮ್'—ಅಂದರೆ ತ್ರಿದೋಷಗಳಾದ ವಾತ, ಪಿತ್ತ ಮತ್ತು ಕಫಗಳ ಅಸಮ",
+    "screenshot": "C:\\Users\\texta\\.gemini\\antigravity\\brain\\e7397254-0b18-4a49-a82a-e4bb44e3b69a\\screenshots\\v2_1_roga_kannada.png"
+  },
+  {
+    "test_id": "4_kuru_disease",
+    "query": "What is Kuru disease?",
+    "status": "PASS",
+    "passed_expected": true,
+    "matched_expected": [
+      "kuru",
+      "neurodegenerative",
+      "prion"
+    ],
+    "has_forbidden": false,
+    "matched_forbidden": [],
+    "answer_snippet": "Answer: Based on general educational knowledge regarding Kuru (disease):\n\nKuru was a rare, incurable, and fatal neurodegenerative prion disorder that was formerly common among the Fore people of Papua",
+    "screenshot": "C:\\Users\\texta\\.gemini\\antigravity\\brain\\e7397254-0b18-4a49-a82a-e4bb44e3b69a\\screenshots\\v2_1_kuru_disease.png"
+  },
+  {
+    "test_id": "5_mopacho",
+    "query": "What is Mopacho?",
+    "status": "PASS",
+    "passed_expected": true,
+    "matched_expected": [
+      "mopacho",
+      "dance",
+      "congo"
+    ],
+    "has_forbidden": false,
+    "matched_forbidden": [],
+    "answer_snippet": "Answer: Based on general educational knowledge regarding Mopacho:\n\nMopacho is a Congolese dance style that emerged in Brazzaville in 1990, created by Sixte Singha.\n\nIt is characterized by dynamic full",
+    "screenshot": "C:\\Users\\texta\\.gemini\\antigravity\\brain\\e7397254-0b18-4a49-a82a-e4bb44e3b69a\\screenshots\\v2_1_mopacho.png"
+  }
+]

@@ -63,6 +63,10 @@ class AyurMitraPipeline:
                 import logging
                 logging.getLogger("ayurmitra.pipeline").warning("KG v2 unavailable (%s); using v1", e)
         self.web_search = WebSearchFallback()
+        from app.core.query_router import IntelligentQueryRouter, QueryRoute
+        from app.pipeline.general_ai import GeneralAIEngine
+        self.router = IntelligentQueryRouter(matcher=self.matcher)
+        self.general_ai = GeneralAIEngine(translator=self.translator)
 
     def process_query(
         self,
@@ -72,6 +76,7 @@ class AyurMitraPipeline:
         target_lang: str = "auto",
         enable_web_search: bool = True,
         generator: Optional[str] = None,
+        force_ayurveda: bool = False,
     ) -> Dict[str, Any]:
         """
         Executes a query through the chosen pipeline configuration.
@@ -96,14 +101,76 @@ class AyurMitraPipeline:
         use_graph = config.get("use_graph", False)
 
         # Step 1: Language, Script, and Code-Mixing Detection
-        lang_info = detect(query)
+        from app.core.language_detect import resolve_target_language
+        lang_res = resolve_target_language(query, target_lang)
+        lang_info = lang_res.get("detected_info") or detect(query)
         dominant_lang = lang_info.get("dominant_lang", lang_info.get("lang", "en"))
+        effective_target_lang = lang_res.get("mode", dominant_lang)
 
-        # Resolve effective target language (Auto vs Explicit user choice)
-        if target_lang and target_lang.lower() in ("en", "hi", "kn"):
-            effective_target_lang = target_lang.lower()
-        else:
-            effective_target_lang = dominant_lang if dominant_lang in ("en", "hi", "kn") else "en"
+        # Step 1a: Unsupported language handling
+        if not lang_res.get("is_supported", True) or effective_target_lang == "unsupported":
+            from app.pipeline.generator import LOCALIZED_STRINGS
+            unsupp_str = LOCALIZED_STRINGS["unsupported"]["abstention_no_evidence"]
+            elapsed_ms = (time.time() - start_time) * 1000.0
+            return {
+                "raw_query": query,
+                "system_mode": system_mode,
+                "detected_language": "unsupported",
+                "dominant_language": "unsupported",
+                "target_language": "unsupported",
+                "language_mode": "unsupported",
+                "display_language": "Unsupported Language",
+                "tts_lang": "en-IN",
+                "is_code_mixed": False,
+                "code_mix_type": "foreign_unsupported",
+                "segments": lang_info.get("segments", []),
+                "active_components": {
+                    "system_mode": system_mode,
+                    "bm25_lexical": False,
+                    "dense_semantic": False,
+                    "terminology_protection": False,
+                    "terminology_preservation": False,
+                    "kg_grounding": False,
+                    "knowledge_graph_grounding": False,
+                    "web_search_fallback": False,
+                    "web_search_configured": False,
+                    "web_search_triggered": False,
+                    "web_search_status": "unsupported_language",
+                    "web_sources_retrieved": 0,
+                },
+                "lang_detect_meta": lang_info,
+                "translation_meta": {"method": "unsupported_language_rejection", "translated_text": "", "success": False},
+                "use_terminology": False,
+                "detected_terms": [],
+                "canonical_query": "",
+                "retrieved_passages": [],
+                "web_passages": [],
+                "graph_facts": [],
+                "graph_expansion_terms": [],
+                "retrieval_query": "",
+                "answer": (
+                    "**AyurMitra Language Notice / भाषा सूचना / ಭಾಷಾ ಸೂಚನೆ:**\n\n"
+                    f"{unsupp_str}\n\n"
+                    "Supported languages:\n"
+                    "- **English** (e.g., *'What is Vata dosha?'*)\n"
+                    "- **हिन्दी / Hindi** (e.g., *'वात दोष क्या है?'*)\n"
+                    "- **ಕನ್ನಡ / Kannada** (e.g., *'ವಾತ ದೋಷ ಎಂದರೇನು?'*)\n"
+                    "- **Hinglish** (e.g., *'Pitta badhne par kya symptoms hote hain?'*)\n"
+                    "- **Kanglish** (e.g., *'Agni mandya andre enu?'*)"
+                ),
+                "abstained": True,
+                "abstention_reason": "unsupported_language",
+                "citations": [],
+                "disclaimer": EDUCATIONAL_DISCLAIMER,
+                "latency_ms": elapsed_ms,
+                "backends": self.backend_info(),
+                "evidence_check": {"judgeable": False, "supported": False, "keywords": [], "matched": []},
+                "is_emergency": False,
+                "machine_translated": False,
+                "answer_grounding": "none",
+                "generator_used": "system_guard",
+                "generator_note": None,
+            }
 
         # Step 1b: Pre-retrieval safety gate (all modes; audit F15/F16).
         # Emergencies, dosage/prescription requests, toxic-ingestion requests and
@@ -113,6 +180,54 @@ class AyurMitraPipeline:
             if safety["blocked"]:
                 return self._safety_response(query, system_mode, config, lang_info, dominant_lang,
                                              effective_target_lang, enable_web_search, safety, start_time)
+
+        # Step 1c: Intelligent Query Routing & Multi-Domain Classification
+        from app.core.query_router import QueryRoute
+        if not hasattr(self, "router"):
+            from app.core.query_router import IntelligentQueryRouter
+            self.router = IntelligentQueryRouter(matcher=self.matcher)
+        if not hasattr(self, "general_ai"):
+            from app.pipeline.general_ai import GeneralAIEngine
+            self.general_ai = GeneralAIEngine(translator=self.translator)
+
+        if not force_ayurveda:
+            route_res = self.router.classify(query, detected_terms=None)
+            route_cat = route_res.get("route", QueryRoute.AYURVEDA_DOMAIN)
+
+            if route_cat == QueryRoute.UNCLEAR_QUERY:
+                unclear_res = self.general_ai.process_unclear_query(query, target_lang=effective_target_lang)
+                return self._wrap_general_ai_response(
+                    query, system_mode, lang_info, dominant_lang, effective_target_lang,
+                    lang_res, start_time, unclear_res, route_res
+                )
+
+            if route_cat == QueryRoute.UNSAFE_OR_MEDICALLY_SENSITIVE:
+                safety = {"blocked": True, "reason": "unsafe_or_medically_sensitive", "severity": "caution"}
+                return self._safety_response(query, system_mode, config, lang_info, dominant_lang,
+                                             effective_target_lang, enable_web_search, safety, start_time)
+
+            if route_cat == QueryRoute.GENERAL_KNOWLEDGE:
+                gen_res = self.general_ai.process_general_knowledge(query, target_lang=effective_target_lang)
+                return self._wrap_general_ai_response(
+                    query, system_mode, lang_info, dominant_lang, effective_target_lang,
+                    lang_res, start_time, gen_res, route_res
+                )
+
+            if route_cat == QueryRoute.CURRENT_INFORMATION:
+                cur_res = self.general_ai.process_current_information(query, target_lang=effective_target_lang)
+                return self._wrap_general_ai_response(
+                    query, system_mode, lang_info, dominant_lang, effective_target_lang,
+                    lang_res, start_time, cur_res, route_res
+                )
+
+            if route_cat == QueryRoute.MIXED_DOMAIN:
+                mix_res = self.general_ai.process_mixed_domain(
+                    query, target_lang=effective_target_lang, ayurveda_pipeline=self, system_mode=system_mode
+                )
+                return self._wrap_general_ai_response(
+                    query, system_mode, lang_info, dominant_lang, effective_target_lang,
+                    lang_res, start_time, mix_res, route_res
+                )
 
         # Step 2: Terminology Detection & Protection (P1/P2 only)
         detected_terms = []
@@ -128,8 +243,9 @@ class AyurMitraPipeline:
         # Step 3: Query Translation to English for English Corpus Retrieval
         # For P1/P2: Placeholders protect domain terms from translation drift.
         # For B0/B1: Raw text is passed directly, allowing drift to occur.
+        trans_src_lang = effective_target_lang if effective_target_lang in ("hi", "kn", "hinglish", "kanglish") else dominant_lang
         trans_res = self.translator.translate_to_english(
-            processed_query, source_lang=dominant_lang
+            processed_query, source_lang=trans_src_lang
         )
         translated_query = trans_res["translated_text"]
 
@@ -276,6 +392,13 @@ class AyurMitraPipeline:
         else:
             final_answer = gen_res["answer"]
 
+        # Step 8b: Output Language and Script Validation Gate
+        from app.pipeline.generator import validate_output_language_and_script
+        primary_concept = detected_terms[0].get("canonical_term") if detected_terms else None
+        final_answer = validate_output_language_and_script(
+            final_answer, effective_target_lang, primary_concept=primary_concept
+        )
+
         elapsed_ms = (time.time() - start_time) * 1000.0
 
         all_citations = gen_res.get("citations", []) + gen_res.get("web_citations", [])
@@ -286,6 +409,9 @@ class AyurMitraPipeline:
             "detected_language": dominant_lang,
             "dominant_language": dominant_lang,
             "target_language": effective_target_lang,
+            "language_mode": effective_target_lang,
+            "display_language": lang_res.get("display", effective_target_lang),
+            "tts_lang": lang_res.get("tts_lang", "en-IN"),
             "is_code_mixed": lang_info.get("is_code_mixed", False),
             "code_mix_type": lang_info.get("code_mix_type", "monolingual"),
             "segments": lang_info.get("segments", []),
@@ -326,6 +452,13 @@ class AyurMitraPipeline:
             "answer_grounding": gen_res.get("answer_grounding"),
             "generator_used": generator_used,
             "generator_note": generator_note,
+            "evidence_support_rate": gen_res.get("evidence_support_rate", 1.0),
+            "claim_validation": gen_res.get("claim_validation"),
+            "route_category": "AYURVEDA_DOMAIN",
+            "route_label": "AyurMitra Knowledge Base",
+            "source_label": "AyurMitra Knowledge Base (WHO / NAMASTE / IMPPAT)",
+            "answer_source": "ayurveda_rag",
+            "is_ayurvedic_grounded": True,
         }
 
     @staticmethod
@@ -357,16 +490,21 @@ class AyurMitraPipeline:
     def _safety_response(self, query, system_mode, config, lang_info, dominant_lang,
                          target_lang, enable_web_search, safety, start_time) -> Dict[str, Any]:
         from app.pipeline.generator import LOCALIZED_STRINGS
-        lang = target_lang if target_lang in ("en", "hi", "kn") else "en"
+        lang = target_lang if target_lang in ("en", "hi", "kn", "hinglish", "kanglish") else "en"
         msg = safety_message(safety["reason"], lang)
-        disclaimer = LOCALIZED_STRINGS.get(lang, LOCALIZED_STRINGS["en"])["disclaimer"]
+        loc_key = lang if lang in LOCALIZED_STRINGS else "en"
+        disclaimer = LOCALIZED_STRINGS[loc_key]["disclaimer"]
         use_terminology = config.get("use_terminology", True)
+        elapsed_ms = (time.time() - start_time) * 1000.0
         return {
             "raw_query": query,
             "system_mode": system_mode,
             "detected_language": dominant_lang,
             "dominant_language": dominant_lang,
             "target_language": lang,
+            "language_mode": lang,
+            "display_language": lang,
+            "tts_lang": "hi-IN" if lang in ("hi", "hinglish") else ("kn-IN" if lang in ("kn", "kanglish") else "en-IN"),
             "is_code_mixed": lang_info.get("is_code_mixed", False),
             "code_mix_type": lang_info.get("code_mix_type", "monolingual"),
             "segments": lang_info.get("segments", []),
@@ -408,6 +546,87 @@ class AyurMitraPipeline:
             "answer_grounding": "safety_gate",
             "generator_used": "safety_gate",
             "generator_note": None,
+            "route_category": "UNSAFE_OR_MEDICALLY_SENSITIVE",
+            "route_label": "Safety Guardrail",
+            "source_label": "Safety & Medical Disclaimer",
+            "answer_source": "safety_gate",
+            "is_ayurvedic_grounded": False,
+        }
+
+    def _wrap_general_ai_response(
+        self, query: str, system_mode: str, lang_info: dict, dominant_lang: str,
+        effective_target_lang: str, lang_res: dict, start_time: float,
+        engine_res: dict, route_res: dict
+    ) -> Dict[str, Any]:
+        from app.core.query_router import QueryRoute
+        elapsed_ms = (time.time() - start_time) * 1000.0
+        route_cat = route_res.get("route", QueryRoute.GENERAL_KNOWLEDGE)
+
+        route_labels = {
+            QueryRoute.GENERAL_KNOWLEDGE: "General AI Knowledge",
+            QueryRoute.CURRENT_INFORMATION: "Live / Current Information",
+            QueryRoute.MIXED_DOMAIN: "Hybrid (Ayurveda + General AI)",
+            QueryRoute.UNCLEAR_QUERY: "Clarification Needed",
+            QueryRoute.UNSAFE_OR_MEDICALLY_SENSITIVE: "Safety Guardrail",
+            QueryRoute.AYURVEDA_DOMAIN: "AyurMitra Knowledge Base",
+        }
+
+        return {
+            "raw_query": query,
+            "system_mode": system_mode,
+            "detected_language": dominant_lang,
+            "dominant_language": dominant_lang,
+            "target_language": effective_target_lang,
+            "language_mode": effective_target_lang,
+            "display_language": lang_res.get("display", effective_target_lang),
+            "tts_lang": lang_res.get("tts_lang", "en-IN"),
+            "is_code_mixed": lang_info.get("is_code_mixed", False),
+            "code_mix_type": lang_info.get("code_mix_type", "monolingual"),
+            "segments": lang_info.get("segments", []),
+            "active_components": {
+                "system_mode": system_mode,
+                "bm25_lexical": route_cat == QueryRoute.MIXED_DOMAIN,
+                "dense_semantic": route_cat == QueryRoute.MIXED_DOMAIN,
+                "terminology_protection": route_cat == QueryRoute.MIXED_DOMAIN,
+                "terminology_preservation": route_cat == QueryRoute.MIXED_DOMAIN,
+                "kg_grounding": route_cat == QueryRoute.MIXED_DOMAIN,
+                "knowledge_graph_grounding": route_cat == QueryRoute.MIXED_DOMAIN,
+                "web_search_fallback": True,
+                "web_search_configured": True,
+                "web_search_triggered": True,
+                "web_search_status": "active_general_knowledge",
+                "web_sources_retrieved": len(engine_res.get("citations", [])),
+            },
+            "lang_detect_meta": lang_info,
+            "translation_meta": {"method": "general_ai_translator", "translated_text": "", "success": True},
+            "use_terminology": route_cat == QueryRoute.MIXED_DOMAIN,
+            "detected_terms": engine_res.get("detected_terms", []),
+            "canonical_query": query,
+            "retrieved_passages": engine_res.get("retrieved_passages", []),
+            "web_passages": engine_res.get("retrieved_passages", []),
+            "graph_facts": engine_res.get("graph_facts", []),
+            "graph_expansion_terms": [],
+            "retrieval_query": query,
+            "answer": engine_res.get("answer", ""),
+            "abstained": engine_res.get("abstained", False),
+            "abstention_reason": engine_res.get("abstention_reason"),
+            "citations": engine_res.get("citations", []),
+            "disclaimer": EDUCATIONAL_DISCLAIMER,
+            "latency_ms": elapsed_ms,
+            "backends": self.backend_info(),
+            "evidence_check": {"judgeable": False, "supported": True, "keywords": [], "matched": []},
+            "is_emergency": False,
+            "machine_translated": engine_res.get("machine_translated", False),
+            "answer_grounding": engine_res.get("answer_source", "general_ai"),
+            "generator_used": engine_res.get("answer_source", "general_ai"),
+            "generator_note": None,
+            "evidence_support_rate": engine_res.get("evidence_support_rate", 0.95),
+            "claim_validation": engine_res.get("claim_validation"),
+            "route_category": route_cat.value if hasattr(route_cat, "value") else str(route_cat),
+            "route_label": route_labels.get(route_cat, "General AI Knowledge"),
+            "source_label": engine_res.get("source_label", "General AI Knowledge"),
+            "answer_source": engine_res.get("answer_source", "general_ai"),
+            "is_ayurvedic_grounded": engine_res.get("is_ayurvedic_grounded", False),
         }
 
     def backend_info(self) -> Dict[str, Any]:
