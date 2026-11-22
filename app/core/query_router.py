@@ -50,8 +50,8 @@ UNSAFE_RULES = [
 MIXED_DOMAIN_PATTERNS = [
     re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(ayurved\w*|traditional\s+medic\w*)\b.*\b(modern|allopath\w*|western|scientific|biomedic\w*)\b", re.IGNORECASE),
     re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(modern|allopath\w*|western|scientific|biomedic\w*)\b.*\b(ayurved\w*|traditional\s+medic\w*)\b", re.IGNORECASE),
-    re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(traditional|ayurved\w*|agni|vata|pitta|kapha)\b.*\b(biological|metabolism|modern|science|scientific|allopath\w*)\b", re.IGNORECASE),
-    re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(biological|metabolism|modern|science|scientific|allopath\w*)\b.*\b(traditional|ayurved\w*|agni|vata|pitta|kapha)\b", re.IGNORECASE),
+    re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(traditional|ayurved\w*|agni|vata|pitta|kapha|jwara)\b.*(with|and|versus|vs\.?).*\b(biological|metabolism|modern|science|scientific|allopath\w*|fever)\b", re.IGNORECASE),
+    re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(biological|metabolism|modern|science|scientific|allopath\w*|fever)\b.*(with|and|versus|vs\.?).*\b(traditional|ayurved\w*|agni|vata|pitta|kapha|jwara)\b", re.IGNORECASE),
     re.compile(r"\b(ai|artificial intelligence|nlp|machine learning|deep learning|data science|comput\w*|ontology|ontologies)\b.*\b(preserve|preservation|traditional|ayurved\w*|sanskrit)\b", re.IGNORECASE),
     re.compile(r"\b(how can|how does)\b.*\b(ai|nlp|technology|informatics)\b.*\b(ayurved\w*|traditional\s+medic\w*|herbal)\b", re.IGNORECASE),
     re.compile(r"\b(ayurved\w*|traditional\s+medic\w*)\b.*\b(modern\s+medicine|modern\s+terminology|snomed|icd-11|scientific\s+validation|modern\s+science|clinical\s+trials)\b", re.IGNORECASE),
@@ -140,6 +140,7 @@ GENERAL_DOMAIN_KEYWORDS = {
     "modern biology", "biology", "modern medicine", "modern science", "pharmacology",
     "pharmacological", "biomedical", "biomedicine", "allopathy", "allopathic",
     "pathology", "physiology", "bile", "wellness", "vitality", "diabetes", "metabolism",
+    "fever", "pyrexia",
     # Biology & Ecology
     "dna", "rna", "genetics", "cellular", "mitochondria", "evolution", "ecosystem",
     "biodiversity", "species", "biome", "food chain",
@@ -152,6 +153,7 @@ GENERAL_DOMAIN_KEYWORDS = {
     "rest api", "apis", "database", "sql", "nosql", "normalization", "operating system",
     "cybersecurity", "encryption", "compiler", "data science", "python decorators",
     "react", "javascript", "docker", "kubernetes", "binary search", "recursion",
+    "python", "rag", "retrieval augmented generation", "retrieval-augmented generation",
     # History, Geography & Education
     "indian education", "education system", "nep 2020", "indian independence",
     "world war", "civilization", "geography", "continents", "tectonic plates",
@@ -272,9 +274,11 @@ class IntelligentQueryRouter:
             if g in q_lower and g not in general_matches:
                 general_matches.append(g)
 
-        # If user queried general medical terms (like 'diabetes') without classical keywords, prevent matcher false positive
+        # If user queried general medical terms (like 'diabetes', 'fever') without classical keywords, prevent matcher false positive
         if "diabetes" in q_lower and not any(k in q_lower for k in ("madhumeh", "prameh", "ayurved")):
             ayur_matches = [m for m in ayur_matches if m != "Madhumeha"]
+        if "fever" in q_lower and not any(k in q_lower for k in ("jwar", "jvar", "ayurved", "charak", "sushrut")):
+            ayur_matches = [m for m in ayur_matches if m != "Jwara"]
 
         # Multi-factor scoring
         score_ayur = min(1.0, len(ayur_matches) * 0.45)

@@ -142,7 +142,8 @@ def _clean_passage_sentence(text: str) -> str:
     cleaned = re.sub(r"\bAyurvedic Principle:\s*", "", cleaned)
     cleaned = re.sub(r"qa_cleaned\.csv_rows_\S+", "", cleaned)
     cleaned = re.sub(r"Ayurvedic Principle on [^?]{0,300}\?:\s*", "", cleaned)  # QA-chunk question prefix
-    cleaned = re.sub(r"Q\s*\([a-z]{2}\):[^->\n]+->\s*A:[^\n.]*", "", cleaned)
+    cleaned = re.sub(r"Q\s*\([a-z]{2}\):\s*", "", cleaned)
+    cleaned = re.sub(r"\s*->\s*A:\s*", ": ", cleaned)
     cleaned = re.sub(r"\[EN:\s*[^\]]+\]", "", cleaned)
     # Phase 2: strip WHO-table boilerplate (column headers / running page headers)
     cleaned = re.sub(r"Term ID English term Description Sanskrit term in IAST\*? Sanskrit term", " ", cleaned)
@@ -380,6 +381,19 @@ class EvidenceGroundedGenerator:
         else:
             direct_answer = loc_str["abstention_no_evidence"]
             answer_grounding = "none"
+            return {
+                "answer": direct_answer,
+                "abstained": True,
+                "reason": "insufficient_evidence",
+                "citations": [],
+                "web_citations": [],
+                "disclaimer": disclaimer,
+                "target_lang": lang,
+                "machine_translated": False,
+                "answer_grounding": "none",
+                "evidence_support_rate": 0.0,
+                "claim_validation": {"support_ratio": 0.0, "claims": []},
+            }
 
         # 2. Explanation synthesis strictly grounded in supporting passages
         explanation_parts = []

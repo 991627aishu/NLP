@@ -54,11 +54,16 @@ HI_PATTERNS = [
 
 KN_PATTERNS = [
     r"^\s*ಆಯುರ್ವೇದದಲ್ಲಿ\s+(.+?)\s+ಎಂದರೇನು\s*\??$",
+    r"^\s*ಆಯುರ್ವೇದದಲ್ಲಿ\s+(.+?)\s+ಎಂದರೆ\s*\??$",
     r"^\s*ಆಯುರ್ವೇದದಲ್ಲಿ\s+(.+?)\s+ಅರ್ಥವೇನು\s*\??$",
     r"^\s*(.+?)\s+ಎಂದರೇನು\s*\??$",
+    r"^\s*(.+?)\s+ಎಂದರೆ\s*\??$",
+    r"^\s*(.+?)\s+ಅಂದರೇನು\s*\??$",
+    r"^\s*(.+?)\s+ಅಂದರೆ\s*\??$",
     r"^\s*(.+?)\s+ಅರ್ಥವೇನು\s*\??$",
     r"^\s*(.+?)\s+ಬಗ್ಗೆ\s+ತಿಳಿಸಿ\s*\??$",
     r"^\s*(.+?)\s+ಲಕ್ಷಣಗಳು\s+ಯಾವುವು\s*\??$",
+    r"^\s*(.+?)\s+ಏನು\s*\??$",
 ]
 
 HINGLISH_PATTERNS = [
@@ -240,6 +245,43 @@ SEMANTIC_ENTITY_CATALOG: Dict[str, Dict[str, Any]] = {
         "kannada_synonyms": ["ನ್ಯೂಟನ್ ಚಲನೆಯ ನಿಯಮಗಳು", "ನ್ಯೂಟನ್ ನಿಯಮಗಳು"],
         "definition_short": "Three fundamental physical laws that describe the relationship between the motion of an object and the forces acting on it.",
         "wikipedia_target": "Newton's_laws_of_motion",
+    },
+    "jwara": {
+        "canonical_name": "Jwara",
+        "category": "AYURVEDIC_PATHOLOGY",
+        "ayurvedic_concept": True,
+        "general_concept": True,
+        "english_equivalent": "Fever / Jwara",
+        "synonyms": ["jwara", "jvara", "jwara in ayurveda", "fever in ayurveda", "jwar", "jwaram"],
+        "hindi_synonyms": ["ज्वर", "आयुर्वेद में ज्वर"],
+        "kannada_synonyms": ["ಜ್ವರ", "ಆಯುರ್ವೇದದಲ್ಲಿ ಜ್ವರ"],
+        "definition_short": "In classical Ayurveda, Jwara (Fever, WHO ITA-5.6.1) is considered the king of diseases (Rogarat), characterized by Santapa, Sveda-avarodha, Aruchi, and body stiffness.",
+        "ayurvedic_definition": "A disorder characterized by rise of temperature/agitation; absence of perspiration; generalized body stiffness/pain. WHO ITA-5.6.1.",
+        "wikipedia_target": "Fever",
+    },
+    "fever": {
+        "canonical_name": "Fever",
+        "category": "MEDICAL_EDUCATION",
+        "ayurvedic_concept": True,
+        "general_concept": True,
+        "english_equivalent": "Fever (Pyrexia)",
+        "synonyms": ["fever", "pyrexia", "high temperature", "febrile illness", "elevated body temperature"],
+        "hindi_synonyms": ["बुखार", "ताप"],
+        "kannada_synonyms": ["ಜ್ವರ", "ತಾಪ"],
+        "definition_short": "Fever (pyrexia) is a temporary elevation of body temperature above the normal physiological set-point (typically >38°C / 100.4°F), mediated by pyrogens in response to infection or inflammation.",
+        "wikipedia_target": "Fever",
+    },
+    "rag": {
+        "canonical_name": "Retrieval-Augmented Generation",
+        "category": "COMPUTER_SCIENCE",
+        "ayurvedic_concept": False,
+        "general_concept": True,
+        "english_equivalent": "Retrieval-Augmented Generation (RAG)",
+        "synonyms": ["rag", "what is rag", "retrieval augmented generation", "retrieval-augmented generation"],
+        "hindi_synonyms": ["आरएजी", "रिट्रीवल ऑगमेंटेड जनरेशन"],
+        "kannada_synonyms": ["ಆರ್‌ಎಜಿ", "ರಿಟ್ರೈವಲ್ ಆಗ್ಮೆಂಟೆಡ್ ಜನರೇಷನ್"],
+        "definition_short": "Retrieval-Augmented Generation (RAG) is an AI architecture that enhances large language models by dynamically retrieving relevant facts from external authoritative databases before generating an answer.",
+        "wikipedia_target": "Retrieval-augmented_generation",
     },
 }
 

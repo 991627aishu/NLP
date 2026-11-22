@@ -114,6 +114,26 @@ CURATED_GENERAL_TOPICS = {
         "explanation": "It was transmitted through ritual funerary cannibalism and was characterized by cerebellar ataxia, severe tremors ('kúru' meaning trembling in the Fore language), loss of coordination, and emotional lability, colloquially termed 'laughing sickness'. The identification of Kuru as a transmissible spongiform encephalopathy earned D. Carleton Gajdusek the 1976 Nobel Prize in Physiology or Medicine.",
         "domain": "Biomedical History & Neurodegenerative Diseases"
     },
+    "fever": {
+        "title": "Fever (Pyrexia)",
+        "url": "https://en.wikipedia.org/wiki/Fever",
+        "publisher": "WHO & Curated Medical Education Archive",
+        "definition": "Fever, also referred to as pyrexia, is a temporary increase in the body's core temperature above normal physiological levels (typically 38.0 °C / 100.4 °F or higher), regulated by the hypothalamus in response to illness.",
+        "explanation": "Fever is primarily an adaptive physiological immune response triggered when exogenous or endogenous pyrogens (such as interleukin-1 and TNF) stimulate prostaglandin E2 (PGE2) synthesis, elevating the hypothalamic thermoregulatory set-point. Common causes include viral and bacterial infections, inflammatory conditions, and immunological reactions. First-line supportive care includes adequate fluid intake to prevent dehydration, rest, and antipyretics (such as acetaminophen/paracetamol) when temperature causes significant distress. Immediate medical evaluation is required if fever is accompanied by stiff neck, shortness of breath, confusion, persistent vomiting, or in infants under 3 months. In traditional Ayurveda, fever is correlated with Jwara (WHO ITA-5.6.1).",
+        "domain": "Medical Education & Physiology",
+        "native_hi": "**उत्तर:** चिकित्सा शिक्षा के अनुसार बुखार (Fever / ज्वर) का परिचय:\n\nबुखार (Pyrexia) शरीर के मुख्य तापमान में सामान्य स्तर (सामान्यतः 38°C या 100.4°F से अधिक) से होने वाली एक अस्थायी वृद्धि है। यह शरीर की प्रतिरक्षा प्रणाली (Immune System) की एक रक्षात्मक प्रतिक्रिया है, जो मस्तिष्क के हाइपोथैलेमस द्वारा नियंत्रित होती है।\n\n**कारण एवं लक्षण:**\n1. **कारण:** वायरल या बैक्टीरियल संक्रमण, सर्दी-जुकाम, फ्लू, और शरीर में सूजन।\n2. **लक्षण:** शरीर का गर्म होना, कंपकंपी (shivering), पसीना, सिरदर्द, थकान और भूख में कमी।\n3. **प्राथमिक देखभाल:** पर्याप्त मात्रा में पानी और तरल पदार्थ लें (निर्जलीकरण से बचाव), आराम करें और आवश्यकतानुसार चिकित्सक की सलाह से पैरासिटामोल लें। यदि तेज बुखार, गर्दन में अकड़न या सांस लेने में तकलीफ हो तो तुरंत डॉक्टर से संपर्क करें। आयुर्वेद में इसे 'ज्वर' (WHO ITA-5.6.1) कहा जाता है।",
+        "native_kn": "**ಉತ್ತರ:** ವೈದ್ಯಕೀಯ ಶಿಕ್ಷಣದ ಪ್ರಕಾರ ಜ್ವರ (Fever / Pyrexia) ಎಂದರೇನು:\n\nಜ್ವರವು (Fever) ದೇಹದ ಸಾಮಾನ್ಯ ಉಷ್ಣತೆಗಿಂತ (ಸಾಮಾನ್ಯವಾಗಿ 38°C ಅಥವಾ 100.4°F ಗಿಂತ ಹೆಚ್ಚು) ದೇಹದ ಉಷ್ಣತೆಯು ತಾತ್ಕಾಲಿಕವಾಗಿ ಹೆಚ್ಚಾಗುವ ಸಾಮಾನ್ಯ ಶಾರೀರಿಕ ಸ್ಥಿತಿಯಾಗಿದೆ. ಇದು ದೇಹದ ರೋಗನಿರೋಧಕ ವ್ಯವಸ್ಥೆಯು ಸೋಂಕು ಅಥವಾ ಉರಿಯೂತದ ವಿರುದ್ಧ ಹೋರಾಡುವಾಗ ಮೆದುಳಿನ ಹೈಪೋಥಾಲಮಸ್ ನಿರ್ದೇಶಿಸುವ ರಕ್ಷಣಾತ್ಮಕ ಕ್ರಿಯೆಯಾಗಿದೆ.\n\n**ಪ್ರಮುಖ ಕಾರಣಗಳು ಮತ್ತು ಲಕ್ಷಣಗಳು:**\n1. **ಕಾರಣಗಳು:** ವೈರಲ್ ಅಥವಾ ಬ್ಯಾಕ್ಟೀರಿಯಾದ ಸೋಂಕುಗಳು, ಶೀತ, ಜ್ವರದ ಸೋಂಕುಗಳು.\n2. **ಲಕ್ಷಣಗಳು:** ಮೈ ಬಿಸಿಯಾಗುವುದು, ಚಳಿ, ನಡುಕ, ತಲೆನೋವು, ಆಲಸ್ಯ ಮತ್ತು ಹಸಿವು ಕಡಿಮೆಯಾಗುವುದು.\n3. **ಪ್ರಾಥಮಿಕ ಆರೈಕೆ:** ಸಾಕಷ್ಟು ನೀರು, ಎಳನೀರು ಅಥವಾ ಗಂಜಿಯಂತಹ ದ್ರವಾಹಾರವನ್ನು ಸೇವಿಸಿ ನಿರ್ಜಲೀಕರಣ ತಡೆಯುವುದು, ಪೂರ್ಣ ವಿಶ್ರಾಂತಿ ಪಡೆಯುವುದು. ತೀವ್ರ ಜ್ವರ ಅಥವಾ ಉಸಿರಾಟದ ತೊಂದರೆ ಕಂಡುಬಂದರೆ ಕೂಡಲೇ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ. ಶಾಸ್ತ್ರೀಯ ಆಯುರ್ವೇದದಲ್ಲಿ ಇದನ್ನು 'ಜ್ವರ' (WHO ITA-5.6.1) ಎಂದು ವಿವರಿಸಲಾಗಿದೆ."
+    },
+    "rag": {
+        "title": "Retrieval-Augmented Generation (RAG)",
+        "url": "https://en.wikipedia.org/wiki/Retrieval-augmented_generation",
+        "publisher": "Wikimedia Foundation & AI Research Archive",
+        "definition": "Retrieval-Augmented Generation (RAG) is an AI architecture that enhances large language model generation by retrieving verified factual documents from external knowledge repositories before generating answers.",
+        "explanation": "Introduced by Lewis et al. in 2020, RAG solves fundamental limitations of large language models, including hallucinations, knowledge cutoffs, and inability to cite specific provenance. The architecture consists of two primary stages:\n1. **Retrieval Stage:** The user query is embedded or tokenized to search a vector store or lexical index (BM25) and retrieve relevant ground-truth passages.\n2. **Augmented Generation Stage:** The retrieved context passages are concatenated into the prompt alongside the query, instructing the LLM to generate responses grounded strictly in the retrieved facts and cite supporting passages.",
+        "domain": "Artificial Intelligence & Natural Language Processing",
+        "native_hi": "**उत्तर:** कृत्रिम बुद्धिमत्ता (AI) के अनुसार रिट्रीवल-ऑगमेंटेड जनरेशन (RAG) क्या है:\n\nRAG (Retrieval-Augmented Generation) आधुनिक आर्टिफिशियल इंटेलिजेंस और लार्ज लैंग्वेज मॉडल्स (LLM) की एक शक्तिशाली तकनीक है। यह मॉडल को बिना किसी पूर्व अनुमान या भ्रम (Hallucination) के सटीक उत्तर देने में सक्षम बनाती है।\n\n**कार्यप्रणाली के दो मुख्य चरण:**\n1. **रिट्रीवल (Retrieval):** जब उपयोगकर्ता प्रश्न पूछता है, तो सिस्टम पहले प्रामाणिक डेटाबेस या दस्तावेजों से सबसे प्रासंगिक जानकारी (Passages) खोजता है।\n2. **ऑगमेंटेड जनरेशन (Generation):** खोजे गए वास्तविक तथ्यों को संदर्भ (Context) के रूप में भाषा मॉडल (LLM) को दिया जाता है, जिससे मॉडल केवल सत्य और उद्धृत (Cited) जानकारी के आधार पर उत्तर तैयार करता है।",
+        "native_kn": "**ಉತ್ತರ:** ಕೃತಕ ಬುದ್ಧಿಮತ್ತೆ (AI) ಪ್ರಕಾರ ರಿಟ್ರೈವಲ್-ಆಗ್ಮೆಂಟೆಡ್ ಜನರೇಷನ್ (RAG) ಎಂದರೇನು:\n\nRAG (Retrieval-Augmented Generation) ಎಂಬುದು ಆಧುನಿಕ ಕೃತಕ ಬುದ್ಧಿಮತ್ತೆ ಮತ್ತು ಲಾರ್ಜ್ ಲ್ಯಾಂಗ್ವೇಜ್ ಮಾಡೆಲ್‌ಗಳಲ್ಲಿ (LLM) ಬಳಸಲಾಗುವ ಅತ್ಯಾಧುನಿಕ ವಿನ್ಯಾಸವಾಗಿದೆ. ಇದು ಮಾದರಿಗಳು ತಪ್ಪು ಮಾಹಿತಿ ನೀಡುವುದನ್ನು (Hallucinations) ತಪ್ಪಿಸಿ, ಸತ್ಯಾಸತ್ಯತೆಯನ್ನು ಖಚಿತಪಡಿಸುತ್ತದೆ.\n\n**ಕಾರ್ಯವಿಧಾನದ ಎರಡು ಹಂತಗಳು:**\n1. **ಮಾಹಿತಿ ಹಿಂಪಡೆಯುವಿಕೆ (Retrieval):** ಬಳಕೆದಾರರು ಪ್ರಶ್ನೆ ಕೇಳಿದಾಗ, ಸಿಸ್ಟಮ್ ಮೊದಲು ಅಧಿಕೃತ ಡೇಟಾಬೇಸ್ ಅಥವಾ ದಾಖಲೆಗಳಿಂದ ಸಂಬಂಧಿತ ಪಠ್ಯಗಳನ್ನು ಹುಡುಕಿ ತೆಗೆಯುತ್ತದೆ.\n2. **ಆಧಾರಿತ ಉತ್ತರ ಸೃಷ್ಟಿ (Generation):** ಹಿಂಪಡೆದ ಸಾಕ್ಷ್ಯಾಧಾರಿತ ದಾಖಲೆಗಳನ್ನು ಭಾಷಾ ಮಾದರಿಗೆ (LLM) ಒದಗಿಸಿ, ನಿಖರವಾದ ಮತ್ತು ಮೂಲ ಉಲ್ಲೇಖಗಳೊಂದಿಗೆ (Citations) ಕೂಡಿದ ನೈಸರ್ಗಿಕ ಉತ್ತರವನ್ನು ಸೃಷ್ಟಿಸಲಾಗುತ್ತದೆ."
+    },
     "mopacho": {
         "title": "Mopacho",
         "url": "https://en.wikipedia.org/wiki/Mopacho",
@@ -441,6 +461,18 @@ class GeneralAIEngine:
             "डायबिटीज क्या है", "शुगर की बीमारी क्या है", "ಡಯಾಬಿಟಿಸ್ ಎಂದರೇನು", "ಸಕ್ಕರೆ ಕಾಯಿಲೆ ಎಂದರೇನು"
         ]):
             return CURATED_GENERAL_TOPICS["diabetes"]
+
+        if any(term in q_clean for term in [
+            "what is fever", "explain fever", "define fever", "concept of fever", "fever definition", "what causes fever",
+            "बुखार क्या है", "बुखार का मतलब", "ಜ್ವರ ಎಂದರೇನು (ವೈದ್ಯಕೀಯ)", "ತಾಪ ಎಂದರೇನು"
+        ]) or (q_clean.strip() in ["fever", "pyrexia", "बुखार"]):
+            return CURATED_GENERAL_TOPICS["fever"]
+
+        if any(term in q_clean for term in [
+            "what is rag", "explain rag", "define rag", "retrieval augmented generation", "retrieval-augmented generation",
+            "आरएजी क्या है", "ಆರ್‌ಎಜಿ ಎಂದರೇನು"
+        ]) or q_clean.strip() in ["rag", "what is rag"]:
+            return CURATED_GENERAL_TOPICS["rag"]
 
         # Specific Medical Entities
         if "kuru" in q_clean or "कुरु" in q_clean or "ಕುರು" in q_clean:

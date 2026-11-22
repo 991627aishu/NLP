@@ -47,9 +47,9 @@ HINDI_QUERY_PATTERNS = [
 KANNADA_QUERY_PATTERNS = [
     (re.compile(r"(.+?)\s*(?:ಗೆ|ಕ್ಕೆ|ದ)?\s*(?:ಸಂಬಂಧಿಸಿದ\s*)?(?:ಲಕ್ಷಣಗಳು|ಗುಣಗಳು)\s*(?:ಯಾವುವು|ಏನು)\??", re.IGNORECASE), "What are the symptoms and signs related to {0}?"),
     (re.compile(r"(.+?)\s*(?:ನ|ದ)?\s*(?:ಕಾರ್ಯಗಳು|ಕೆಲಸಗಳು)\s*(?:ಯಾವುವು|ಏನು)\??", re.IGNORECASE), "What are the functions and actions of {0}?"),
-    (re.compile(r"(.+?)\s*(?:ಎಂದರೇನು|ಅರ್ಥವೇನು|ಯಾವುದು)\??", re.IGNORECASE), "What is {0}?"),
-    (re.compile(r"(.+?)\s*(?:ಮಹತ್ವವೇನು|ಉಪಯೋಗವೇನು)\??", re.IGNORECASE), "What is the importance and use of {0}?"),
-    (re.compile(r"(.+?)\s*(?:ಪರಿಹಾರವೇನು|ಚಿಕಿತ್ಸೆ\s*ಏನು|ಹೇಗೆ\s*ಗುಣಪಡಿಸುವುದು)\??", re.IGNORECASE), "How to balance and treat {0}?"),
+    (re.compile(r"(.+?)\s*(?:ಎಂದರೇನು|ಎಂದರೆ|ಅಂದರೇನು|ಅಂದರೆ|ಅರ್ಥವೇನು|ಅರ್ಥ|ಯಾವುದು|ಏನು)\??", re.IGNORECASE), "What is {0}?"),
+    (re.compile(r"(.+?)\s*(?:ಮಹತ್ವವೇನು|ಉಪಯೋಗವೇನು|ಪ್ರಯೋಜನಗಳು\s*ಯಾವುವು|ಉಪಯೋಗಗಳು)\??", re.IGNORECASE), "What is the importance and use of {0}?"),
+    (re.compile(r"(.+?)\s*(?:ಪರಿಹಾರವೇನು|ಚಿಕಿತ್ಸೆ\s*ಏನು|ಹೇಗೆ\s*ಗುಣಪಡಿಸುವುದು|ಉಪಶಮನ\s*ಹೇಗೆ)\??", re.IGNORECASE), "How to balance and treat {0}?"),
 ]
 
 # Code-mixed Hinglish query patterns (Romanized Hindi + English)
@@ -85,7 +85,7 @@ KANGLISH_QUERY_PATTERNS = [
     (re.compile(r"(?:oota\s*aadmele|ootada\s*nantara)\s+(?:hotte\s*heavy|hotte\s*bhara|susthu)\s*(?:aagutte|ide)?\??", re.IGNORECASE), "Why is there stomach heaviness after eating food according to Ayurveda?"),
     (re.compile(r"(?:nidre\s*baradilla|nidde\s*baralla|nidre\s*sariyagi\s*baradilla)\s*(?:enu\s*madodu|parihara\s*enu)?\??", re.IGNORECASE), "What causes difficulty sleeping and insomnia according to Ayurveda?"),
     (re.compile(r"(?:hotte\s*ubbara|adhmana|gas)\s*(?:ide|ge\s*parihara\s*enu)?\??", re.IGNORECASE), "What causes bloating and gas in Ayurveda?"),
-    (re.compile(r"(.+?)\s*(?:ge)?\s*(?:yava\s*aushadhi|yava\s*herb|olleydhu|upayukta)?\??", re.IGNORECASE), "Which herbs and remedies are recommended for {0}?"),
+    (re.compile(r"(.+?)\s*(?:ge)?\s+(?:yava\s*aushadhi|yava\s*herb|olleydhu|upayukta)\??", re.IGNORECASE), "Which herbs and remedies are recommended for {0}?"),
 ]
 
 # Concept explanations in Hindi and Kannada for evidence passage localization
@@ -171,6 +171,31 @@ CONCEPT_EXPLANATIONS = {
         "en": "Kushtha refers to a broad spectrum of classical Ayurvedic dermatological disorders (skin diseases), encompassing 7 Mahakushtha (major skin conditions) and 11 Kshudrakushtha (minor skin conditions), characterized by chronic Tridosha and Dhatu vitiation.",
         "hi": "कुष्ठ आयुर्वेद में त्वचा विकारों (त्वग्रोगों) का व्यापक वर्ग है, जिसमें 7 महाकुष्ठ और 11 क्षुद्रकुष्ठ शामिल हैं। यह वात, पित्त, कफ तथा त्वचा, रक्त, मांस और लसिका की विकृति से उत्पन्न होता है।",
         "kn": "ಕುಷ್ಠವು ಆಯುರ್ವೇದದಲ್ಲಿ ಚರ್ಮ ರೋಗಗಳ ಸಮೂಹವಾಗಿದ್ದು, 7 ಮಹಾಕುಷ್ಠ ಮತ್ತು 11 ಕ್ಷುದ್ರಕುಷ್ಠಗಳನ್ನು ಒಳಗೊಂಡಿದೆ. ಇದು ತ್ರಿದೋಷಗಳು ಮತ್ತು ತ್ವಕ್, ರಕ್ತ, ಮಾಂಸ, ಲಸಿಕೆಗಳ ವಿಕೃತಿಯಿಂದ ಉಂಟಾಗುತ್ತದೆ."
+    },
+    "Jwara": {
+        "en": "In classical Ayurveda, Jwara (Fever, WHO International Standard Terminologies on Ayurveda ITA-5.6.1) is described as the 'King of all diseases' (Rogarat). It is characterized by Santapa (abnormal rise in body temperature and systemic distress), absence of perspiration (Sveda avarodha), loss of appetite (Aruchi), and generalized body aches. It primarily originates from impaired digestive fire (Jatharagni mandya) leading to toxic metabolic residue (Ama) that obstructs the sweat and fluid-carrying channels (Sveda-vaha and Rasa-vaha Srotas).",
+        "hi": "शास्त्रीय आयुर्वेद में ज्वर (बुखार / Fever, WHO ITA-5.6.1) को 'रोगों का राजा' (रोगराट्) कहा गया है। यह संताप (शरीर के तापमान में असामान्य वृद्धि व बेचैनी), पसीने की रुकावट (स्वेद-अवरोध), अरुचि और अंगों में जकड़न व दर्द से पहचाना जाता है। इसका मूल कारण जठराग्नि की विकृति और 'आम' (अपचित रस) का संचय है, जो स्वेदवह और रसवह स्रोतों को अवरुद्ध कर देता है।",
+        "kn": "ಶಾಸ್ತ್ರೀಯ ಆಯುರ್ವೇದದಲ್ಲಿ ಜ್ವರವನ್ನು (Fever / Jwara, WHO ITA-5.6.1) 'ಸಕಲ ರೋಗಗಳ ರಾಜ' (ರೋಗರಾಟ್) ಎಂದು ಕರೆಯಲಾಗಿದೆ. ಇದು ಸಂತಾಪ (ದೇಹದ ಉಷ್ಣತೆ ಅತಿಯಾಗಿ ಹೆಚ್ಚಾಗುವುದು ಮತ್ತು ಆತಂಕ), ಬೆವರು ಬಾರದಿರುವುದು (ಸ್ವೇದಾವರೋಧ), ಅರುಚಿ ಮತ್ತು ಮೈಕೈ ನೋವಿನಿಂದ ಕೂಡಿದ ಸ್ಥಿತಿಯಾಗಿದೆ. ಜಠರಾಗ್ನಿಯ ಮಾಂದ್ಯತೆಯಿಂದಾಗಿ 'ಆಮ' (ವಿಷಕಾರಿ ಅಪಕ್ವ ರಸ) ಉತ್ಪತ್ತಿಯಾಗಿ, ರಸ ಮತ್ತು ಬೆವರನ್ನು ಸಾಗಿಸುವ ಸ್ರೋತಸ್ಸುಗಳನ್ನು ಮುಚ್ಚುವುದರಿಂದ ಜ್ವರವು ಉಂಟಾಗುತ್ತದೆ."
+    },
+    "Agni mandya": {
+        "en": "Agni mandya (or Mandagni) refers to weakened, sluggish digestive capacity in Ayurveda. When Agni is depleted, food is not properly metabolized, leading to the formation of Ama (toxic undigested residue), heaviness, bloating, and susceptibility to chronic disorders.",
+        "hi": "अग्निमांद्य (मंदाग्नि) आयुर्वेद में पाचन शक्ति के दुर्बल अथवा मंद होने की अवस्था है। जब अग्नि मंद हो जाती है, तो भोजन का सम्यक परिपाक नहीं होता, जिससे 'आम' (विषाक्त अपचित रस) बनता है और उदर गौरव, भारीपन व विभिन्न रोग उत्पन्न होते हैं।",
+        "kn": "ಅಗ್ನಿಮಾಂದ್ಯವು (ಅಥವಾ ಮಂದಾಗ್ನಿ) ಆಯುರ್ವೇದದಲ್ಲಿ ಜೀರ್ಣಶಕ್ತಿಯ ದೌರ್ಬಲ್ಯ ಅಥವಾ ಮಂದತೆಯನ್ನು ಸೂಚಿಸುತ್ತದೆ. ಅಗ್ನಿಯು ಕ್ಷೀಣಿಸಿದಾಗ ಆಹಾರವು ಸರಿಯಾಗಿ ಜೀರ್ಣವಾಗದೆ 'ಆಮ' (ವಿಷಕಾರಿ ಅಪಕ್ವ ರಸ) ಉಂಟಾಗುತ್ತದೆ, ಇದು ಹೊಟ್ಟೆಯ ಉಬ್ಬರ, ತೂಕ ಮತ್ತು ವಿವಿಧ ದೈಹಿಕ ರೋಗಗಳಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ."
+    },
+    "Agnimandya": {
+        "en": "Agni mandya (or Mandagni) refers to weakened, sluggish digestive capacity in Ayurveda. When Agni is depleted, food is not properly metabolized, leading to the formation of Ama (toxic undigested residue), heaviness, bloating, and susceptibility to chronic disorders.",
+        "hi": "अग्निमांद्य (मंदाग्नि) आयुर्वेद में पाचन शक्ति के दुर्बल अथवा मंद होने की अवस्था है। जब अग्नि मंद हो जाती है, तो भोजन का सम्यक परिपाक नहीं होता, जिससे 'आम' (विषाक्त अपचित रस) बनता है और उदर गौरव, भारीपन व विभिन्न रोग उत्पन्न होते हैं।",
+        "kn": "ಅಗ್ನಿಮಾಂದ್ಯವು (ಅಥವಾ ಮಂದಾಗ್ನಿ) ಆಯುರ್ವೇದದಲ್ಲಿ ಜೀರ್ಣಶಕ್ತಿಯ ದೌರ್ಬಲ್ಯ ಅಥವಾ ಮಂದತೆಯನ್ನು ಸೂಚಿಸುತ್ತದೆ. ಅಗ್ನಿಯು ಕ್ಷೀಣಿಸಿದಾಗ ಆಹಾರವು ಸರಿಯಾಗಿ ಜೀರ್ಣವಾಗದೆ 'ಆಮ' (ವಿಷಕಾರಿ ಅಪಕ್ವ ರಸ) ಉಂಟಾಗುತ್ತದೆ, ಇದು ಹೊಟ್ಟೆಯ ಉಬ್ಬರ, ತೂಕ ಮತ್ತು ವಿವಿಧ ದೈಹಿಕ ರೋಗಗಳಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ."
+    },
+    "Atisara": {
+        "en": "Atisara (Diarrhea in classical Ayurveda, WHO ITA-5.28) is characterized by excessive and frequent passage of watery, liquid stools. It is provoked by consumption of unwholesome, excessively liquid or contaminated foods that weaken Agni and vitiate the water-carrying channels (Udaka-vaha Srotas).",
+        "hi": "अतिसार (आयुर्वेद में डायरिया / दस्त, WHO ITA-5.28) वह व्याधि है जिसमें अत्यधिक मात्रा में पतला व जलीय मल बार-बार विसर्जित होता है। यह मंदाग्नि तथा उदकवह व पुरीषवह स्रोतों की विकृति से उत्पन्न होता है।",
+        "kn": "ಅತಿಸಾರವು (Diarrhea / ಸಡಿಲ ಮಲವಿಸರ್ಜನೆ, WHO ITA-5.28) ದಿನದಲ್ಲಿ ಅತಿಯಾಗಿ ನೀರಾಗಿ ಅಥವಾ ದ್ರವರೂಪದಲ್ಲಿ ಪದೇ ಪದೇ ಮಲವಿಸರ್ಜನೆಯಾಗುವ ಆಯುರ್ವೇದ ವ್ಯಾಧಿಯಾಗಿದೆ. ಇದು ಮಂದಾಗ್ನಿ ಮತ್ತು ಜಲವಾಹಿ ಸ್ರೋತಸ್ಸುಗಳ ವಿಕೃತಿಯಿಂದ ಉಂಟಾಗುತ್ತದೆ."
+    },
+    "Ashwagandha": {
+        "en": "Ashwagandha (Withania somnifera, Indian Ginseng) is one of Ayurveda's premier Rasayana (rejuvenative) and Balya (strength-promoting) herbs. Traditionally used for pacifying Vata and Kapha, enhancing vitality (Ojas), managing stress, supporting physical endurance, and promoting sound sleep.",
+        "hi": "अश्वगंधा (Withania somnifera) आयुर्वेद की प्रमुख रसायन एवं बल्य औषधि है। यह वात और कफ का शमन करती है, ओजस व रोगप्रतिरोधक क्षमता बढ़ाती है, तनाव कम करती है और शरीर को ऊर्जा व बल प्रदान करती है।",
+        "kn": "ಅಶ್ವಗಂಧವು (Withania somnifera) ಆಯುರ್ವೇದದ ಪ್ರಮುಖ ರಸಾಯನ ಮತ್ತು ಬಲ್ಯ (ಶಕ್ತಿವರ್ಧಕ) ಮೂಲಿಕೆಯಾಗಿದೆ. ಇದು ವಾತ ಮತ್ತು ಕಫ ದೋಷಗಳನ್ನು ಶಮನಗೊಳಿಸಿ, ಓಜಸ್ಸು, ದೈಹಿಕ ಶಕ್ತಿ ಮತ್ತು ಮಾನಸಿಕ ಶಾಂತಿಯನ್ನು ಹೆಚ್ಚಿಸುತ್ತದೆ."
     }
 }
 
