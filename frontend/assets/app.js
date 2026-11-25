@@ -146,18 +146,37 @@
     },
     _detectClientLang(text, fallbackLang) {
       const s = text || "";
-      if (/[\u0C80-\u0CFF]/.test(s)) return "kn";
-      if (/[\u0900-\u097F]/.test(s)) return "hi";
+      const kn = (s.match(/[\u0C80-\u0CFF]/g) || []).length;
+      const hi = (s.match(/[\u0900-\u097F]/g) || []).length;
+      const lat = (s.match(/[A-Za-z]/g) || []).length;
+      const tot = kn + hi + lat || 1;
+      if ((kn / tot >= 0.25 || (kn >= 15 && lat < 40)) && kn >= hi) return "kn";
+      if ((hi / tot >= 0.25 || (hi >= 15 && lat < 40)) && hi > kn) return "hi";
       return fallbackLang || "en";
     },
-    _splitFirstChunk(text) {
-      const s = (text || "").trim();
-      if (s.length <= 260) return [s, ""];
-      const m = s.slice(0, 280).match(/^[\s\S]{40,260}?[.!?।](?=\s|$)/);
-      if (m) return [m[0].trim(), s.slice(m[0].length).trim()];
-      const sp = s.lastIndexOf(" ", 240);
-      const cut = sp > 60 ? sp : 240;
-      return [s.slice(0, cut).trim(), s.slice(cut).trim()];
+    _splitChunks(text, maxLen = 360) {
+      const out = [];
+      const sentences = String(text || "").trim().split(/(?<=[.!?।\n])\s+/);
+      let cur = "";
+      for (let s of sentences) {
+        s = s.trim();
+        if (!s) continue;
+        while (s.length > maxLen) {
+          let cut = s.lastIndexOf(",", maxLen);
+          if (cut < maxLen * 0.4) cut = s.lastIndexOf(" ", maxLen);
+          if (cut <= 0) cut = maxLen;
+          out.push(s.slice(0, cut).trim());
+          s = s.slice(cut).replace(/^,\s*/, "").trim();
+        }
+        if (cur && (cur.length + s.length + 1 > maxLen)) {
+          out.push(cur);
+          cur = s;
+        } else {
+          cur = cur ? cur + " " + s : s;
+        }
+      }
+      if (cur) out.push(cur);
+      return out.length ? out : [String(text || "").trim()].filter(Boolean);
     },
     async speak(text, lang, el, onend) {
       this.stop();
@@ -165,66 +184,73 @@
       this.el = el; this.onend = onend; this._ui("loading");
       const effectiveLang = this._detectClientLang(text, lang || "auto");
       const voice = $("#opt-voice").value;
-      const [head, tail] = this._splitFirstChunk(text);
+      const chunks = this._splitChunks(text, 360);
+      if (!chunks.length) { this._ui("idle"); return; }
 
-      const fetchTTS = (txt, addDisc) => api("/api/tts", {
-        method: "POST", body: { text: txt, lang: effectiveLang, voice, add_disclaimer: addDisc }
-      }).catch(() => {
+      const fetchOne = async (txt, addDisc) => {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            return await api("/api/tts", {
+              method: "POST", body: { text: txt, lang: effectiveLang, voice, add_disclaimer: addDisc }
+            });
+          } catch {
+            if (attempt === 0) await new Promise(res => setTimeout(res, 250));
+          }
+        }
         const bLang = { en: "en-IN", hi: "hi-IN", kn: "kn-IN", hinglish: "hi-IN", kanglish: "kn-IN" }[effectiveLang] || "en-IN";
         return { backend: "browser", chunks: [txt], chunk_langs: [bLang], browser_lang: bLang };
-      });
+      };
 
-      // Fire first-chunk and remaining-chunks requests in parallel for instant playback start
-      this._tailPending = Boolean(tail);
-      const headPromise = fetchTTS(head, !tail);
-      const tailPromise = tail ? fetchTTS(tail, true) : null;
-
-      const r1 = await headPromise;
+      // Stream chunks one-by-one sequentially with 1-chunk lookahead so Render never gets overloaded
+      this._tailPending = chunks.length > 1;
+      const r0 = await fetchOne(chunks[0], chunks.length === 1);
       if (myId !== this._playId) return;
 
-      if (r1.audio_base64 && r1.audio_base64.length) {
-        this.queue = r1.audio_base64.slice();
-        this._next(myId);
-        if (tailPromise) {
-          tailPromise.then(r2 => {
-            if (myId !== this._playId) return;
-            this._tailPending = false;
-            if (r2.audio_base64 && r2.audio_base64.length) {
-              this.queue.push(...r2.audio_base64);
-              if (!this.audio && this.queue.length) this._next(myId);
-            } else if (r2.chunks && r2.chunks.length) {
-              const waitAudioEnd = () => {
-                if (myId !== this._playId) return;
-                if (this.audio || this.queue.length) { setTimeout(waitAudioEnd, 150); return; }
-                this._browser(r2.chunks, r2.browser_lang || "en-IN", r2.chunk_langs || null, myId);
-              };
-              waitAudioEnd();
-            } else if (!this.audio && !this.queue.length) {
-              this._ui("idle"); this.onend && this.onend();
-            }
-          }).catch(() => {
-            if (myId === this._playId) {
-              this._tailPending = false;
-              if (!this.audio && !this.queue.length) { this._ui("idle"); this.onend && this.onend(); }
-            }
-          });
-        }
-      } else {
-        let allChunks = (r1.chunks || [r1.spoken_text || head]).slice();
-        let allLangs = (r1.chunk_langs || []).slice();
-        if (tailPromise) {
-          const r2 = await tailPromise;
-          if (myId !== this._playId) return;
-          this._tailPending = false;
-          if (r2.chunks && r2.chunks.length) {
-            allChunks = allChunks.concat(r2.chunks);
-            allLangs = allLangs.concat(r2.chunk_langs || []);
-          }
-        } else {
-          this._tailPending = false;
-        }
-        await this._browser(allChunks, r1.browser_lang || "en-IN", allLangs.length ? allLangs : null, myId);
+      if (!(r0.audio_base64 && r0.audio_base64.length)) {
+        // Server TTS unavailable for chunk 0: speak ALL chunks via browser speechSynthesis immediately
+        this._tailPending = false;
+        const bLang = r0.browser_lang || ({ en: "en-IN", hi: "hi-IN", kn: "kn-IN", hinglish: "hi-IN", kanglish: "kn-IN" }[effectiveLang] || "en-IN");
+        await this._browser(chunks, bLang, chunks.map(c => {
+          if (/[\u0C80-\u0CFF]{4,}/.test(c)) return "kn-IN";
+          if (/[\u0900-\u097F]{4,}/.test(c)) return "hi-IN";
+          return bLang;
+        }), myId);
+        return;
       }
+
+      this.queue.push(...r0.audio_base64);
+      this._next(myId);
+      if (chunks.length === 1) {
+        this._tailPending = false;
+        return;
+      }
+
+      // Sequentially fetch remaining chunks in background while earlier chunks play
+      (async () => {
+        for (let i = 1; i < chunks.length; i++) {
+          if (myId !== this._playId) return;
+          const ri = await fetchOne(chunks[i], i === chunks.length - 1);
+          if (myId !== this._playId) return;
+          if (ri.audio_base64 && ri.audio_base64.length) {
+            this.queue.push(...ri.audio_base64);
+            if (!this.audio && this.queue.length) this._next(myId);
+          } else {
+            // Wait for current MP3 queue to finish, then speak remaining chunks via browser TTS
+            const remaining = chunks.slice(i);
+            const waitAudioEnd = () => {
+              if (myId !== this._playId) return;
+              if (this.audio || this.queue.length) { setTimeout(waitAudioEnd, 150); return; }
+              this._tailPending = false;
+              const bLang = ri.browser_lang || "en-IN";
+              this._browser(remaining, bLang, null, myId);
+            };
+            waitAudioEnd();
+            return;
+          }
+        }
+        this._tailPending = false;
+        if (!this.audio && !this.queue.length) { this._ui("idle"); this.onend && this.onend(); }
+      })();
     },
     playBase64(list, el, onend) {
       this.stop();

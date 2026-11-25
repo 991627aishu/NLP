@@ -121,9 +121,11 @@ def detect_response_language(text: str, fallback_lang: str = "en") -> str:
         return fb
     kn_cnt = len(_KN_RX.findall(t))
     hi_cnt = len(_HI_RX.findall(t))
-    if kn_cnt >= 6 and kn_cnt >= hi_cnt:
+    lat_cnt = len(re.findall(r"[A-Za-z]", t))
+    total_letters = kn_cnt + hi_cnt + lat_cnt or 1
+    if (kn_cnt / total_letters >= 0.25 or (kn_cnt >= 15 and lat_cnt < 40)) and kn_cnt >= hi_cnt:
         return "kn"
-    if hi_cnt >= 6 and hi_cnt > kn_cnt:
+    if (hi_cnt / total_letters >= 0.25 or (hi_cnt >= 15 and lat_cnt < 40)) and hi_cnt > kn_cnt:
         return "hi"
     try:
         from app.core.language_detect import detect
@@ -218,16 +220,7 @@ def synthesize(text: str, lang: str = "auto", voice: str = "female", clean: bool
                 path.write_bytes(data)
                 return data
 
-            if len(seg_chunks) <= 1 or b != "edge_tts":
-                audio_parts = [_synth_one(s) for s in seg_chunks]
-            else:
-                import concurrent.futures
-                ex = concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(seg_chunks)))
-                try:
-                    futs = [ex.submit(_synth_one, s) for s in seg_chunks]
-                    audio_parts = [f.result(timeout=6.0) for f in futs]
-                finally:
-                    ex.shutdown(wait=False, cancel_futures=True)
+            audio_parts = [_synth_one(s) for s in seg_chunks]
             return {"backend": b, "voice": VOICES[lang].get(voice) if b == "edge_tts" else f"gtts:{lang}",
                     "lang": lang, "browser_lang": BROWSER_LANG[lang], "mime": "audio/mpeg",
                     "spoken_text": spoken, "chunks": chunks, "chunk_langs": chunk_langs,
