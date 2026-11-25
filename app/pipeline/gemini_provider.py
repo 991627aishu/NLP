@@ -58,7 +58,7 @@ class GeminiProvider:
         search_grounding: Optional[bool] = None,
     ):
         self.api_key = (api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or GEMINI_API_KEY or "").strip()
-        self.generation_model = (generation_model or os.environ.get("GEMINI_GENERATION_MODEL") or GEMINI_GENERATION_MODEL or "gemini-2.5-flash").strip()
+        self.generation_model = (generation_model or os.environ.get("GEMINI_GENERATION_MODEL") or GEMINI_GENERATION_MODEL or "gemini-3.8-flash").strip()
         self.embedding_model = (embedding_model or os.environ.get("GEMINI_EMBEDDING_MODEL") or GEMINI_EMBEDDING_MODEL or "gemini-embedding-001").strip()
         
         grounding_env = os.environ.get("GEMINI_SEARCH_GROUNDING_ENABLED")
@@ -255,6 +255,31 @@ class GeminiProvider:
                     time.sleep(sleep_time)
                 else:
                     break
+
+        # Fallback to alternate active model if primary returns a temporary 503 high-demand spike
+        if last_error and ("503" in str(last_error) or "unavailable" in str(last_error).lower()):
+            alt_model = "gemini-3.5-flash"
+            if self.generation_model != alt_model:
+                try:
+                    log.info("Primary %s experiencing temporary 503 spike, trying alternate %s...", self.generation_model, alt_model)
+                    t0 = time.perf_counter()
+                    alt_response = self._client.models.generate_content(
+                        model=alt_model,
+                        contents=user_prompt,
+                        config=config,
+                    )
+                    latency_ms = (time.perf_counter() - t0) * 1000.0
+                    return {
+                        "text": alt_response.text or "",
+                        "model": alt_model,
+                        "token_usage": token_usage,
+                        "latency_ms": latency_ms,
+                        "grounding_sources": [],
+                        "structured_json": structured_json,
+                        "success": True,
+                    }
+                except Exception as alt_err:
+                    log.warning("Alternate model %s also failed: %s", alt_model, alt_err)
 
         raise RuntimeError(f"Gemini API failed after {max_retries} attempts: {last_error}")
 
