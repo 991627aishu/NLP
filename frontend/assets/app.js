@@ -149,24 +149,68 @@
       if (/[\u0900-\u097F]/.test(s)) return "hi";
       return fallbackLang || "en";
     },
+    _splitFirstChunk(text) {
+      const s = (text || "").trim();
+      if (s.length <= 260) return [s, ""];
+      const m = s.slice(0, 280).match(/^[\s\S]{40,260}?[.!?।](?=\s|$)/);
+      if (m) return [m[0].trim(), s.slice(m[0].length).trim()];
+      const sp = s.lastIndexOf(" ", 240);
+      const cut = sp > 60 ? sp : 240;
+      return [s.slice(0, cut).trim(), s.slice(cut).trim()];
+    },
     async speak(text, lang, el, onend) {
       this.stop();
       const myId = this._playId;
       this.el = el; this.onend = onend; this._ui("loading");
       const effectiveLang = this._detectClientLang(text, lang || "auto");
-      let r;
-      try {
-        r = await api("/api/tts", { method: "POST", body: { text, lang: effectiveLang, voice: $("#opt-voice").value } });
-      } catch {
+      const voice = $("#opt-voice").value;
+      const [head, tail] = this._splitFirstChunk(text);
+
+      const fetchTTS = (txt, addDisc) => api("/api/tts", {
+        method: "POST", body: { text: txt, lang: effectiveLang, voice, add_disclaimer: addDisc }
+      }).catch(() => {
         const bLang = { en: "en-IN", hi: "hi-IN", kn: "kn-IN", hinglish: "hi-IN", kanglish: "kn-IN" }[effectiveLang] || "en-IN";
-        r = { backend: "browser", chunks: [text], chunk_langs: [bLang], browser_lang: bLang };
-      }
+        return { backend: "browser", chunks: [txt], chunk_langs: [bLang], browser_lang: bLang };
+      });
+
+      // Fire first-chunk and remaining-chunks requests in parallel for instant playback start
+      const headPromise = fetchTTS(head, !tail);
+      const tailPromise = tail ? fetchTTS(tail, true) : null;
+
+      const r1 = await headPromise;
       if (myId !== this._playId) return;
-      if (r.audio_base64 && r.audio_base64.length) {
-        this.queue = r.audio_base64.slice();
+
+      if (r1.audio_base64 && r1.audio_base64.length) {
+        this.queue = r1.audio_base64.slice();
         this._next(myId);
+        if (tailPromise) {
+          tailPromise.then(r2 => {
+            if (myId !== this._playId) return;
+            if (r2.audio_base64 && r2.audio_base64.length) {
+              this.queue.push(...r2.audio_base64);
+              if (!this.audio && this.queue.length) this._next(myId);
+            } else if (r2.chunks && r2.chunks.length) {
+              const waitAudioEnd = () => {
+                if (myId !== this._playId) return;
+                if (this.audio || this.queue.length) { setTimeout(waitAudioEnd, 150); return; }
+                this._browser(r2.chunks, r2.browser_lang || "en-IN", r2.chunk_langs || null, myId);
+              };
+              waitAudioEnd();
+            }
+          });
+        }
       } else {
-        await this._browser(r.chunks || [r.spoken_text || text], r.browser_lang || "en-IN", r.chunk_langs || null, myId);
+        let allChunks = (r1.chunks || [r1.spoken_text || head]).slice();
+        let allLangs = (r1.chunk_langs || []).slice();
+        if (tailPromise) {
+          const r2 = await tailPromise;
+          if (myId !== this._playId) return;
+          if (r2.chunks && r2.chunks.length) {
+            allChunks = allChunks.concat(r2.chunks);
+            allLangs = allLangs.concat(r2.chunk_langs || []);
+          }
+        }
+        await this._browser(allChunks, r1.browser_lang || "en-IN", allLangs.length ? allLangs : null, myId);
       }
     },
     playBase64(list, el, onend) {

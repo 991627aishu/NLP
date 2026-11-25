@@ -11,11 +11,14 @@ proposed (P1) configurations.
 
 from __future__ import annotations
 
+import concurrent.futures
 from typing import Any, Dict, List, Optional
 
 from app.config import RRF_K, FUSION_TOP_K, BM25_TOP_K, DENSE_TOP_K
 from app.pipeline.bm25_retriever import BM25Retriever
 from app.pipeline.dense_retriever import DenseRetriever
+
+_RET_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
 
 class HybridRetriever:
@@ -49,8 +52,14 @@ class HybridRetriever:
         if not query or not query.strip():
             return []
 
-        bm25_results = self.bm25.retrieve(query, top_k=BM25_TOP_K) if use_bm25 else []
-        dense_results = self.dense.retrieve(query, top_k=DENSE_TOP_K) if use_dense else []
+        if use_bm25 and use_dense:
+            f_bm25 = _RET_POOL.submit(self.bm25.retrieve, query, top_k=BM25_TOP_K)
+            f_dense = _RET_POOL.submit(self.dense.retrieve, query, top_k=DENSE_TOP_K)
+            bm25_results = f_bm25.result()
+            dense_results = f_dense.result()
+        else:
+            bm25_results = self.bm25.retrieve(query, top_k=BM25_TOP_K) if use_bm25 else []
+            dense_results = self.dense.retrieve(query, top_k=DENSE_TOP_K) if use_dense else []
 
         if use_bm25 and not use_dense:
             # BM25-only (e.g. B0)

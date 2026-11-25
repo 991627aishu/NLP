@@ -194,9 +194,9 @@ class GeminiProvider:
 
         config = types.GenerateContentConfig(**config_params)
 
-        # Model candidates ordered by preference
+        # Model candidates ordered by preference (excluding deprecated 2.5-flash-lite)
         candidates = [self.generation_model]
-        for alt in ("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"):
+        for alt in ("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"):
             if alt not in candidates:
                 candidates.append(alt)
 
@@ -213,9 +213,9 @@ class GeminiProvider:
         token_usage: Dict[str, int] = {"prompt_tokens": 0, "candidate_tokens": 0, "total_tokens": 0}
         last_error = None
 
-        for attempt, model_name in enumerate(candidates):
-            # Skip models in active cooldown unless it's our only option
-            if now < self._overloaded_models.get(model_name, 0) and model_name != active_model and attempt > 0:
+        for model_name in candidates:
+            # Skip models in active cooldown unless it's our selected active_model
+            if now < self._overloaded_models.get(model_name, 0) and model_name != active_model:
                 continue
 
             try:

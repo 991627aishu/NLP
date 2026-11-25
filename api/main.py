@@ -158,7 +158,24 @@ def _slim_passage(p: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+_ASK_CACHE: Dict[tuple, tuple] = {}
+_ASK_CACHE_LOCK = threading.Lock()
+_ASK_CACHE_TTL = 1800.0
+_ASK_CACHE_MAX = 128
+
+
 def _run_query(req: AskRequest) -> Dict[str, Any]:
+    cache_key = (req.query.strip().lower(), req.mode, req.target_lang, bool(req.web_fallback), req.generator)
+    now = time.time()
+    with _ASK_CACHE_LOCK:
+        hit = _ASK_CACHE.get(cache_key)
+        if hit and (now - hit[0]) < _ASK_CACHE_TTL:
+            cached = dict(hit[1])
+            cached["latency_ms"] = 0.4
+            cached["stage_timings_ms"] = {"cache_hit_ms": 0.4, "total_ms": 0.4}
+            cached["cache_hit"] = True
+            return cached
+
     pipe = _need("pipeline")
     r = pipe.process_query(req.query, system_mode=req.mode, target_lang=req.target_lang,
                            enable_web_search=req.web_fallback, generator=req.generator)
@@ -176,6 +193,14 @@ def _run_query(req: AskRequest) -> Dict[str, Any]:
     out["response_language"] = resp_lang
     out["tts_lang"] = BROWSER_LANG.get(resp_lang, out.get("tts_lang") or "en-IN")
     out["ok"] = True
+
+    if not out.get("abstained") and out.get("answer"):
+        with _ASK_CACHE_LOCK:
+            if len(_ASK_CACHE) >= _ASK_CACHE_MAX:
+                oldest = next(iter(_ASK_CACHE))
+                _ASK_CACHE.pop(oldest, None)
+            _ASK_CACHE[cache_key] = (time.time(), dict(out))
+
     log.info("Request completed in %.1fms [route=%s, model=%s, passages=%d, citations=%d]",
              r.get("latency_ms", 0), r.get("route_category"), r.get("generator_used"),
              len(r.get("retrieved_passages", [])), len(r.get("citations", [])))

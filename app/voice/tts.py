@@ -70,7 +70,7 @@ def _edge_tts_mp3(text: str, voice: str, rate: str = "+0%") -> bytes:
                 buf += chunk["data"]
         return buf
     async def _runner() -> bytes:
-        return await asyncio.wait_for(run(), timeout=10.0)
+        return await asyncio.wait_for(run(), timeout=4.5)
 
     try:
         return asyncio.run(_runner())
@@ -84,17 +84,27 @@ def _edge_tts_mp3(text: str, voice: str, rate: str = "+0%") -> bytes:
 
 def _gtts_mp3(text: str, lang: str) -> bytes:
     from gtts import gTTS  # type: ignore
-    import concurrent.futures
     import io
+    import threading
 
-    def _run() -> bytes:
-        buf = io.BytesIO()
-        gTTS(text=text, lang=lang).write_to_fp(buf)
-        return buf.getvalue()
+    out: Dict[str, Any] = {}
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-        fut = ex.submit(_run)
-        return fut.result(timeout=6.0)
+    def _run() -> None:
+        try:
+            buf = io.BytesIO()
+            gTTS(text=text, lang=lang).write_to_fp(buf)
+            out["data"] = buf.getvalue()
+        except Exception as e:
+            out["err"] = e
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout=4.0)
+    if t.is_alive():
+        raise TimeoutError("gTTS timed out")
+    if "err" in out:
+        raise out["err"]
+    return out.get("data", b"")
 
 
 def detect_response_language(text: str, fallback_lang: str = "en") -> str:
@@ -186,8 +196,7 @@ def synthesize(text: str, lang: str = "auto", voice: str = "female", clean: bool
         if b == "browser":
             break
         try:
-            audio_parts = []
-            for seg in seg_chunks:
+            def _synth_one(seg: Dict[str, str]) -> bytes:
                 c = seg["text"]
                 seg_lang = seg["lang"]
                 gtts_lang = "hi" if seg_lang in ("hi", "hinglish") else ("kn" if seg_lang in ("kn", "kanglish") else "en")
@@ -195,14 +204,24 @@ def synthesize(text: str, lang: str = "auto", voice: str = "female", clean: bool
                 key = hashlib.sha256(f"{b}|{vname}|{c}".encode("utf-8")).hexdigest()
                 path = TTS_CACHE_DIR / f"{key}.mp3"
                 if path.exists():
-                    data = path.read_bytes()
-                else:
-                    data = _edge_tts_mp3(c, vname) if b == "edge_tts" else _gtts_mp3(c, gtts_lang)
-                    if not data:
-                        raise RuntimeError("empty audio")
-                    TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-                    path.write_bytes(data)
-                audio_parts.append(data)
+                    return path.read_bytes()
+                data = _edge_tts_mp3(c, vname) if b == "edge_tts" else _gtts_mp3(c, gtts_lang)
+                if not data:
+                    raise RuntimeError("empty audio")
+                TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+                return data
+
+            if len(seg_chunks) <= 1 or b != "edge_tts":
+                audio_parts = [_synth_one(s) for s in seg_chunks]
+            else:
+                import concurrent.futures
+                ex = concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(seg_chunks)))
+                try:
+                    futs = [ex.submit(_synth_one, s) for s in seg_chunks]
+                    audio_parts = [f.result(timeout=6.0) for f in futs]
+                finally:
+                    ex.shutdown(wait=False, cancel_futures=True)
             return {"backend": b, "voice": VOICES[lang].get(voice) if b == "edge_tts" else f"gtts:{lang}",
                     "lang": lang, "browser_lang": BROWSER_LANG[lang], "mime": "audio/mpeg",
                     "spoken_text": spoken, "chunks": chunks, "chunk_langs": chunk_langs,

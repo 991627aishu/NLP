@@ -72,10 +72,10 @@ def build_user_prompt(question: str, passages: List[Dict[str, Any]], graph_facts
     lines = [f"User Question: {question}", f"Domain: {domain}", ""]
     if passages:
         lines.append("Authoritative Evidence Passages:")
-        for p in passages[:6]:
+        for p in passages[:4]:
             cid = p.get("chunk_id") or p.get("source_id") or "EVID"
             loc = p.get("locator") or p.get("title") or "General"
-            txt = re.sub(r"\s+", " ", p.get("text", "") or p.get("extract", ""))[:1200]
+            txt = re.sub(r"\s+", " ", p.get("text", "") or p.get("extract", ""))[:750]
             lines.append(f"[{cid}] ({p.get('source_id', 'Source')} | {loc}) {txt}")
     if graph_facts:
         lines.append("")
