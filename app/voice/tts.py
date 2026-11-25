@@ -70,7 +70,13 @@ def _edge_tts_mp3(text: str, voice: str, rate: str = "+0%") -> bytes:
                 buf += chunk["data"]
         return buf
     async def _runner() -> bytes:
-        return await asyncio.wait_for(run(), timeout=4.5)
+        last_err: Optional[Exception] = None
+        for _ in range(2):
+            try:
+                return await asyncio.wait_for(run(), timeout=8.0)
+            except Exception as exc:
+                last_err = exc
+        raise last_err or RuntimeError("edge_tts failed")
 
     try:
         return asyncio.run(_runner())

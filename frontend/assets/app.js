@@ -123,6 +123,7 @@
     audio: null, queue: [], utter: null, rate: 1, onend: null, el: null, _playId: 0,
     stop() {
       this._playId++;
+      this._tailPending = false;
       if (this.audio) { this.audio.onended = null; this.audio.pause(); this.audio = null; }
       this.queue = [];
       this.utter = null;
@@ -174,6 +175,7 @@
       });
 
       // Fire first-chunk and remaining-chunks requests in parallel for instant playback start
+      this._tailPending = Boolean(tail);
       const headPromise = fetchTTS(head, !tail);
       const tailPromise = tail ? fetchTTS(tail, true) : null;
 
@@ -186,6 +188,7 @@
         if (tailPromise) {
           tailPromise.then(r2 => {
             if (myId !== this._playId) return;
+            this._tailPending = false;
             if (r2.audio_base64 && r2.audio_base64.length) {
               this.queue.push(...r2.audio_base64);
               if (!this.audio && this.queue.length) this._next(myId);
@@ -196,6 +199,13 @@
                 this._browser(r2.chunks, r2.browser_lang || "en-IN", r2.chunk_langs || null, myId);
               };
               waitAudioEnd();
+            } else if (!this.audio && !this.queue.length) {
+              this._ui("idle"); this.onend && this.onend();
+            }
+          }).catch(() => {
+            if (myId === this._playId) {
+              this._tailPending = false;
+              if (!this.audio && !this.queue.length) { this._ui("idle"); this.onend && this.onend(); }
             }
           });
         }
@@ -205,10 +215,13 @@
         if (tailPromise) {
           const r2 = await tailPromise;
           if (myId !== this._playId) return;
+          this._tailPending = false;
           if (r2.chunks && r2.chunks.length) {
             allChunks = allChunks.concat(r2.chunks);
             allLangs = allLangs.concat(r2.chunk_langs || []);
           }
+        } else {
+          this._tailPending = false;
         }
         await this._browser(allChunks, r1.browser_lang || "en-IN", allLangs.length ? allLangs : null, myId);
       }
@@ -221,11 +234,17 @@
     },
     _next(myId) {
       if (myId !== undefined && myId !== this._playId) return;
-      if (!this.queue.length) { this._ui("idle"); this.onend && this.onend(); return; }
+      if (!this.queue.length) {
+        this.audio = null;
+        if (this._tailPending) { this._ui("loading"); return; }
+        this._ui("idle"); this.onend && this.onend();
+        return;
+      }
       this.audio = new Audio("data:audio/mpeg;base64," + this.queue.shift());
       this.audio.playbackRate = this.rate;
       this.audio.onended = () => this._next(myId);
-      this.audio.play().catch(() => this._ui("idle"));
+      this.audio.onerror = () => this._next(myId);
+      this.audio.play().catch(() => { this.audio = null; this._ui("idle"); });
       this._ui("playing");
     },
     _getVoices() {
