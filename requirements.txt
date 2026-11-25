@@ -16,6 +16,8 @@ openpyxl==3.1.5
 xlrd==2.0.2            # NAMASTE file is legacy OLE2 .xls despite .xlsx name (audit F20)
 pdfplumber==0.11.10    # PDF fallback when PyMuPDF is unavailable
 pypdf==6.17.0
+beautifulsoup4>=4.12.0 # web search and readable article content extraction
+requests>=2.31.0       # HTTP requests for web fallback and external APIs
 
 # API / website (tested)
 fastapi>=0.115
@@ -24,6 +26,13 @@ httpx>=0.27.0
 uvicorn==0.54.0
 pydantic==2.13.5
 python-multipart>=0.0.9
+python-dotenv>=1.0.0   # environment configuration loader
+
+# LLM & Generation (tested)
+google-genai>=3.6.0    # official Google GenAI SDK for Gemini generation & embeddings
+
+# voice (optional server-side TTS)
+edge-tts>=6.1.12
 
 # tests (tested)
 pytest==9.1.1

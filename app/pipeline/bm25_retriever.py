@@ -49,8 +49,9 @@ class BM25Retriever:
     """Okapi BM25 index and query retriever for the Ayurvedic corpus."""
 
     def __init__(self, corpus_path: Path = CORPUS_JSONL, index_path: Path = BM25_INDEX_PKL):
-        self.corpus_path = corpus_path
-        self.index_path = index_path
+        from app.config import resolve_data_file
+        self.corpus_path = resolve_data_file(corpus_path)
+        self.index_path = resolve_data_file(index_path)
         self.chunks: List[Dict[str, Any]] = []
         self.bm25: BM25Okapi = None
         self._load_or_build()

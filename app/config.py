@@ -25,35 +25,45 @@ def _load_dotenv(path: Path) -> None:
         pass
 
 
-def _resolve_child_dir(parent: Path, preferred: str) -> Path:
+def _resolve_child_dir(parent: Path, preferred: str = "data") -> Path:
     """Case-insensitive directory lookup (F8).
 
-    The raw-data folder ships as ``Data/`` but older code referred to ``data/``.
-    On case-sensitive filesystems (Linux/macOS/cloud) that mismatch silently
-    created a second, empty ``data/`` tree. On Windows, NTFS is case-preserving
-    so we inspect iterdir() to return the actual casing existing on disk,
-    preferring exact case if both somehow existed, without renaming anything.
+    The dataset directory in the repository is tracked as ``data/`` (and some
+    legacy references use ``Data/``). On case-sensitive Linux environments
+    (Render/Cloud), this ensures we resolve to whichever directory actually exists
+    on disk, preferring lowercase ``data`` if both exist.
     """
     try:
         if parent.is_dir():
-            match_any = None
+            exact = parent / preferred
+            if exact.is_dir():
+                return exact
             for child in parent.iterdir():
                 if child.is_dir() and child.name.lower() == preferred.lower():
-                    if child.name == preferred:
-                        return child
-                    if match_any is None:
-                        match_any = child
-            if match_any is not None:
-                return match_any
+                    return child
     except OSError:
         pass
     return parent / preferred
 
 
+def resolve_data_file(path: Path) -> Path:
+    """Cross-casing file fallback across data/ and Data/ on Linux filesystems."""
+    if path.exists():
+        return path
+    parts = list(path.parts)
+    for i, p in enumerate(parts):
+        if p in ("data", "Data"):
+            parts[i] = "Data" if p == "data" else "data"
+            alt = Path(*parts)
+            if alt.exists():
+                return alt
+    return path
+
+
 # ── Root directories ─────────────────────────────────────────────────────────
 ROOT        = Path(__file__).resolve().parent.parent
 _load_dotenv(ROOT / ".env")
-DATA_RAW    = _resolve_child_dir(ROOT, "Data")
+DATA_RAW    = _resolve_child_dir(ROOT, "data")
 DATA_PROC   = DATA_RAW / "processed"
 DATA_EVAL   = DATA_RAW / "evaluation"
 DOCS_DIR    = ROOT / "docs"
@@ -75,6 +85,8 @@ CORPUS_JSONL        = DATA_PROC / "corpus_chunks.jsonl"
 BM25_INDEX_PKL      = DATA_PROC / "bm25_index.pkl"
 DENSE_INDEX_PKL     = DATA_PROC / "dense_index.pkl"       # numpy dot-product index
 EMBEDDINGS_NPY      = DATA_PROC / "embeddings.npy"
+GEMINI_EMBEDDINGS_NPY = DATA_PROC / "gemini_embeddings.npy"
+GEMINI_EMBEDDINGS_META= DATA_PROC / "gemini_embeddings_meta.json"
 CHUNK_META_JSON     = DATA_PROC / "chunk_metadata.json"
 KG_PKL              = DATA_PROC / "knowledge_graph.pkl"
 EVAL_SEED_JSON      = DATA_EVAL / "eval_seed_questions.json"

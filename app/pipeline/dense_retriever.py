@@ -158,8 +158,9 @@ class DenseRetriever:
             self.backend_warning = "Gemini API key not configured — using TF-IDF fallback"
             return
         try:
-            gemini_npy = EMBEDDINGS_NPY.with_name("gemini_embeddings.npy")
-            gemini_meta = EMBEDDINGS_NPY.with_name("gemini_embeddings_meta.json")
+            from app.config import resolve_data_file, GEMINI_EMBEDDINGS_NPY, GEMINI_EMBEDDINGS_META
+            gemini_npy = resolve_data_file(GEMINI_EMBEDDINGS_NPY)
+            gemini_meta = resolve_data_file(GEMINI_EMBEDDINGS_META)
             corpus_sha = make_stamp(self.corpus_path)["corpus_sha256"]
             if gemini_npy.exists() and gemini_meta.exists():
                 meta = json.loads(gemini_meta.read_text(encoding="utf-8"))

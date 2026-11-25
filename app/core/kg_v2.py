@@ -34,6 +34,8 @@ class KnowledgeGraphV2:
     version = "v2"
 
     def __init__(self, path: Path = KG_V2_PKL):
+        from app.config import resolve_data_file
+        path = resolve_data_file(path)
         with open(path, "rb") as f:
             self.graph: nx.DiGraph = pickle.load(f)
 
