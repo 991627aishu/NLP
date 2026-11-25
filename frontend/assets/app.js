@@ -308,6 +308,8 @@
     const rows = [
       ["Processing Route", `${esc(r.route_category || "AYURVEDA_DOMAIN")} · <strong>${esc(r.route_label || "AyurMitra Knowledge Base")}</strong>`],
       ["Knowledge Source", esc(r.source_label || "AyurMitra Knowledge Base (WHO / NAMASTE / IMPPAT)")],
+      ["Generation Model", `<strong>${esc(r.generator_used || b.generator || "evidence_grounded_engine")}</strong>${r.generator_note ? ` <small>(${esc(r.generator_note)})</small>` : ""}`],
+      ["Retrieved Passages", `${(r.retrieved_passages || []).length} relevant passage(s) Grounded`],
       ["Language Mode", `${esc(r.language_mode || r.target_language || "en")} (${LANG_NAME[r.language_mode || r.target_language] || r.target_language})`],
       ["Detected language", `${r.detected_language}${r.is_code_mixed ? ` (code-mixed: ${esc(r.code_mix_type)})` : ""}`],
       ["Segments", (r.segments || []).map(s => `${esc(s.text || s.segment || "")} <small>[${esc(s.lang || s.script || "")}]</small>`).join(" · ") || "—"],

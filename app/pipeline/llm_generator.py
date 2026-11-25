@@ -27,6 +27,8 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
+from app.pipeline.gemini_provider import GeminiProvider, GENAI_SDK_AVAILABLE
+
 try:
     from app.config import (
         LLM_PROVIDER, LLM_MODEL, LLM_MAX_TOKENS, LLM_TEMPERATURE,
@@ -109,20 +111,24 @@ def post_check(raw: str, allowed_ids: set) -> Dict[str, Any]:
 class LLMGenerator:
     """
     Provider-independent generative LLM interface with multi-provider failover.
+    Primary enterprise integration: Google Gemini API via official google-genai SDK.
     """
 
     def __init__(self, provider: Optional[str] = None, model: Optional[str] = None):
+        self.gemini = GeminiProvider()
         self.provider = (provider or os.environ.get("AYUR_LLM_PROVIDER") or LLM_PROVIDER or "auto").lower()
         self.model = model or os.environ.get("AYUR_LLM_MODEL") or LLM_MODEL or "default"
         self._detect_best_provider()
 
     def _detect_best_provider(self):
-        """Auto-detects active credentials across supported providers."""
-        if self.provider == "auto":
-            if os.environ.get("GEMINI_API_KEY"):
+        """Auto-detects active credentials across supported providers, prioritizing Google Gemini."""
+        if self.provider in ("auto", "google_gemini", "gemini"):
+            if self.gemini.is_available():
                 self.provider = "google_gemini"
-                self.model = "gemini-1.5-flash"
-            elif os.environ.get("GROQ_API_KEY"):
+                self.model = self.gemini.generation_model
+                return
+        if self.provider == "auto":
+            if os.environ.get("GROQ_API_KEY"):
                 self.provider = "groq"
                 self.model = "llama-3.3-70b-versatile"
             elif os.environ.get("OPENROUTER_API_KEY"):
@@ -134,6 +140,9 @@ class LLMGenerator:
             elif os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN"):
                 self.provider = "huggingface"
                 self.model = "Qwen/Qwen2.5-7B-Instruct"
+            elif self.gemini.is_available():
+                self.provider = "google_gemini"
+                self.model = self.gemini.generation_model
             else:
                 self.provider = "ollama"
                 self.model = OLLAMA_MODEL
@@ -141,9 +150,17 @@ class LLMGenerator:
     def available(self) -> Dict[str, Any]:
         """Reports live provider status and readiness."""
         prov = self.provider
-        if prov == "google_gemini":
-            ok = bool(os.environ.get("GEMINI_API_KEY"))
-            return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "GEMINI_API_KEY not set"}
+        if prov in ("google_gemini", "gemini"):
+            health = self.gemini.check_health()
+            return {
+                "available": health["api_key_configured"] and health["sdk_installed"],
+                "provider": "google_gemini",
+                "model": health["generation_model"],
+                "embedding_model": health["embedding_model"],
+                "search_grounding": health["search_grounding_enabled"],
+                "reason": None if health["api_key_configured"] else "GEMINI_API_KEY not set in environment (configure in .env)",
+                "sdk_installed": health["sdk_installed"],
+            }
         if prov == "groq":
             ok = bool(os.environ.get("GROQ_API_KEY"))
             return {"available": ok, "provider": prov, "model": self.model, "reason": None if ok else "GROQ_API_KEY not set"}
@@ -178,21 +195,12 @@ class LLMGenerator:
         """Dispatches generation prompt to active LLM provider."""
         prov = self.provider
 
-        # 1. Google Gemini API
-        if prov == "google_gemini":
-            key = os.environ.get("GEMINI_API_KEY")
-            if not key:
+        # 1. Google Gemini API via official google-genai SDK
+        if prov in ("google_gemini", "gemini"):
+            if not self.gemini.is_available():
                 raise RuntimeError("GEMINI_API_KEY not set")
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={key}"
-            payload = {
-                "contents": [{"parts": [{"text": f"{system}\n\n{user}"}]}],
-                "generationConfig": {"temperature": 0.1, "maxOutputTokens": 700}
-            }
-            data = self._http_post(url, payload, {})
-            try:
-                return data["candidates"][0]["content"]["parts"][0]["text"]
-            except (KeyError, IndexError):
-                return ""
+            res = self.gemini.generate_answer(system_instruction=system, user_prompt=user)
+            return res.get("text", "")
 
         # 2. Groq Developer API (OpenAI-compatible)
         if prov == "groq":

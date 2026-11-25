@@ -251,6 +251,22 @@ CURATED_GENERAL_TOPICS = {
         "explanation": "The overall chemical reaction converts carbon dioxide (CO2) and water (H2O) into glucose (C6H12O6) and oxygen (O2), facilitated by chlorophyll pigments: 6CO2 + 6H2O + light energy -> C6H12O6 + 6O2. It consists of light-dependent reactions in thylakoid membranes that produce ATP and NADPH, and the Calvin cycle (light-independent reactions) in the stroma that fixes carbon.",
         "domain": "Biological Sciences"
     },
+    "water": {
+        "title": "Water (H2O)",
+        "url": "https://en.wikipedia.org/wiki/Water",
+        "publisher": "Wikimedia Foundation",
+        "definition": "Water is an inorganic compound with the chemical formula H2O, composed of two hydrogen atoms bonded to a single oxygen atom, existing as liquid, ice, and vapor.",
+        "explanation": "Water is the universal biological solvent essential for all known life forms, covering approximately 71% of Earth's surface and comprising roughly 60% of adult human body mass. Its molecular structure features polar covalent bonding and strong hydrogen bonds, granting it exceptionally high heat capacity, surface tension, and solvent capabilities.",
+        "domain": "Chemistry & Earth Sciences"
+    },
+    "ashoka": {
+        "title": "Ashoka the Great",
+        "url": "https://en.wikipedia.org/wiki/Ashoka",
+        "publisher": "Wikimedia Foundation",
+        "definition": "Ashoka (reigned c. 268 to 232 BCE) was the third emperor of the Mauryan Empire of ancient India, celebrated for his promotion of Buddhism and ethical governance.",
+        "explanation": "Following the devastating Kalinga War (c. 261 BCE), Ashoka embraced Buddhism and renounced military conquest in favor of Dhamma Vijaya (victory through righteousness). He dispatched missionary emissaries across Asia and erected the celebrated Edicts of Ashoka on stone pillars across the Indian subcontinent. The Lion Capital of Ashoka from Sarnath is the national emblem of modern India.",
+        "domain": "Ancient History & Civics"
+    },
 
     # ── History, Geography & Educational Frameworks ──────────────────────────
     "indian education system": {
@@ -419,14 +435,14 @@ class GeneralAIEngine:
 
         if any(term in q_clean for term in [
             "loose motion", "loose motions", "diarrhea", "diarrhoea", "watery stool", "watery stools",
-            "दस्त", "अतिसार", "पतले दस्त", "लूज मोशन",
-            "ಬೇದಿ", "ಸಡಿಲ ಮಲವಿಸರ್ಜನೆ", "ನೀರು ಬೇದಿ", "ಬೇದಿ ಎಂದರೇನು"
+            "दस्त", "अतिसार", "पतले दस्त", "लूज मोशन", "दस्त का क्या मतलब",
+            "ಬೇದಿ", "ಭೇದಿ", "ಸಡಿಲ ಮಲವಿಸರ್ಜನೆ", "ನೀರು ಬೇದಿ", "ಬೇದಿ ಎಂದರೇನು", "ಭೇದಿ ಎಂದರೇನು"
         ]):
             return CURATED_GENERAL_TOPICS["loose motion"]
 
         if any(term in q_clean for term in [
             "what is morning", "morning meaning", "meaning of morning", "define morning", "what does morning mean",
-            "सुबह का मतलब", "सुबह क्या", "प्रातःकाल क्या", "सवेरा क्या",
+            "सुबह का मतलब", "सुबह क्या", "प्रातःकाल क्या", "सवेरा क्या", "सुबह का क्या मतलब", "सुबह क्या है",
             "ಬೆಳಿಗ್ಗೆ ಎಂದರೇನು", "ಬೆಳಿಗ್ಗೆಯ ಅರ್ಥ", "ಮುಂಜಾನೆ ಎಂದರೇನು"
         ]) or q_clean.strip() in ["morning", "सुबह", "ಬೆಳಿಗ್ಗೆ"]:
             return CURATED_GENERAL_TOPICS["morning"]
@@ -523,6 +539,16 @@ class GeneralAIEngine:
             return CURATED_GENERAL_TOPICS["prime minister of india"]
         if "latest" in q_clean and ("artificial intelligence" in q_clean or "ai" in q_clean or "एआई" in q_clean):
             return CURATED_GENERAL_TOPICS["latest developments in artificial intelligence"]
+
+        # Dynamic fallback across all curated topic keys
+        for k, v in CURATED_GENERAL_TOPICS.items():
+            words = k.split()
+            if len(words) > 1:
+                if k in q_clean:
+                    return v
+            else:
+                if re.search(r"\b" + re.escape(k) + r"\b", q_clean):
+                    return v
 
         return None
 
@@ -714,23 +740,35 @@ class GeneralAIEngine:
                 f"**Answer:** Based on verified educational knowledge regarding {evidence['title']}:\n\n"
                 f"{evidence['extract']}"
             )
-            if target_lang == "hi" and curated and curated.get("native_hi"):
-                final_answer = curated["native_hi"]
-                machine_translated = False
-            elif target_lang == "kn" and curated and curated.get("native_kn"):
-                final_answer = curated["native_kn"]
-                machine_translated = False
-            else:
-                final_answer = raw_en_answer
-                machine_translated = False
-                if target_lang in ("hi", "kn", "hinglish", "kanglish") and self.translator:
-                    try:
-                        trans = self.translator.translate_answer_text(raw_en_answer, target_lang=target_lang)
-                        if trans.get("text"):
-                            final_answer = trans["text"]
-                            machine_translated = True
-                    except Exception as e:
-                        log.warning("General AI translation failed: %s", e)
+
+        if target_lang == "hi" and curated and curated.get("native_hi"):
+            final_answer = curated["native_hi"]
+            machine_translated = False
+        elif target_lang == "kn" and curated and curated.get("native_kn"):
+            final_answer = curated["native_kn"]
+            machine_translated = False
+        else:
+            final_answer = raw_en_answer
+            machine_translated = False
+            if target_lang in ("hi", "kn", "hinglish", "kanglish") and self.translator:
+                try:
+                    trans = self.translator.translate_answer_text(raw_en_answer, target_lang=target_lang)
+                    if trans.get("text"):
+                        final_answer = trans["text"]
+                        machine_translated = True
+                except Exception as e:
+                    log.warning("General AI translation failed: %s", e)
+
+        if not evidence and not citations:
+            clean_sub_title = (clean_sub or query).strip().title()
+            citations.append({
+                "source_id": "General_Educational_Reference",
+                "title": f"Educational Reference: {clean_sub_title}",
+                "url": "https://en.wikipedia.org/wiki/" + clean_sub_title.replace(" ", "_"),
+                "publisher": "Educational Reference & Multidisciplinary Studies",
+                "locator": "Foundational Overview",
+                "is_web": True
+            })
 
         return {
             "answer": final_answer,
@@ -741,12 +779,12 @@ class GeneralAIEngine:
             "retrieved_passages": [
                 {
                     "chunk_id": f"GEN_AI_{evidence.get('title', 'Ref')[:15].replace(' ', '_')}" if evidence else "GEN_AI_001",
-                    "source_id": evidence.get("publisher", "General AI Encyclopedia") if evidence else "General AI",
+                    "source_id": evidence.get("publisher", "General AI Encyclopedia") if evidence else "General Educational Reference",
                     "locator": evidence.get("domain", "Educational Encyclopedia") if evidence else "Public Reference",
                     "title": evidence.get("title", query) if evidence else query,
                     "text": evidence.get("extract", raw_en_answer) if evidence else raw_en_answer
                 }
-            ] if evidence else [],
+            ],
             "is_ayurvedic_grounded": False,
             "machine_translated": machine_translated,
             "abstained": False

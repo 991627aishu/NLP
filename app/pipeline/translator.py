@@ -59,7 +59,7 @@ HINGLISH_QUERY_PATTERNS = [
     (re.compile(r"(.+?)\s*(?:ke|k\s*)?\s*(?:fayde|fayday|labh|benefits)\s*(?:kya\s*hain|kya\s*hai|batao)?\??", re.IGNORECASE), "What are the benefits of {0}?"),
     (re.compile(r"(.+?)\s*(?:ke|k\s*)?\s*(?:lakshan|symptoms)\s*(?:kya\s*hain|kya\s*hai|batao)?\??", re.IGNORECASE), "What are the symptoms of {0}?"),
     (re.compile(r"(.+?)\s*(?:ke|k\s*)?\s*(?:karya|kaam|functions)\s*(?:kya\s*hain|kya\s*hai|batao)?\??", re.IGNORECASE), "What are the functions of {0}?"),
-    (re.compile(r"(.+?)\s*(?:kya\s*hai|kya\s*hota\s*hai|kise\s*kehte\s*hain)\??", re.IGNORECASE), "What is {0}?"),
+    (re.compile(r"(.+?)\s*(?:kya\s*hai|kya\s*hota\s*hai|kise\s*kehte\s*hain|ka\s*matlab\s*kya\s*hai|matlab\s*kya\s*hai)\??", re.IGNORECASE), "What is {0}?"),
     (re.compile(r"(.+?)\s+aur\s+(.+?)\s+(?:mein|me)\s*(?:kya\s*antar\s*hai|difference\s*kya\s*hai)\??", re.IGNORECASE), "What is the difference between {0} and {1}?"),
     (re.compile(r"(.+?)\s*(?:ko|ka)?\s*(?:kaise\s*theek\s*kare|ka\s*ilaj|kaise\s*balance\s*kare)\??", re.IGNORECASE), "How to balance and treat {0}?"),
     (re.compile(r"(?:mujhe\s+)?pet\s*(?:me\s*)?dard\s*(?:hai|ho\s*raha\s*hai|kya\s*kare)?\??", re.IGNORECASE), "What is the Ayurvedic view and remedy for stomach pain?"),
@@ -77,7 +77,7 @@ KANGLISH_QUERY_PATTERNS = [
     (re.compile(r"(.+?)\s*(?:da|na)?\s*(?:prayojanagalu|upayogagalu|benefits)\s*(?:enu|yenu|yavuvu)?\??", re.IGNORECASE), "What are the benefits of {0}?"),
     (re.compile(r"(.+?)\s*(?:da|na)?\s*(?:lakshanagalu|symptoms)\s*(?:yavuvu|enu|yenu)?\??", re.IGNORECASE), "What are the symptoms of {0}?"),
     (re.compile(r"(.+?)\s*(?:da|na)?\s*(?:karyagalu|functions)\s*(?:yavuvu|enu)?\??", re.IGNORECASE), "What are the functions of {0}?"),
-    (re.compile(r"(.+?)\s*(?:endarenu|yavudu|artavenu)\??", re.IGNORECASE), "What is {0}?"),
+    (re.compile(r"(.+?)\s*(?:andre\s*enu|andre\s*yenu|endare\s*enu|endarenu|yavudu|artavenu|artha\s*enu|andre)\??", re.IGNORECASE), "What is {0}?"),
     (re.compile(r"(.+?)\s+mattu\s+(.+?)\s+(?:naduvina|alli)\s*(?:vyatyasa\s*enu|difference\s*enu)\??", re.IGNORECASE), "What is the difference between {0} and {1}?"),
     (re.compile(r"(.+?)\s*(?:ge)?\s*(?:parihara\s*enu|chikitse\s*enu|hege\s*guna\s*maduvudu)\??", re.IGNORECASE), "How to balance and treat {0}?"),
     (re.compile(r"(?:nanage\s+)?hotte\s*novu\s*(?:ide|aaguttide|ge\s*parihara\s*enu)?\??", re.IGNORECASE), "What is the Ayurvedic perspective and remedy for stomach pain?"),
@@ -196,6 +196,66 @@ CONCEPT_EXPLANATIONS = {
         "en": "Ashwagandha (Withania somnifera, Indian Ginseng) is one of Ayurveda's premier Rasayana (rejuvenative) and Balya (strength-promoting) herbs. Traditionally used for pacifying Vata and Kapha, enhancing vitality (Ojas), managing stress, supporting physical endurance, and promoting sound sleep.",
         "hi": "अश्वगंधा (Withania somnifera) आयुर्वेद की प्रमुख रसायन एवं बल्य औषधि है। यह वात और कफ का शमन करती है, ओजस व रोगप्रतिरोधक क्षमता बढ़ाती है, तनाव कम करती है और शरीर को ऊर्जा व बल प्रदान करती है।",
         "kn": "ಅಶ್ವಗಂಧವು (Withania somnifera) ಆಯುರ್ವೇದದ ಪ್ರಮುಖ ರಸಾಯನ ಮತ್ತು ಬಲ್ಯ (ಶಕ್ತಿವರ್ಧಕ) ಮೂಲಿಕೆಯಾಗಿದೆ. ಇದು ವಾತ ಮತ್ತು ಕಫ ದೋಷಗಳನ್ನು ಶಮನಗೊಳಿಸಿ, ಓಜಸ್ಸು, ದೈಹಿಕ ಶಕ್ತಿ ಮತ್ತು ಮಾನಸಿಕ ಶಾಂತಿಯನ್ನು ಹೆಚ್ಚಿಸುತ್ತದೆ."
+    },
+    "Panchakarma": {
+        "en": "Panchakarma represents the five classical bio-purification and detoxification procedures in Ayurveda: Vamana (therapeutic emesis for Kapha), Virechana (therapeutic purgation for Pitta), Basti (medicated enema for Vata, considered Ardha Chikitsa), Nasya (nasal administration for supra-clavicular disorders), and Raktamokshana (bloodletting for Rakta-Pitta morbidity).",
+        "hi": "पंचकर्म आयुर्वेद की पांच प्रधान शोधन एवं विषहरण प्रक्रियाएं हैं: वमन (कफ दोष के लिए चिकित्सीय उल्टी), विरेचन (पित्त दोष के लिए विरेचन), बस्ति (वात दोष के लिए औषधीय एनीमा, जिसे 'अर्ध चिकित्सा' कहा गया है), नस्य (ऊर्ध्वजत्रुगत रोगों के लिए नासिका मार्ग से औषधि प्रयोग), और रक्तमोक्षण (दूषित रक्त का शोधन)।",
+        "kn": "ಪಂಚಕರ್ಮವು ಆಯುರ್ವೇದದ ಐದು ಪ್ರಮುಖ ಜೈವಿಕ ಶುದ್ಧೀಕರಣ ಮತ್ತು ನಿರ್ವಿಶೀಕರಣ ಚಿಕಿತ್ಸೆಗಳಾಗಿವೆ: ವಮನ (ಕಫ ದೋಷ ನಿವಾರಣೆಗೆ), ವಿರೇಚನ (ಪಿತ್ತ ದೋಷ ನಿವಾರಣೆಗೆ), ಬಸ್ತಿ (ವಾತ ದೋಷ ನಿವಾರಣೆಗೆ ಔಷಧೀಯ ಎನಿಮಾ, 'ಅರ್ಧ ಚಿಕಿತ್ಸೆ'), ನಸ್ಯ (ಶಿರಸ್ಸಿನ ರೋಗಗಳಿಗೆ ಮೂಗಿನ ಮೂಲಕ ಔಷಧ ಪ್ರಯೋಗ), ಮತ್ತು ರಕ್ತಮೋಕ್ಷಣ (ರಕ್ತ ಶುದ್ಧೀಕರಣ)."
+    },
+    "Vikriti": {
+        "en": "In classical Ayurveda, Vikriti denotes the acquired, temporary pathological state of doshic imbalance and morbidity, representing the departure from one's baseline natural constitution (Prakriti). Assessment of Vikriti guides therapeutic interventions (Chikitsa).",
+        "hi": "विकृति आयुर्वेद में दोषों के असंतुलन अथवा विकार की वह अर्जित अवस्था है जो व्यक्ति की मूल स्वाभाविक प्रकृति (Prakriti) से विचलन को दर्शाती है। विकृति का सही निदान ही समुचित चिकित्सा का आधार बनता है।",
+        "kn": "ವಿಕೃತಿಯು ಆಯುರ್ವೇದದಲ್ಲಿ ವ್ಯಕ್ತಿಯ ಮೂಲ ಸ್ವಾಭಾವಿಕ ಪ್ರಕೃತಿಯಿಂದ (Prakriti) ಉಂಟಾಗುವ ದೋಷಗಳ ಅಸಮತೋಲನ ಮತ್ತು ರೋಗಾವಸ್ಥೆಯನ್ನು ಸೂಚಿಸುತ್ತದೆ. ವಿಕೃತಿಯ ಸರಿಯಾದ ಪರೀಕ್ಷೆಯು ಚಿಕಿತ್ಸೆಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತದೆ."
+    },
+    "Mala": {
+        "en": "Mala represents the metabolic waste products of digestion and cellular transformation in Ayurveda. The three primary bodily wastes (Trimala) are Purisha (feces), Mutra (urine), and Sweda (sweat). Their proper formation and timely elimination are essential for maintaining homeostasis.",
+        "hi": "मल आयुर्वेद में चयापचय और पाचन क्रिया के अपशिष्ट उत्पाद हैं। त्रि-मल मुख्य रूप से पुरीष (मल), मूत्र और स्वेद (पसीना) हैं। इनका सम्यक निर्माण और समय पर निष्कासन ही शारीरिक संतुलन (दोषसाम्य) का आधार है।",
+        "kn": "ಮಲವು ಆಯುರ್ವೇದದಲ್ಲಿ ಜೀರ್ಣಕ್ರಿಯೆ ಮತ್ತು ಚಯಾಪಚಯ ಕ್ರಿಯೆಯ ತ್ಯಾಜ್ಯ ಉತ್ಪನ್ನಗಳಾಗಿವೆ. ಪ್ರಮುಖ ತ್ರಿಮಲಗಳು: ಪುರೀಷ (ಮಲ), ಮೂತ್ರ ಮತ್ತು ಸ್ವೇದ (ಬೆವರು). ಇವುಗಳ ಸಮತೋಲಿತ ವಿಸರ್ಜನೆಯು ಆರೋಗ್ಯಕ್ಕೆ ಅತ್ಯಗತ್ಯ."
+    },
+    "Trimala": {
+        "en": "Trimala represents the three primary bodily metabolic wastes in classical Ayurveda: Purisha (feces, supporting Agni and bodily strength), Mutra (urine, carrying out moisture and water-soluble metabolites), and Sweda (sweat, regulating body temperature, skin tone, and fluid homeostasis).",
+        "hi": "त्रि-मल आयुर्वेद के तीन प्राथमिक शारीरिक अपशिष्ट हैं: पुरीष (मल), मूत्र (मूत्र विसर्जन) और स्वेद (पसीना)। इनका सम्यक निष्कासन शरीर को स्वस्थ और स्रोतों को शुद्ध रखता है।",
+        "kn": "ತ್ರಿಮಲಗಳು ಆಯುರ್ವೇದದ ಮೂರು ಪ್ರಮುಖ ಶಾರೀರಿಕ ತ್ಯಾಜ್ಯಗಳಾಗಿವೆ: ಪುರೀಷ (ಮಲ), ಮೂತ್ರ ಮತ್ತು ಸ್ವೇದ (ಬೆವರು). ಇವುಗಳ ಸಮತೋಲಿತ ವಿಸರ್ಜನೆಯು ದೇಹದ ಸ್ವಾಸ್ಥ್ಯಕ್ಕೆ ಅಗತ್ಯವಾಗಿದೆ."
+    },
+    "Ritucharya": {
+        "en": "Ritucharya denotes the classical seasonal regimen outlined in classical Ayurveda (Charaka Samhita Sutrasthana Ch. 6). It prescribes specific diet, lifestyle adaptations, and purification procedures across the six Indian seasons (Shishira, Vasanta, Grishma, Varsha, Sharad, Hemanta) to prevent seasonal doshic accumulation (Chaya, Prakopa, Prashama).",
+        "hi": "ऋतुचर्या आयुर्वेद का ऋतु-आधारित जीवनशैली और आहार विज्ञान है (चरक संहिता सूत्रस्थान अध्याय 6)। यह छह ऋतुओं (शिशिर, वसंत, ग्रीष्म, वर्षा, शरद, हेमंत) के अनुसार दोषों के संचय, प्रकोप और प्रशमन को रोकने के लिए विशिष्ट आहार और आचरण का निर्देश देता है।",
+        "kn": "ಋತುಚರ್ಯೆಯು ಆಯುರ್ವೇದ ಶಾಸ್ತ್ರೋಕ್ತ ಋತುಮಾನದ ಆಹಾರ ಮತ್ತು ಜೀವನಶೈಲಿಯ ನಿಯಮಾವಳಿಯಾಗಿದೆ (ಚರಕ ಸಂಹಿತೆ). ಇದು ಆರು ಋತುಗಳಿಗೆ (ಶಿಶಿರ, ವಸಂತ, ಗ್ರೀಷ್ಮ, ವರ್ಷ, ಶರದ್, ಹೇಮಂತ) ಅನುಗುಣವಾಗಿ ದೋಷಗಳ ಸಂಚಯ ಮತ್ತು ಪ್ರಕೋಪವನ್ನು ತಡೆಯಲು ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತದೆ."
+    },
+    "Charaka Samhita": {
+        "en": "The Charaka Samhita is one of the foundational foundational pillars of classical Ayurvedic literature (Brihat Trayi), attributed to Mahamuni Atreya and redactor Acharya Charaka. It specializes primarily in internal medicine (Kaya Chikitsa), etiopathogenesis (Nidana), therapeutics (Chikitsa), and philosophical physiology.",
+        "hi": "चरक संहिता आयुर्वेद के 'बृहत्त्रयी' का सबसे प्राचीन और प्रामाणिक ग्रंथ है, जो मुख्य रूप से कायचिकित्सा (Internal Medicine), निदान, और औषधीय चिकित्सा के सिद्धांतों पर केंद्रित है।",
+        "kn": "ಚರಕ ಸಂಹಿತೆಯು ಆಯುರ್ವೇದದ 'ಬೃಹತ್ತ್ರಯಿ'ಯ ಅತ್ಯಂತ ಪುರಾತನ ಮತ್ತು ಅಧಿಕೃತ ಗ್ರಂಥವಾಗಿದ್ದು, ಮುಖ್ಯವಾಗಿ ಕಾಯಚಿಕಿತ್ಸೆ (Internal Medicine), ರೋಗನಿದಾನ ಮತ್ತು ಚಿಕಿತ್ಸಾ ತತ್ವಗಳನ್ನು ಪ್ರತಿಪಾದಿಸುತ್ತದೆ."
+    },
+    "Sushruta Samhita": {
+        "en": "The Sushruta Samhita is the classical Sanskrit treatise authored by Acharya Sushruta, revered as the pioneer of surgical methodology (Shalya Tantra). It details surgical instruments (Yantra and Shastra), rhinoplasty, wound healing (Vrana), and foundational anatomical dissections (Sharira Sthana).",
+        "hi": "सुश्रुत संहिता शल्य चिकित्सा (Surgery / Shalya Tantra) का विश्वप्रसिद्ध शास्त्रीय ग्रंथ है, जिसके प्रणेता आचार्य सुश्रुत हैं। इसमें शल्यकर्म, यंत्र-शस्त्र, शारीर (शारीरिक रचना), और प्लास्टिक सर्जरी (राइनोप्लास्टी) का विस्तृत वर्णन है।",
+        "kn": "ಸುಶ್ರುತ ಸಂಹಿತೆಯು ಆಯುರ್ವೇದದ ಶಲ್ಯತಂತ್ರದ (ಸರ್ಜರಿ) ಅತ್ಯಂತ ಪ್ರಸಿದ್ಧ ಶಾಸ್ತ್ರೀಯ ಗ್ರಂಥವಾಗಿದ್ದು, ಆಚಾರ್ಯ ಸುಶ್ರುತರ ಶಸ್ತ್ರಚಿಕಿತ್ಸಾ ಉಪಕರಣಗಳು, ಅಂಗರಚನಾ ಶಾಸ್ತ್ರ ಮತ್ತು ಶಸ್ತ್ರಚಿಕಿತ್ಸಾ ವಿಧಾನಗಳನ್ನು ಒಳಗೊಂಡಿದೆ."
+    },
+    "Ashtanga Hridaya": {
+        "en": "The Ashtanga Hridaya, authored by Acharya Vagbhata (circa 6th century CE), is a poetic, lucid synthesis that harmonizes the teachings of Charaka and Sushruta, covering all eight specialized branches (Ashtanga) of classical Ayurveda.",
+        "hi": "अष्टांग हृदय आचार्य वाग्भट द्वारा रचित आयुर्वेद का अत्यंत लोकप्रिय काव्यमय ग्रंथ है, जो चरक और सुश्रुत संहिताओं के ज्ञान का सार रूप में आठों अंगों (अष्टांग आयुर्वेद) का समन्वय करता है।",
+        "kn": "ಅಷ್ಟಾಂಗ ಹೃದಯವು ಆಚಾರ್ಯ ವಾಗ್ಭಟರಿಂದ ರಚಿಸಲ್ಪಟ್ಟ ಪ್ರಸಿದ್ಧ ಕಾವ್ಯಮಯ ಆಯುರ್ವೇದ ಗ್ರಂಥವಾಗಿದ್ದು, ಚರಕ ಮತ್ತು ಸುಶ್ರುತರ ಜ್ಞಾನವನ್ನು ಸರಳವಾಗಿ ಎಲ್ಲಾ ಎಂಟು ಆಯುರ್ವೇದ ಶಾಖೆಗಳಲ್ಲಿ (ಅಷ್ಟಾಂಗ) ಸಂಯೋಜಿಸಿದೆ."
+    },
+    "Triphala": {
+        "en": "Triphala ('three fruits') is a celebrated classical Ayurvedic formulation composed of equal parts of Haritaki (Terminalia chebula), Bibhitaki (Terminalia bellirica), and Amalaki (Phyllanthus emblica). Renowned as a gentle Tridoshic Rasayana, mild laxative, digestive toner (Deepana-Pachana), and potent ocular tonic (Chakshushya).",
+        "hi": "त्रिफला (तीन फल) आयुर्वेद का सुप्रसिद्ध शास्त्रीय योग है, जो हरीतकी, बिभीतकी और आमलकी के समान मिश्रण से बनता है। यह त्रिदोषहर, रसायन, सौम्य विरेचक, दीपन-पाचन और नेत्रों के लिए अत्यंत लाभकारी (चक्षುष्य) है।",
+        "kn": "ತ್ರಿಫಲವು (ಮೂರು ಹಣ್ಣುಗಳು) ಆಯುರ್ವೇದದ ಅತ್ಯಂತ ಪ್ರಸಿದ್ಧ ಶಾಸ್ತ್ರೀಯ ಸಂಯೋಜನೆಯಾಗಿದ್ದು, ಹರೀತಕಿ, ಬಿಭೀತಕಿ ಮತ್ತು ಆಮಲಕಿಗಳ ಮಿಶ್ರಣವಾಗಿದೆ. ಇದು ತ್ರಿದೋಷಹರ, ರಸಾಯನ, ಜೀರ್ಣಕಾರಿ ಮತ್ತು ದೃಷ್ಟಿ ವರ್ಧಕವಾಗಿದೆ."
+    },
+    "Tulsi": {
+        "en": "Tulsi (Ocimum sanctum / Holy Basil) is a revered Ayurvedic medicinal plant classified as a potent Kapha-Vata pacifying herb, known for its Deepana (digestive), Swasahara (respiratory supportive), and Vishaghna (antimicrobial/adaptogenic) virtues.",
+        "hi": "तुलसी (Ocimum sanctum) आयुर्वेद की अत्यंत पवित्र और गुणकारी वनौषधि है। यह कफ-वात शामक, दीपन, श्वासहर (फेफड़ों व श्वसन तंत्र के लिए हितकारी) और प्राकृतिक अनुकूलक (adaptogen) है।",
+        "kn": "ತುಳಸಿಯು (Ocimum sanctum) ಆಯುರ್ವೇದದ ಪವಿತ್ರ ಮತ್ತು ಪ್ರಬಲ ಔಷಧೀಯ ಸಸ್ಯವಾಗಿದ್ದು, ಕಫ-ವಾತ ಶಮನಕಾರಿ, ಜೀರ್ಣಶಕ್ತಿ ವರ್ಧಕ ಮತ್ತು ಶ್ವಾಸಕೋಶದ ಆರೋಗ್ಯ ರಕ್ಷಕವಾಗಿದೆ."
+    },
+    "Neem": {
+        "en": "Neem (Azadirachta indica / Nimba) is a foremost bitter and astringent medicinal tree in Ayurveda, renowned for its Pitta-Kapha pacifying, blood-purifying (Rakta-shodhaka), and dermatological therapeutic (Kushthaghna) actions.",
+        "hi": "नीम (Azadirachta indica / निम्ब) आयुर्वेद में तिक्त-कषाय रस प्रधान औषधि है। यह पित्त-कफ शामक, रक्तशोधक और सभी प्रकार के कुष्ठ व त्वग्रोगों में परम हितकारी माना जाता है।",
+        "kn": "ಬೇವಿನ ಮರವು (Azadirachta indica / ನಿಂಬ) ಕಹಿ ಮತ್ತು ಒಗರು ರಸ ಹೊಂದಿರುವ ಪ್ರಮುಖ ಔಷಧೀಯ ಸಸ್ಯವಾಗಿದ್ದು, ಪಿತ್ತ-ಕಫ ಶಮನಕಾರಿ, ರಕ್ತಶುದ್ಧಿಕಾರಕ ಮತ್ತು ಚರ್ಮರೋಗಗಳಿಗೆ ಅತ್ಯಂತ ಉಪಯುಕ್ತವಾಗಿದೆ."
+    },
+    "Guduchi": {
+        "en": "Guduchi (Tinospora cordifolia / Giloy / Amrita) is one of Ayurveda's foremost Rasayana herbs, possessing Tikta-Kashaya rasa, Ushna virya, and Tridosha-balancing qualities. Highly valued for immunomodulatory action, antipyretic efficacy in chronic Jwara, and hepatoprotective properties.",
+        "hi": "गिलोय (Tinospora cordifolia / गिलोय / अमृता) आयुर्वेद की श्रेष्ठ रसायन एवं त्रिदोषशामक वनौषधि है। यह विशेष रूप से जीर्ण ज्वर (पुराने बुखार), रोगप्रतिरोधक क्षमता (Immunity) और यकृत (Liver) स्वास्थ्य के लिए प्रसिद्ध है।",
+        "kn": "ಗುಡುಚಿಯು (Tinospora cordifolia / ಗಿಲೊಯ್ / ಅಮೃತಬಳ್ಳಿ) ಆಯುರ್ವೇದದ ಪ್ರಮುಖ ರಸಾಯನ ಮೂಲಿಕೆಯಾಗಿದ್ದು, ತ್ರಿದೋಷಗಳನ್ನು ಸಮತೋಲನದಲ್ಲಿಟ್ಟು, ರೋಗನಿರೋಧಕ ಶಕ್ತಿಯನ್ನು ಹೆಚ್ಚಿಸಲು ಮತ್ತು ಜ್ವರ ನಿವಾರಣೆಗೆ ಪ್ರಸಿದ್ಧವಾಗಿದೆ."
     }
 }
 

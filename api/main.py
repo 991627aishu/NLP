@@ -185,26 +185,37 @@ def _speak(text: str, lang: str, voice: str = "female") -> Dict[str, Any]:
 def health():
     from app.voice import stt, tts
     from app.pipeline.llm_generator import LLMGenerator
+    from app.pipeline.gemini_provider import GeminiProvider
     pipe = STATE.get("pipeline")
     b = pipe.backend_info() if pipe else {}
     kg = STATE.get("kg")
     tts_order = tts.available_backends()
+    gemini_health = GeminiProvider().check_health()
     return {
         "ok": pipe is not None, "startup_seconds": STATE.get("startup_seconds"),
         "backends": {
             "neural_mt": {"live": b.get("translator") == "indictrans2", "backend": b.get("translator"),
                           "note": b.get("translator_warning")},
-            "embeddings": {"live": b.get("dense") == "sentence_transformers", "backend": b.get("dense"),
+            "embeddings": {"live": b.get("dense") in ("sentence_transformers", "gemini_embeddings"), "backend": b.get("dense"),
                            "model": b.get("dense_model"), "note": b.get("dense_warning")},
             "stt": stt.status() | {"live": stt.status()["server_stt"]},
             "tts": {"live": tts_order[0] != "browser", "chain": tts_order},
             "llm": LLMGenerator().available() | {"live": LLMGenerator().available()["available"]},
+            "gemini": gemini_health,
             "web": {"live": True, "note": "EuropePMC / Wikipedia fallback; off by default, never used in benchmarks"},
             "knowledge_graph": {"live": kg is not None, "version": getattr(kg, "version", None)},
             "safety_gate": {"live": bool(b.get("safety_gate"))},
         },
         "disclaimer": EDUCATIONAL_DISCLAIMER,
     }
+
+
+@app.get("/api/gemini/status")
+def gemini_status():
+    """Detailed health, readiness, and configuration audit of the Google Gemini integration."""
+    from app.pipeline.gemini_provider import GeminiProvider
+    provider = GeminiProvider()
+    return provider.check_health()
 
 
 @app.post("/api/ask")

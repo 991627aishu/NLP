@@ -105,27 +105,37 @@ AYURVEDIC_TERMS_BASE = {
     "ayurveda", "ayurvedic", "panchakarma", "rasayana", "dinacharya", "ritucharya",
     "charaka", "sushruta", "vagbhata", "samhita", "nighantu", "ashtanga", "hridaya",
     "dravyaguna", "kayachikitsa", "shalakya", "shalya", "kaumarbhritya", "namaste", "imppat",
+    "srotodushti", "deepana", "pachana", "trikatu", "dashamula", "sitopaladi", "avipattikar",
+    "virechana", "raktamokshana", "snehana", "swedana", "purvakarma", "paschatkarma", "samsarjana",
+    "shirodhara", "brahma muhurta", "brahmamuhurta", "viruddhahara", "upashaya", "purvarupa", "kavala", "gandusha",
+    "abhyanga", "bhavaprakasha", "madhava", "trimala", "dhatuposhana", "nyaya", "dhatvagni", "dhatvagnis",
+    "bhutagni", "bhutagnis", "sama", "grishma", "ritu", "varsha", "shad rasa", "rasas", "brihat trayi",
+    "basti", "vamana", "nasya", "swedana", "snehana", "purisha", "sweda",
 }
 
 INDIC_AYURVEDIC_TERMS = {
     # Devanagari
     "रोग", "व्याधि", "लक्षण", "निदान", "चिकित्सा", "स्वास्थ्य", "संप्राप्ति",
     "आयुर्वेद", "वात", "वायु", "पित्त", "कफ", "श्लेष्मा", "अग्नि", "जठराग्नि",
-    "प्रकृति", "धातु", "दोष", "ओजस", "ओज", "प्राण", "त्रिदोष", "आम", "रसायन",
+    "प्रकृति", "विकृति", "धातु", "दोष", "ओजस", "ओज", "प्राण", "त्रिदोष", "आम", "रसायन",
     "पंचकर्म", "स्रोतस", "नाड़ी", "रस", "रक्त", "मांस", "मेद", "अस्थि", "मज्जा",
     "शुक्र", "अश्वगंधा", "त्रिफला", "तुलसी", "नीम", "गुग्गुल", "ब्राह्मी", "शतावरी",
     "हरीतकी", "आमलकी", "बिभीतकी", "गुल्म", "अर्श", "कास", "श्वास", "ज्वर", "प्रमेह",
     "मधुमेह", "कुष्ठ", "कुष्ठरोग", "आवृत्त", "आवरण", "धातुक्षयज", "अग्निमांद्य", "मंदाग्नि",
     "धातुसाम्यता", "धातुसाम्य", "धातुवैषम्य", "दोषवैषम्य", "समदोष", "समधातु",
+    "चरक", "सुश्रुत", "वाग्भट", "संहिता", "अष्टांग", "हृदय", "दिनचर्या", "ऋतुचर्या", "अतिसार",
+    "गिलोय", "गुडूची", "त्रिमल", "मल",
     # Kannada
     "ರೋಗ", "ವ್ಯಾಧಿ", "ಲಕ್ಷಣ", "ನಿದಾನ", "ಚಿಕಿತ್ಸೆ", "ಸ್ವಾಸ್ಥ್ಯ", "ಸಂಪ್ರಾಪ್ತಿ",
     "ಆಯುರ್ವೇದ", "ವಾತ", "ವಾಯು", "ಪಿತ್ತ", "ಕಫ", "ಶ್ಲೇಷ್ಮ", "ಅಗ್ನಿ", "ಜಠರಾಗ್ನಿ",
-    "ಪ್ರಕೃತಿ", "ಧಾತು", "ದೋಷ", "ಓಜಸ್ಸು", "ಓಜಸ್", "ಪ್ರಾಣ", "ತ್ರಿದೋಷ", "ಆಮ", "ರಸಾಯನ",
+    "ಪ್ರಕೃತಿ", "ವಿಕೃತಿ", "ಧಾತು", "ದೋಷ", "ಓಜಸ್ಸು", "ಓಜಸ್", "ಪ್ರಾಣ", "ತ್ರಿದೋಷ", "ಆಮ", "ರಸಾಯನ",
     "ಪಂಚಕರ್ಮ", "ಸ್ರೋತಸ್", "ನಾಡಿ", "ರಸ", "ರಕ್ತ", "ಮಾಂಸ", "ಮೇದಸ್ಸು", "ಅಸ್ಥಿ", "ಮಜ್ಜ",
     "ಶುಕ್ರ", "ಅಶ್ವಗಂಧ", "ತ್ರಿಫಲ", "ತುಳಸಿ", "ಬೇವಿನ", "ಬೇವು", "ಬ್ರಾಹ್ಮಿ", "ಶತಾವರಿ",
     "ಆಮಲಕಿ", "ಹರೀತಕಿ", "ಜ್ವರ", "ಪ್ರಮೇಹ", "ಮಧುಮೇಹ", "ಕಾಸ", "ಶ್ವಾಸ", "ಕುಷ್ಠ", "ಕುಷ್ಠರೋಗ",
     "ಆವೃತ", "ಆವರಣ", "ಧಾತುಕ್ಷಯಜ", "ಅಗ್ನಿಮಾಂದ್ಯ", "ಮಂದಾಗ್ನಿ",
     "ಧಾತುಸಾಮ್ಯತೆ", "ಧಾತುಸಾಮ್ಯ", "ಧಾತುವೈಷಮ್ಯ", "ದೋಷವೈಷಮ್ಯ", "ಸಮದೋಷ",
+    "ಚರಕ", "ಸುಶ್ರುತ", "ವಾಗ್ಭಟ", "ಸಂಹಿತೆ", "ಅಷ್ಟಾಂಗ", "ಹೃದಯ", "ದಿನಚರ್ಯೆ", "ಋತುಚರ್ಯೆ", "ಅತಿಸಾರ",
+    "ಕಷಾಯ", "ಗಿಲೋಯ್", "ತ್ರಿಮಲ", "ಮಲ",
 }
 
 # ── General Educational Domains & Indicators ─────────────────────────────────
@@ -271,7 +281,7 @@ class IntelligentQueryRouter:
 
         general_matches = []
         for g in GENERAL_DOMAIN_KEYWORDS:
-            if g in q_lower and g not in general_matches:
+            if re.search(r"\b" + re.escape(g) + r"\b", q_lower) and g not in general_matches:
                 general_matches.append(g)
 
         # If user queried general medical terms (like 'diabetes', 'fever') without classical keywords, prevent matcher false positive

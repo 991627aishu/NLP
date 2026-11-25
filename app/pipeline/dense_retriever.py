@@ -30,9 +30,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from app.config import (
     CORPUS_JSONL, DENSE_INDEX_PKL, DENSE_TOP_K, DENSE_BACKEND, DENSE_MODEL_NAME, EMBEDDINGS_NPY,
+    GEMINI_API_KEY, GEMINI_EMBEDDING_MODEL
 )
 from app.pipeline.bm25_retriever import QUESTION_STOPWORDS
 from app.pipeline.index_cache import make_stamp, stamp_matches, backup_once
+from app.pipeline.gemini_provider import GeminiProvider
 
 log = logging.getLogger("ayurmitra.dense")
 
@@ -54,10 +56,13 @@ class DenseRetriever:
         self.backend_warning: Optional[str] = None
         self._st_model = None
         self._embeddings: Optional[np.ndarray] = None
+        self.gemini_provider = GeminiProvider()
 
         # The TF-IDF index is always available (fallback + v1 reproducibility).
         self._load_or_build()
-        if self.requested_backend in ("auto", "sentence_transformers"):
+        if self.requested_backend in ("gemini", "gemini_embeddings") or (self.requested_backend == "auto" and self.gemini_provider.is_available()):
+            self._try_init_gemini_embeddings()
+        elif self.requested_backend in ("auto", "sentence_transformers"):
             self._try_init_sentence_transformers()
 
     # ── TF-IDF (v1) ──────────────────────────────────────────────────────────
@@ -147,8 +152,33 @@ class DenseRetriever:
             self.backend_warning = f"Embedding model unavailable ({type(e).__name__}) — using TF-IDF fallback"
             log.warning(self.backend_warning)
 
+    # ── Gemini Embeddings (Section 6) ─────────────────────────────────────────
+    def _try_init_gemini_embeddings(self) -> None:
+        if not self.gemini_provider.is_available():
+            self.backend_warning = "Gemini API key not configured — using TF-IDF fallback"
+            return
+        try:
+            gemini_npy = EMBEDDINGS_NPY.with_name("gemini_embeddings.npy")
+            gemini_meta = EMBEDDINGS_NPY.with_name("gemini_embeddings_meta.json")
+            corpus_sha = make_stamp(self.corpus_path)["corpus_sha256"]
+            if gemini_npy.exists() and gemini_meta.exists():
+                meta = json.loads(gemini_meta.read_text(encoding="utf-8"))
+                if (meta.get("model") == self.gemini_provider.embedding_model and
+                        meta.get("corpus_sha256") == corpus_sha and meta.get("n") == len(self.chunks)):
+                    self._embeddings = np.load(gemini_npy)
+                    self.backend_used = "gemini_embeddings"
+                    self.backend_warning = None
+                    return
+            self.backend_used = "gemini_embeddings"
+            self.backend_warning = None
+        except Exception as e:
+            self.backend_warning = f"Gemini embeddings error ({e}) — using TF-IDF fallback"
+            log.warning(self.backend_warning)
+
     @property
     def model_name(self) -> str:
+        if self.backend_used == "gemini_embeddings":
+            return self.gemini_provider.embedding_model
         return DENSE_MODEL_NAME if self.backend_used == "sentence_transformers" else "tfidf_char_wb_3-5"
 
     def retrieve(self, query: str, top_k: int = DENSE_TOP_K) -> List[Dict[str, Any]]:
@@ -159,7 +189,24 @@ class DenseRetriever:
         if not self.chunks or not query or not query.strip():
             return []
 
-        if self.backend_used == "sentence_transformers" and self._embeddings is not None:
+        if self.backend_used == "gemini_embeddings" and self.gemini_provider.is_available():
+            try:
+                q_emb = self.gemini_provider.embed_text(query, task_type="RETRIEVAL_QUERY")
+                if q_emb and self._embeddings is not None:
+                    q_arr = np.asarray(q_emb, dtype=np.float32)
+                    q_norm = q_arr / (np.linalg.norm(q_arr) + 1e-9)
+                    scores = (self._embeddings @ q_norm).astype(float)
+                    min_score = 0.05
+                else:
+                    raise ValueError("Document embeddings not preloaded")
+            except Exception:
+                tokens = [w for w in re.findall(r"\b[a-zA-Z0-9_ऀ-ॿಀ-೿\-]{2,}\b", query.lower())
+                          if w not in QUESTION_STOPWORDS]
+                clean_query = " ".join(tokens) if tokens else query
+                q_vec = self.vectorizer.transform([clean_query])
+                scores = cosine_similarity(q_vec, self.doc_matrix).flatten()
+                min_score = 0.01
+        elif self.backend_used == "sentence_transformers" and self._embeddings is not None:
             q = self._st_model.encode([query], normalize_embeddings=True, show_progress_bar=False)
             scores = (self._embeddings @ np.asarray(q, dtype=np.float32)[0]).astype(float)
             min_score = 0.05

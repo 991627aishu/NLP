@@ -149,6 +149,12 @@ OLLAMA_URL      = os.environ.get("AYUR_OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL    = os.environ.get("AYUR_OLLAMA_MODEL", "llama3.2")
 GENERATOR_MODEL = os.environ.get("AYUR_GENERATOR_MODEL", None)
 
+# ── Google Gemini API Configuration ──────────────────────────────────────────
+GEMINI_API_KEY                  = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
+GEMINI_GENERATION_MODEL         = os.environ.get("GEMINI_GENERATION_MODEL", "gemini-2.5-flash")
+GEMINI_EMBEDDING_MODEL          = os.environ.get("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")
+GEMINI_SEARCH_GROUNDING_ENABLED = _env_bool("GEMINI_SEARCH_GROUNDING_ENABLED", True)
+
 # ── Experiment configurations ─────────────────────────────────────────────────
 EXPERIMENT_CONFIGS = {
     "B0": {
