@@ -56,7 +56,8 @@ class DenseRetriever:
         self.backend_warning: Optional[str] = None
         self._st_model = None
         self._embeddings: Optional[np.ndarray] = None
-        self.gemini_provider = GeminiProvider()
+        from app.pipeline.gemini_provider import get_gemini_provider
+        self.gemini_provider = get_gemini_provider()
 
         # The TF-IDF index is always available (fallback + v1 reproducibility).
         self._load_or_build()

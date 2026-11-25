@@ -10,8 +10,11 @@ Orchestrates the complete AyurMitra architecture supporting:
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any, Dict, List, Optional
+
+log = logging.getLogger("ayurmitra.pipeline")
 
 from app.config import EXPERIMENT_CONFIGS, FUSION_TOP_K, SAFETY_GATE, EDUCATIONAL_DISCLAIMER
 from app.core.safety import check_query_safety, safety_message
@@ -96,6 +99,8 @@ class AyurMitraPipeline:
             active components, retrieval results, generated answer, and execution trace.
         """
         start_time = time.time()
+        stage_timings = {}
+        t_cursor = start_time
         config = EXPERIMENT_CONFIGS.get(system_mode, EXPERIMENT_CONFIGS["P1"])
         use_terminology = config.get("use_terminology", True)
         use_dense = config.get("use_dense", True)
@@ -107,12 +112,16 @@ class AyurMitraPipeline:
         lang_info = lang_res.get("detected_info") or detect(query)
         dominant_lang = lang_info.get("dominant_lang", lang_info.get("lang", "en"))
         effective_target_lang = lang_res.get("mode", dominant_lang)
+        t_now = time.time()
+        stage_timings["language_detect_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         # Step 1a: Unsupported language handling
         if not lang_res.get("is_supported", True) or effective_target_lang == "unsupported":
             from app.pipeline.generator import LOCALIZED_STRINGS
             unsupp_str = LOCALIZED_STRINGS["unsupported"]["abstention_no_evidence"]
             elapsed_ms = (time.time() - start_time) * 1000.0
+            stage_timings["total_ms"] = round(elapsed_ms, 2)
             return {
                 "raw_query": query,
                 "system_mode": system_mode,
@@ -164,6 +173,7 @@ class AyurMitraPipeline:
                 "citations": [],
                 "disclaimer": EDUCATIONAL_DISCLAIMER,
                 "latency_ms": elapsed_ms,
+                "stage_timings_ms": stage_timings,
                 "backends": self.backend_info(),
                 "evidence_check": {"judgeable": False, "supported": False, "keywords": [], "matched": []},
                 "is_emergency": False,
@@ -179,8 +189,10 @@ class AyurMitraPipeline:
         if SAFETY_GATE and not getattr(self, "_disable_safety_gate", False):
             safety = check_query_safety(query)
             if safety["blocked"]:
+                t_now = time.time()
+                stage_timings["safety_gate_ms"] = round((t_now - t_cursor) * 1000, 2)
                 return self._safety_response(query, system_mode, config, lang_info, dominant_lang,
-                                             effective_target_lang, enable_web_search, safety, start_time)
+                                             effective_target_lang, enable_web_search, safety, start_time, stage_timings)
 
         # Step 1c: Intelligent Query Routing & Multi-Domain Classification
         from app.core.query_router import QueryRoute
@@ -195,40 +207,52 @@ class AyurMitraPipeline:
             route_res = self.router.classify(query, detected_terms=None)
             route_cat = route_res.get("route", QueryRoute.AYURVEDA_DOMAIN)
 
+            t_now = time.time()
+            stage_timings["router_ms"] = round((t_now - t_cursor) * 1000, 2)
+            t_cursor = t_now
+
             if route_cat == QueryRoute.UNCLEAR_QUERY:
                 unclear_res = self.general_ai.process_unclear_query(query, target_lang=effective_target_lang)
+                stage_timings["general_ai_ms"] = round((time.time() - t_cursor) * 1000, 2)
                 return self._wrap_general_ai_response(
                     query, system_mode, lang_info, dominant_lang, effective_target_lang,
-                    lang_res, start_time, unclear_res, route_res
+                    lang_res, start_time, unclear_res, route_res, stage_timings
                 )
 
             if route_cat == QueryRoute.UNSAFE_OR_MEDICALLY_SENSITIVE:
                 safety = {"blocked": True, "reason": "unsafe_or_medically_sensitive", "severity": "caution"}
                 return self._safety_response(query, system_mode, config, lang_info, dominant_lang,
-                                             effective_target_lang, enable_web_search, safety, start_time)
+                                             effective_target_lang, enable_web_search, safety, start_time, stage_timings)
 
             if route_cat == QueryRoute.GENERAL_KNOWLEDGE:
                 gen_res = self.general_ai.process_general_knowledge(query, target_lang=effective_target_lang)
+                stage_timings["general_ai_ms"] = round((time.time() - t_cursor) * 1000, 2)
                 return self._wrap_general_ai_response(
                     query, system_mode, lang_info, dominant_lang, effective_target_lang,
-                    lang_res, start_time, gen_res, route_res
+                    lang_res, start_time, gen_res, route_res, stage_timings
                 )
 
             if route_cat == QueryRoute.CURRENT_INFORMATION:
                 cur_res = self.general_ai.process_current_information(query, target_lang=effective_target_lang)
+                stage_timings["general_ai_ms"] = round((time.time() - t_cursor) * 1000, 2)
                 return self._wrap_general_ai_response(
                     query, system_mode, lang_info, dominant_lang, effective_target_lang,
-                    lang_res, start_time, cur_res, route_res
+                    lang_res, start_time, cur_res, route_res, stage_timings
                 )
 
             if route_cat == QueryRoute.MIXED_DOMAIN:
                 mix_res = self.general_ai.process_mixed_domain(
                     query, target_lang=effective_target_lang, ayurveda_pipeline=self, system_mode=system_mode
                 )
+                stage_timings["general_ai_ms"] = round((time.time() - t_cursor) * 1000, 2)
                 return self._wrap_general_ai_response(
                     query, system_mode, lang_info, dominant_lang, effective_target_lang,
-                    lang_res, start_time, mix_res, route_res
+                    lang_res, start_time, mix_res, route_res, stage_timings
                 )
+        else:
+            t_now = time.time()
+            stage_timings["router_ms"] = round((t_now - t_cursor) * 1000, 2)
+            t_cursor = t_now
 
         # Step 2: Terminology Detection & Protection (P1/P2 only)
         detected_terms = []
@@ -240,6 +264,9 @@ class AyurMitraPipeline:
             if detected_terms:
                 protected_text, placeholder_map = self.protector.protect(query)
                 processed_query = protected_text
+        t_now = time.time()
+        stage_timings["terminology_detection_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         # Step 3: Query Translation to English for English Corpus Retrieval
         # For P1/P2: Placeholders protect domain terms from translation drift.
@@ -256,6 +283,9 @@ class AyurMitraPipeline:
             english_query = self.protector.restore_canonical(translated_query, placeholder_map)
         else:
             english_query = translated_query
+        t_now = time.time()
+        stage_timings["query_translation_canonicalization_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         # Step 5: Retrieval (BM25 only for B0; Hybrid RRF for B1, P1, P2)
         # In P1/P2: Grounded ranking utilizes detected Ayurvedic terms
@@ -269,6 +299,9 @@ class AyurMitraPipeline:
                         graph_expansion_terms.append(x)
             if graph_expansion_terms:
                 retrieval_query = english_query + " " + " ".join(graph_expansion_terms)
+        t_now = time.time()
+        stage_timings["kg_query_expansion_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         retrieved_passages = self.retriever.retrieve(
             query=retrieval_query,
@@ -277,6 +310,9 @@ class AyurMitraPipeline:
             use_dense=use_dense,
             detected_terms=detected_terms if use_terminology else None,
         )
+        t_now = time.time()
+        stage_timings["hybrid_retrieval_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         # Step 5b: Controlled Web Search Fallback
         # States: disabled, not_needed, triggered, success, no_relevant_results, error
@@ -324,6 +360,9 @@ class AyurMitraPipeline:
                     web_status = "no_relevant_results"
             except Exception as e:
                 web_status = f"error: {e}"
+        t_now = time.time()
+        stage_timings["web_search_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         # Step 6: Knowledge Graph Grounding (P2 only)
         graph_facts = []
@@ -350,6 +389,9 @@ class AyurMitraPipeline:
                             "source_id": conn.get("source_id", "NAMASTE"),
                             "locator": conn.get("locator", ""),
                         })
+        t_now = time.time()
+        stage_timings["kg_grounding_facts_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
 
         # Step 7: Evidence-Grounded Answer Generation in User's Target Language
         gen_res = self.generator.generate_answer(
@@ -444,10 +486,10 @@ class AyurMitraPipeline:
 
         # Level 3 (Gemini Knowledge Fallback) if still abstained
         if gen_res.get("abstained") and (want_llm or (GENERATOR_BACKEND or "llm").lower() == "llm"):
-            from app.pipeline.gemini_provider import GeminiProvider
+            from app.pipeline.gemini_provider import get_gemini_provider
             gem_fb = getattr(self, "_gemini_fb", None)
             if gem_fb is None:
-                gem_fb = GeminiProvider()
+                gem_fb = get_gemini_provider()
                 self._gemini_fb = gem_fb
 
             if gem_fb.is_available():
@@ -483,6 +525,10 @@ class AyurMitraPipeline:
                 except Exception as fb_err:
                     log.warning("Level 3 Gemini knowledge fallback failed: %s", fb_err)
 
+        t_now = time.time()
+        stage_timings["generation_and_fallback_ms"] = round((t_now - t_cursor) * 1000, 2)
+        t_cursor = t_now
+
         # Step 8: Output-Side Term Restoration (P1/P2 only)
         if use_terminology and placeholder_map:
             final_answer = self.protector.restore_to_language(
@@ -503,6 +549,9 @@ class AyurMitraPipeline:
         final_answer = re.sub(r"\s{2,}", " ", final_answer).strip()
 
         elapsed_ms = (time.time() - start_time) * 1000.0
+        t_now = time.time()
+        stage_timings["post_processing_ms"] = round((t_now - t_cursor) * 1000, 2)
+        stage_timings["total_ms"] = round(elapsed_ms, 2)
 
         all_citations = gen_res.get("citations", []) + gen_res.get("web_citations", [])
 
@@ -548,6 +597,7 @@ class AyurMitraPipeline:
             "citations": all_citations,
             "disclaimer": gen_res["disclaimer"],
             "latency_ms": elapsed_ms,
+            "stage_timings_ms": stage_timings,
             "backends": self.backend_info(),
             "evidence_check": evidence_check,
             "is_emergency": False,
@@ -591,7 +641,7 @@ class AyurMitraPipeline:
 
     # ── Safety-gate response (same keys as a normal response) ────────────────
     def _safety_response(self, query, system_mode, config, lang_info, dominant_lang,
-                         target_lang, enable_web_search, safety, start_time) -> Dict[str, Any]:
+                         target_lang, enable_web_search, safety, start_time, stage_timings=None) -> Dict[str, Any]:
         from app.pipeline.generator import LOCALIZED_STRINGS
         lang = target_lang if target_lang in ("en", "hi", "kn", "hinglish", "kanglish") else "en"
         msg = safety_message(safety["reason"], lang)
@@ -599,6 +649,8 @@ class AyurMitraPipeline:
         disclaimer = LOCALIZED_STRINGS[loc_key]["disclaimer"]
         use_terminology = config.get("use_terminology", True)
         elapsed_ms = (time.time() - start_time) * 1000.0
+        timings = dict(stage_timings or {})
+        timings["total_ms"] = round(elapsed_ms, 2)
         return {
             "raw_query": query,
             "system_mode": system_mode,
@@ -643,7 +695,8 @@ class AyurMitraPipeline:
             "is_emergency": safety["severity"] == "emergency",
             "citations": [],
             "disclaimer": disclaimer,
-            "latency_ms": (time.time() - start_time) * 1000.0,
+            "latency_ms": elapsed_ms,
+            "stage_timings_ms": timings,
             "backends": self.backend_info(),
             "machine_translated": False,
             "answer_grounding": "safety_gate",
@@ -659,11 +712,13 @@ class AyurMitraPipeline:
     def _wrap_general_ai_response(
         self, query: str, system_mode: str, lang_info: dict, dominant_lang: str,
         effective_target_lang: str, lang_res: dict, start_time: float,
-        engine_res: dict, route_res: dict
+        engine_res: dict, route_res: dict, stage_timings=None
     ) -> Dict[str, Any]:
         from app.core.query_router import QueryRoute
         elapsed_ms = (time.time() - start_time) * 1000.0
         route_cat = route_res.get("route", QueryRoute.GENERAL_KNOWLEDGE)
+        timings = dict(stage_timings or {})
+        timings["total_ms"] = round(elapsed_ms, 2)
 
         route_labels = {
             QueryRoute.GENERAL_KNOWLEDGE: "General AI Knowledge",
@@ -716,6 +771,7 @@ class AyurMitraPipeline:
             "citations": engine_res.get("citations", []),
             "disclaimer": EDUCATIONAL_DISCLAIMER,
             "latency_ms": elapsed_ms,
+            "stage_timings_ms": timings,
             "backends": self.backend_info(),
             "evidence_check": {"judgeable": False, "supported": True, "keywords": [], "matched": []},
             "is_emergency": False,

@@ -25,7 +25,12 @@
     }
     showOffline(false);
     let data = {}; try { data = await res.json(); } catch { /* non-JSON */ }
-    if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+    if (!res.ok) {
+      if (res.status === 502 || res.status === 504) {
+        throw new Error(data.message || `Render gateway timeout (HTTP ${res.status}): The backend took longer to respond or was waking up. Please retry.`);
+      }
+      throw new Error(data.message || data.detail || `Request failed (${res.status})`);
+    }
     return data;
   }
   function showOffline(on) { const o = $("#offline"); o.hidden = !on; if (on) o.textContent = t("backend_offline"); }
@@ -224,19 +229,34 @@
 
   function addQuestion(text) { const d = document.createElement("div"); d.className = "q"; d.textContent = text; $("#thread").append(d); $("#starters-wrap").hidden = true; }
   function addSkeleton() { const d = document.createElement("div"); d.className = "a"; d.setAttribute("aria-busy", "true");
-    d.innerHTML = `<span class="sr">${t("loading")}</span><div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div>`;
+    d.innerHTML = `<span class="sr">${t("loading")}</span>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.875rem;color:var(--ink-muted,#6b7280);margin-bottom:10px;">
+        <span style="display:inline-block;width:12px;height:12px;border:2px solid #10b981;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></span>
+        <span>🌿 Consulting classical Ayurvedic texts & Gemini foundational knowledge...</span>
+      </div>
+      <div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div>`;
     $("#thread").append(d); d.scrollIntoView({ block: "nearest", behavior: "smooth" }); return d; }
 
   async function ask(textOverride) {
+    if ($("#send").disabled && !textOverride) return;
     const text = (textOverride || q.value).trim(); if (!text) { q.focus(); return; }
     q.value = ""; q.style.height = "120px"; addQuestion(text); const sk = addSkeleton(); $("#send").disabled = true;
     try {
       const r = await api("/api/ask", { method: "POST", key: "ask", body: { query: text, mode: $("#opt-mode").value,
         target_lang: $("#opt-lang").value, web_fallback: $("#opt-web").checked, generator: $("#opt-gen").value, voice: $("#opt-voice").value } });
       renderAnswer(r, sk);
-    } catch (e) { if (e.name !== "AbortError") sk.outerHTML = `<div class="err" role="alert">${esc(e.message)}</div>`; }
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        const safeText = esc(text).replace(/'/g, "\\'");
+        sk.outerHTML = `<div class="err" role="alert" style="display:flex;flex-direction:column;gap:8px;">
+          <div>⚠️ <strong>Response Issue:</strong> ${esc(e.message)}</div>
+          <div><button type="button" class="btn btn-sm" onclick="window.ask('${safeText}')" style="cursor:pointer;padding:6px 12px;font-size:0.85rem;border-radius:4px;border:1px solid currentColor;">🔄 Retry Question</button></div>
+        </div>`;
+      }
+    }
     finally { $("#send").disabled = false; }
   }
+  window.ask = ask;
 
   const LANG_NAME = { en: "English", hi: "हिन्दी", kn: "ಕನ್ನಡ", hinglish: "Hinglish", kanglish: "Kanglish", unsupported: "Unsupported" };
   function displayAnswer(ans) {

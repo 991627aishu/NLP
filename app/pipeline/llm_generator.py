@@ -27,7 +27,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.pipeline.gemini_provider import GeminiProvider, GENAI_SDK_AVAILABLE
+from app.pipeline.gemini_provider import GeminiProvider, get_gemini_provider, GENAI_SDK_AVAILABLE
 
 try:
     from app.config import (
@@ -120,7 +120,7 @@ class LLMGenerator:
     """
 
     def __init__(self, provider: Optional[str] = None, model: Optional[str] = None):
-        self.gemini = GeminiProvider()
+        self.gemini = get_gemini_provider()
         self.provider = (provider or os.environ.get("AYUR_LLM_PROVIDER") or LLM_PROVIDER or "auto").lower()
         self.model = model or os.environ.get("AYUR_LLM_MODEL") or LLM_MODEL or "default"
         self._detect_best_provider()

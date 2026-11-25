@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import sqlite3
+import threading
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -41,6 +42,23 @@ from app.config import (
     GEMINI_EMBEDDING_MODEL,
     GEMINI_SEARCH_GROUNDING_ENABLED,
 )
+
+# Process-wide singleton & fast in-memory embedding cache
+_SINGLETON_PROVIDER: Optional["GeminiProvider"] = None
+_SINGLETON_LOCK = threading.Lock()
+_MEM_EMBED_CACHE: Dict[str, List[float]] = {}
+_MEM_CACHE_LOCK = threading.Lock()
+_MAX_MEM_EMBED_ITEMS = 2048
+
+
+def get_gemini_provider() -> "GeminiProvider":
+    """Thread-safe process-wide singleton for the Google Gemini Provider."""
+    global _SINGLETON_PROVIDER
+    if _SINGLETON_PROVIDER is None:
+        with _SINGLETON_LOCK:
+            if _SINGLETON_PROVIDER is None:
+                _SINGLETON_PROVIDER = GeminiProvider()
+    return _SINGLETON_PROVIDER
 
 
 class GeminiProvider:
@@ -72,6 +90,7 @@ class GeminiProvider:
         self._client: Optional[Any] = None
         self._init_error: Optional[str] = None
         self._cache_db: Optional[Path] = None
+        self._overloaded_models: Dict[str, float] = {}
         self._init_client()
         self._init_embedding_cache()
 
@@ -175,26 +194,34 @@ class GeminiProvider:
 
         config = types.GenerateContentConfig(**config_params)
 
-        # Exponential backoff retry loop with demand spike circuit breaker
-        max_retries = 2
-        backoff_sec = 0.5
-        last_error = None
+        # Model candidates ordered by preference
+        candidates = [self.generation_model]
+        for alt in ("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"):
+            if alt not in candidates:
+                candidates.append(alt)
+
+        # Select first non-overloaded candidate
+        now = time.time()
+        active_model = candidates[0]
+        for c in candidates:
+            if now >= self._overloaded_models.get(c, 0):
+                active_model = c
+                break
+        else:
+            active_model = candidates[0]  # if all in cooldown, retry primary
+
         token_usage: Dict[str, int] = {"prompt_tokens": 0, "candidate_tokens": 0, "total_tokens": 0}
+        last_error = None
 
-        # Circuit breaker: if primary model has an active 503 demand spike, route to fast alternate
-        active_model = self.generation_model
-        now_time = time.time()
-        spike_until = getattr(self, "_spike_cooldown_until", 0)
-        if now_time < spike_until and active_model != "gemini-3.5-flash-lite":
-            log.info("Primary %s has active 503 demand cooldown (remaining: %.1fs); routing to gemini-3.5-flash-lite",
-                     active_model, spike_until - now_time)
-            active_model = "gemini-3.5-flash-lite"
+        for attempt, model_name in enumerate(candidates):
+            # Skip models in active cooldown unless it's our only option
+            if now < self._overloaded_models.get(model_name, 0) and model_name != active_model and attempt > 0:
+                continue
 
-        for attempt in range(max_retries):
             try:
                 t0 = time.perf_counter()
                 response = self._client.models.generate_content(
-                    model=active_model,
+                    model=model_name,
                     contents=user_prompt,
                     config=config,
                 )
@@ -210,7 +237,7 @@ class GeminiProvider:
                     }
                     log.info(
                         "Gemini telemetry [%s]: %d prompt tokens, %d candidate tokens (latency: %.1fms)",
-                        active_model,
+                        model_name,
                         token_usage["prompt_tokens"],
                         token_usage["candidate_tokens"],
                         latency_ms,
@@ -222,7 +249,6 @@ class GeminiProvider:
                     first_cand = response.candidates[0]
                     cand_grounding = getattr(first_cand, "grounding_metadata", None)
                     if cand_grounding:
-                        queries = getattr(cand_grounding, "web_search_queries", []) or []
                         chunks = getattr(cand_grounding, "grounding_chunks", []) or []
                         for ch in chunks:
                             web = getattr(ch, "web", None)
@@ -235,7 +261,7 @@ class GeminiProvider:
                 text_out = response.text or ""
                 return {
                     "text": text_out,
-                    "model": active_model,
+                    "model": model_name,
                     "token_usage": token_usage,
                     "latency_ms": latency_ms,
                     "grounding_sources": grounding_metadata,
@@ -247,78 +273,33 @@ class GeminiProvider:
                 last_error = e
                 err_str = str(e).lower()
                 is_rate_limit = "429" in err_str or "quota" in err_str or "resource exhausted" in err_str
-                is_transient = "503" in err_str or "unavailable" in err_str or "timeout" in err_str
+                is_transient = "503" in err_str or "unavailable" in err_str or "demand" in err_str or "timeout" in err_str
+                is_not_found = "404" in err_str or "not found" in err_str or "no longer available" in err_str
 
                 log.warning(
-                    "Gemini API attempt %d/%d on %s failed: %s (rate_limit=%s, transient=%s)",
-                    attempt + 1,
-                    max_retries,
-                    active_model,
+                    "Gemini API attempt on %s failed: %s (rate_limit=%s, transient=%s, not_found=%s)",
+                    model_name,
                     e,
                     is_rate_limit,
                     is_transient,
+                    is_not_found,
                 )
 
-                if is_transient or is_rate_limit:
-                    # Set 60-second circuit breaker cooldown for primary model
-                    self._spike_cooldown_until = time.time() + 60.0
-                    for alt_candidate in ("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash"):
-                        if active_model != alt_candidate:
-                            log.info("Primary %s hit limit/spike, trying alternate %s immediately...", active_model, alt_candidate)
-                            try:
-                                t0 = time.perf_counter()
-                                alt_response = self._client.models.generate_content(
-                                    model=alt_candidate,
-                                    contents=user_prompt,
-                                    config=config,
-                                )
-                                latency_ms = (time.perf_counter() - t0) * 1000.0
-                                return {
-                                    "text": alt_response.text or "",
-                                    "model": alt_candidate,
-                                    "token_usage": token_usage,
-                                    "latency_ms": latency_ms,
-                                    "grounding_sources": [],
-                                    "structured_json": structured_json,
-                                    "success": True,
-                                }
-                            except Exception as alt_err:
-                                log.warning("Immediate alternate model %s failed: %s", alt_candidate, alt_err)
-
-                if attempt < max_retries - 1:
-                    sleep_time = backoff_sec * (2 ** attempt)
-                    if is_rate_limit:
-                        sleep_time += 1.0
-                    time.sleep(sleep_time)
+                if is_not_found:
+                    # Deprecated / unavailable model: mark unavailable for 24h and try next candidate
+                    self._overloaded_models[model_name] = time.time() + 86400.0
+                    continue
+                elif is_transient or is_rate_limit:
+                    # Mark model overloaded for 180 seconds to avoid hitting it again
+                    self._overloaded_models[model_name] = time.time() + 180.0
+                    # Immediately continue to next candidate model without sleeping
+                    continue
                 else:
-                    break
+                    # Fatal client/auth error: mark and continue to fallback if available
+                    self._overloaded_models[model_name] = time.time() + 300.0
+                    continue
 
-        # Fallback to alternate active model if primary returns a temporary 503 high-demand spike
-        if last_error and ("503" in str(last_error) or "unavailable" in str(last_error).lower()):
-            alt_model = "gemini-3.5-flash"
-            if self.generation_model != alt_model:
-                try:
-                    log.info("Primary %s experiencing temporary 503 spike, trying alternate %s...", self.generation_model, alt_model)
-                    t0 = time.perf_counter()
-                    alt_response = self._client.models.generate_content(
-                        model=alt_model,
-                        contents=user_prompt,
-                        config=config,
-                    )
-                    latency_ms = (time.perf_counter() - t0) * 1000.0
-                    return {
-                        "text": alt_response.text or "",
-                        "model": alt_model,
-                        "token_usage": token_usage,
-                        "latency_ms": latency_ms,
-                        "grounding_sources": [],
-                        "structured_json": structured_json,
-                        "success": True,
-                    }
-                except Exception as alt_err:
-                    log.warning("Alternate model %s also failed: %s", alt_model, alt_err)
-
-        raise RuntimeError(f"Gemini API failed after {max_retries} attempts: {last_error}")
+        raise RuntimeError(f"Gemini API failed across available models: {last_error}")
 
     def embed_text(
         self,
@@ -333,8 +314,14 @@ class GeminiProvider:
         if not clean_text:
             return []
 
-        # Check local cache first
         cache_key = f"{self.embedding_model}:{task_type}:{hash(clean_text)}"
+
+        # 1. Check ultra-fast in-memory cache first (0.001 ms)
+        with _MEM_CACHE_LOCK:
+            if cache_key in _MEM_EMBED_CACHE:
+                return _MEM_EMBED_CACHE[cache_key]
+
+        # 2. Check local SQLite cache (0.5 ms)
         if self._cache_db_path and self._cache_db_path.exists():
             try:
                 with sqlite3.connect(self._cache_db_path) as conn:
@@ -342,7 +329,11 @@ class GeminiProvider:
                     cur.execute("SELECT embedding_json FROM embeddings WHERE cache_key = ?", (cache_key,))
                     row = cur.fetchone()
                     if row:
-                        return json.loads(row[0])
+                        emb = json.loads(row[0])
+                        with _MEM_CACHE_LOCK:
+                            if len(_MEM_EMBED_CACHE) < _MAX_MEM_EMBED_ITEMS:
+                                _MEM_EMBED_CACHE[cache_key] = emb
+                        return emb
             except Exception as e:
                 log.debug("Cache read exception: %s", e)
 
@@ -365,16 +356,21 @@ class GeminiProvider:
             elif hasattr(result, "embeddings") and result.embeddings:
                 embedding_vals = getattr(result.embeddings[0], "values", [])
 
-            if embedding_vals and self._cache_db_path:
-                try:
-                    with sqlite3.connect(self._cache_db_path) as conn:
-                        conn.execute(
-                            "INSERT OR REPLACE INTO embeddings (cache_key, model_name, dim, embedding_json, created_at) VALUES (?, ?, ?, ?, ?)",
-                            (cache_key, self.embedding_model, len(embedding_vals), json.dumps(embedding_vals), time.time()),
-                        )
-                        conn.commit()
-                except Exception as e:
-                    log.debug("Cache write exception: %s", e)
+            if embedding_vals:
+                with _MEM_CACHE_LOCK:
+                    if len(_MEM_EMBED_CACHE) < _MAX_MEM_EMBED_ITEMS:
+                        _MEM_EMBED_CACHE[cache_key] = embedding_vals
+
+                if self._cache_db_path:
+                    try:
+                        with sqlite3.connect(self._cache_db_path) as conn:
+                            conn.execute(
+                                "INSERT OR REPLACE INTO embeddings (cache_key, model_name, dim, embedding_json, created_at) VALUES (?, ?, ?, ?, ?)",
+                                (cache_key, self.embedding_model, len(embedding_vals), json.dumps(embedding_vals), time.time()),
+                            )
+                            conn.commit()
+                    except Exception as e:
+                        log.debug("Cache write exception: %s", e)
 
             return embedding_vals
 

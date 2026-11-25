@@ -38,7 +38,7 @@ MAX_BODY_BYTES = int(os.environ.get("AYUR_MAX_BODY_BYTES", str(12 * 1024 * 1024)
 RATE_LIMIT_PER_MIN = int(os.environ.get("AYUR_RATE_LIMIT_PER_MIN", "90"))
 MODES = ("B0", "B1", "P1", "P2")
 STATE: Dict[str, Any] = {}
-_PIPE_LOCK = threading.Lock()
+# Concurrency enabled: Pipeline components are read-only and thread-safe for parallel requests.
 
 
 # ── lifespan: build heavy objects once ───────────────────────────────────────
@@ -159,19 +159,21 @@ def _slim_passage(p: Dict[str, Any]) -> Dict[str, Any]:
 
 def _run_query(req: AskRequest) -> Dict[str, Any]:
     pipe = _need("pipeline")
-    with _PIPE_LOCK:
-        r = pipe.process_query(req.query, system_mode=req.mode, target_lang=req.target_lang,
-                               enable_web_search=req.web_fallback, generator=req.generator)
+    r = pipe.process_query(req.query, system_mode=req.mode, target_lang=req.target_lang,
+                           enable_web_search=req.web_fallback, generator=req.generator)
     out = {k: r.get(k) for k in (
         "raw_query", "system_mode", "detected_language", "target_language", "language_mode", "display_language", "tts_lang",
         "is_code_mixed", "code_mix_type", "segments", "active_components", "translation_meta", "detected_terms",
         "canonical_query", "retrieval_query", "graph_expansion_terms", "graph_facts", "answer", "abstained",
-        "abstention_reason", "is_emergency", "citations", "disclaimer", "latency_ms", "backends", "machine_translated",
+        "abstention_reason", "is_emergency", "citations", "disclaimer", "latency_ms", "stage_timings_ms", "backends", "machine_translated",
         "answer_grounding", "generator_used", "generator_note", "evidence_check", "safety",
         "route_category", "route_label", "source_label", "answer_source", "is_ayurvedic_grounded")}
     out["retrieved_passages"] = [_slim_passage(p) for p in r.get("retrieved_passages", [])]
     out["web_passages"] = r.get("web_passages", [])
     out["ok"] = True
+    log.info("Request completed in %.1fms [route=%s, model=%s, passages=%d, citations=%d]",
+             r.get("latency_ms", 0), r.get("route_category"), r.get("generator_used"),
+             len(r.get("retrieved_passages", [])), len(r.get("citations", [])))
     return out
 
 
@@ -185,12 +187,12 @@ def _speak(text: str, lang: str, voice: str = "female") -> Dict[str, Any]:
 def health():
     from app.voice import stt, tts
     from app.pipeline.llm_generator import LLMGenerator
-    from app.pipeline.gemini_provider import GeminiProvider
+    from app.pipeline.gemini_provider import get_gemini_provider
     pipe = STATE.get("pipeline")
     b = pipe.backend_info() if pipe else {}
     kg = STATE.get("kg")
     tts_order = tts.available_backends()
-    gemini_health = GeminiProvider().check_health()
+    gemini_health = get_gemini_provider().check_health()
     return {
         "ok": pipe is not None, "startup_seconds": STATE.get("startup_seconds"),
         "backends": {
@@ -213,8 +215,8 @@ def health():
 @app.get("/api/gemini/status")
 def gemini_status():
     """Detailed health, readiness, and configuration audit of the Google Gemini integration."""
-    from app.pipeline.gemini_provider import GeminiProvider
-    provider = GeminiProvider()
+    from app.pipeline.gemini_provider import get_gemini_provider
+    provider = get_gemini_provider()
     return provider.check_health()
 
 

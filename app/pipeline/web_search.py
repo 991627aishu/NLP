@@ -285,26 +285,47 @@ class WebSearchFallback:
 
         results: List[Dict[str, Any]] = []
 
-        # 1. Live Web Search (DuckDuckGo)
-        ddg_res = self.search_duckduckgo(clean_q, max_results=2)
-        results.extend(ddg_res)
+        # Execute external searches concurrently with bounded timeouts
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_ddg = executor.submit(self.search_duckduckgo, clean_q, 2)
+            future_wiki = executor.submit(self.search_encyclopedic_wikipedia, clean_q, 2)
+            future_pmc = executor.submit(self.search_academic_europepmc, clean_q, 2)
 
-        # 2. Encyclopedic Definitions (Wikipedia)
-        wiki_res = self.search_encyclopedic_wikipedia(clean_q, max_results=2)
-        results.extend(wiki_res)
+            # Gather DuckDuckGo
+            try:
+                results.extend(future_ddg.result(timeout=3.5))
+            except Exception as e:
+                log.debug("Concurrent DuckDuckGo timed out or error: %s", e)
 
-        # 3. Peer-Reviewed Academic (EuropePMC)
-        if len(results) < 3:
-            pmc_res = self.search_academic_europepmc(clean_q, max_results=2)
-            results.extend(pmc_res)
+            # Gather Wikipedia
+            try:
+                results.extend(future_wiki.result(timeout=3.5))
+            except Exception as e:
+                log.debug("Concurrent Wikipedia timed out or error: %s", e)
 
-        # 4. Deep webpage extraction for top 2 web URLs if snippet is short
-        for item in results[:2]:
-            url = item.get("url", "")
-            if url.startswith("http") and len(item.get("snippet", "")) < 200:
-                extracted = self.extract_webpage_content(url)
-                if extracted.get("extracted_text"):
-                    item["snippet"] = extracted["extracted_text"][:800]
+            # Gather EuropePMC
+            try:
+                results.extend(future_pmc.result(timeout=3.5))
+            except Exception as e:
+                log.debug("Concurrent EuropePMC timed out or error: %s", e)
+
+        # Deep webpage extraction for top 2 web URLs concurrently if snippets are short
+        targets_to_extract = [item.get("url", "") for item in results[:2]
+                              if item.get("url", "").startswith("http") and len(item.get("snippet", "")) < 200]
+        if targets_to_extract:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(targets_to_extract)) as ext_executor:
+                future_to_url = {ext_executor.submit(self.extract_webpage_content, u): u for u in targets_to_extract}
+                for fut in concurrent.futures.as_completed(future_to_url, timeout=3.0):
+                    u = future_to_url[fut]
+                    try:
+                        extracted = fut.result()
+                        if extracted and extracted.get("extracted_text"):
+                            for item in results:
+                                if item.get("url") == u:
+                                    item["snippet"] = extracted["extracted_text"][:800]
+                    except Exception as e:
+                        log.debug("Concurrent page extraction error: %s", e)
 
         # Deduplicate by URL
         seen_urls = set()
