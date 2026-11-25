@@ -31,15 +31,11 @@ _SECTION_DROP = re.compile(r"\*\*(Sources|Ayurvedic terms|Evidence limitation)[^
 
 
 def clean_for_tts(text: str, lang: str = "en", add_disclaimer: bool = True) -> str:
+    """Clean markdown/URLs/IDs for natural speech while preserving the entire displayed response."""
     t = text or ""
-    t = _SECTION_DROP.sub(" ", t)
-    # graph-fact / provenance lines are for reading, not listening
-    t = "\n".join(l for l in t.splitlines() if "->" not in l and "Source:" not in l
-                  and not re.search(r"Knowledge Graph Grounding|External Public Literature Evidence|ज्ञान ग्राफ|ಜ್ಞಾನ ಗ್ರಾಫ್", l))
     t = re.sub(r"\[Glossary note[^\]]*\]", " ", t)
     t = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r"\1", t)          # markdown links -> label
     t = re.sub(r"https?://\S+", " ", t)
-    t = re.sub(r"\(\s*Source:[^)]*\)", " ", t)
     t = re.sub(r"`[^`]*`", " ", t)
     t = re.sub(r"\[[^\]]*(CHUNK|PASSAGE|QA_|ITA-|SAT-A)[^\]]*\]", " ", t)  # [WHO_CHUNK_0001]
     t = _ID_RX.sub(" ", t)
@@ -48,13 +44,7 @@ def clean_for_tts(text: str, lang: str = "en", add_disclaimer: bool = True) -> s
     t = re.sub(r"\(printed[^)]*\)", " ", t)
     t = re.sub(r"[*#>_|]+", " ", t)
     t = re.sub(r"^\s*[-•]\s*", "", t, flags=re.M)
-    t = t.replace("->", ",").replace("→", ",")
-    t = re.sub(r"\((English source text|अंग्रेज़ी स्रोत पाठ[^)]*|ಇಂಗ್ಲಿಷ್ ಮೂಲ ಪಠ್ಯ[^)]*)\)", " ", t)
-    t = re.sub(r"\b(Answer|Explanation)\s*:", " ", t)
-    if lang in ("hi", "kn"):
-        table = CANONICAL_TO_HINDI if lang == "hi" else CANONICAL_TO_KANNADA
-        for canon in sorted(table, key=len, reverse=True):
-            t = re.sub(rf"\b{re.escape(canon)}\b", table[canon], t)
+    t = t.replace("->", ", ").replace("→", ", ")
     t = re.sub(r"\s+([,.;:!?।])", r"\1", t)
     t = re.sub(r"([,;:])\1+", r"\1", t)
     t = re.sub(r"\s+", " ", t).strip(" ,;")

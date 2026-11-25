@@ -451,7 +451,7 @@
       .replace(/\[[A-Z][A-Z0-9_.\-]{3,}[A-Z0-9]\]/g, "")
       .replace(/\n\*\*Sources:\*\*[\s\S]*?(?=\n\n\*\*|$)/, "")
       .replace(/\n\n\*\*Ayurvedic terms:\*\*[^\n]*/, "");
-    return clean.replace(/\s{2,}/g, " ").trim();
+    return clean.replace(/[ \t]{2,}/g, " ").trim();
   }
 
   function renderAnswer(r, slot) {
@@ -494,7 +494,10 @@
       <div class="actions"></div>`;
     const lead = $(".answer-body p", card); if (lead && !r.abstained) lead.classList.add("lead");
     const actions = $(".actions", card);
-    actions.append(playerControls(() => displayAnswer(r.answer || ""), lang));
+    actions.append(playerControls(() => {
+      const bodyEl = $(".answer-body", card);
+      return (bodyEl && bodyEl.innerText ? bodyEl.innerText.trim() : "") || displayAnswer(r.answer || "");
+    }, lang));
     const mk = (label, fn) => { const b = document.createElement("button"); b.className = "btn ghost"; b.textContent = label; b.onclick = () => fn(b); actions.append(b); };
     mk(t("copy"), async b => { try { await navigator.clipboard.writeText(r.answer); b.textContent = t("copied"); } catch { /* clipboard blocked */ } });
     mk(t("share"), async () => { const txt = `${r.raw_query}\n\n${r.answer}`; if (navigator.share) { try { await navigator.share({ text: txt }); } catch { /* cancelled */ } } else { try { await navigator.clipboard.writeText(txt); } catch { } } });
