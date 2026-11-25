@@ -1,0 +1,8 @@
+{
+  "model": "gemini-embedding-001",
+  "n": 5,
+  "dim": 3072,
+  "corpus_sha256": "eb9c15e25f679456785bf90184928b866120f9ed07ae28c320e80856381c77f6",
+  "created_at": 1795589539.5905216,
+  "is_partial": true
+}

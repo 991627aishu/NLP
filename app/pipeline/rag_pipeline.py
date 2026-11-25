@@ -16,7 +16,8 @@ from typing import Any, Dict, List, Optional
 from app.config import EXPERIMENT_CONFIGS, FUSION_TOP_K, SAFETY_GATE, EDUCATIONAL_DISCLAIMER
 from app.core.safety import check_query_safety, safety_message
 from app.config import EVIDENCE_GATE, EVIDENCE_MIN_COVERAGE, GENERATOR_BACKEND, KG_VERSION
-import re as _re
+import re
+_re = re
 from app.pipeline.bm25_retriever import QUESTION_STOPWORDS
 
 # Words too generic to show that a passage addresses the question.
@@ -286,12 +287,19 @@ class AyurMitraPipeline:
         else:
             top_p = retrieved_passages[0]
             top_score = top_p.get("rrf_score", top_p.get("bm25_score", 0.0))
-            if top_score <= 0.005 and top_p.get("bm25_score", 0.0) == 0:
+            if top_score <= 0.020 and top_p.get("bm25_score", 0.0) == 0:
                 is_local_insufficient = True
+            # Also verify if the primary detected concepts actually exist in retrieved passages
+            primary_terms = [t.get("canonical_term", "").lower() for t in (detected_terms or []) if t.get("canonical_term")]
+            if primary_terms:
+                all_text = " ".join((p.get("text", "") + " " + p.get("title", "")) for p in retrieved_passages).lower()
+                if not any(pt in all_text for pt in primary_terms):
+                    is_local_insufficient = True
 
-        explicit_external_req = any(w in query.lower() for w in ["recent", "modern", "latest", "who report", "clinical trial", "pubchem"])
+        explicit_external_req = any(w in query.lower() for w in ["recent", "modern", "latest", "who report", "clinical trial", "pubchem", "news", "current"])
 
-        if not enable_web_search:
+        # Automatic web research is ALWAYS enabled when local evidence is weak or absent
+        if not (is_local_insufficient or explicit_external_req) and not enable_web_search:
             web_status = "disabled"
             web_triggered = False
         elif not (is_local_insufficient or explicit_external_req):
@@ -300,7 +308,13 @@ class AyurMitraPipeline:
         else:
             web_triggered = True
             try:
-                web_res = self.web_search.search(english_query, max_results=3)
+                # Search using both translated English query and any specific entities
+                search_term = english_query
+                if detected_terms:
+                    canon_names = [t.get("canonical_term") for t in detected_terms if t.get("canonical_term")]
+                    if canon_names:
+                        search_term = " ".join(canon_names) + " " + search_term
+                web_res = self.web_search.search(search_term.strip(), max_results=4)
                 if web_res.get("success") and web_res.get("passages"):
                     web_passages = web_res.get("passages", [])
                     web_status = "success"
@@ -308,8 +322,8 @@ class AyurMitraPipeline:
                     web_status = "no_relevant_results"
                 else:
                     web_status = "no_relevant_results"
-            except Exception:
-                web_status = "error"
+            except Exception as e:
+                web_status = f"error: {e}"
 
         # Step 6: Knowledge Graph Grounding (P2 only)
         graph_facts = []
@@ -363,10 +377,14 @@ class AyurMitraPipeline:
                                    abstained=True, reason="insufficient_evidence", citations=[])
                 else:
                     cited = set(out["cited_ids"])
+                    clean_ans = out['answer_text']
+                    clean_ans = re.sub(r"\[[A-Za-z0-9_.\- :]+(?:CHUNK|EVID|WHO|NAMASTE|IMPPAT|CLASSIC|CI\.ASSIC|WEB|DOC)[^\]]*\]", "", clean_ans, flags=re.IGNORECASE)
+                    clean_ans = re.sub(r"\[[A-Z][A-Z0-9_.\-]{3,}[A-Z0-9]\]", "", clean_ans)
+                    clean_ans = re.sub(r"\s{2,}", " ", clean_ans).strip()
                     cits = [c for c in gen_res.get("citations", []) if c["chunk_id"] in cited] or gen_res.get("citations", [])
-                    src_lines = "\n".join(f"- {c['title']} (`{c['source_id']}` | {c['locator']}) [{c['chunk_id']}]" for c in cits)
+                    src_lines = "\n".join(f"- {c['title']} ({c.get('source_id', 'Corpus')} | {c.get('locator', 'Ref')})" for c in cits)
                     gen_res = dict(gen_res, citations=cits,
-                                   answer=f"**Answer:** {out['answer_text']}\n\n**Sources:**\n{src_lines}")
+                                   answer=f"**Answer:** {clean_ans}\n\n**Sources:**\n{src_lines}")
                 generator_used = f"llm:{out['provider']}:{out['model']}"
                 generator_note = {"dropped_sentences": out["dropped_sentences"]}
             except Exception as e:
@@ -384,6 +402,87 @@ class AyurMitraPipeline:
             gen_res["reason"] = "insufficient_evidence"
             gen_res["citations"] = []
 
+        # Step 7c: 3-Tier Fallback — Level 1 (Local) -> Level 2 (External) -> Level 3 (Gemini Knowledge Fallback)
+        # When local evidence is insufficient or abstained, first utilize any retrieved live web research
+        if gen_res.get("abstained") and web_passages and (want_llm or (GENERATOR_BACKEND or "llm").lower() == "llm"):
+            from app.pipeline.llm_generator import LLMGenerator
+            llm = getattr(self, "_llm", None) or LLMGenerator()
+            self._llm = llm
+            try:
+                web_llm_out = llm.generate(
+                    question=english_query if effective_target_lang == "en" else query,
+                    passages=web_passages,
+                    graph_facts=graph_facts,
+                    target_lang=effective_target_lang,
+                    domain="AYURVEDA_AND_EXTERNAL_EVIDENCE"
+                )
+                if web_llm_out.get("success") and web_llm_out.get("answer_text"):
+                    clean_ans = web_llm_out["answer_text"]
+                    clean_ans = re.sub(r"\[[A-Z0-9_\-]+(?:CHUNK|EVID|WHO|NAMASTE|IMPPAT)[A-Z0-9_\-]*\]", "", clean_ans).strip()
+                    web_cits = []
+                    for wp in web_passages:
+                        web_cits.append({
+                            "chunk_id": f"WEB_{abs(hash(wp.get('url', '')))%10000:04d}",
+                            "source_id": wp.get("publisher", "Web Reference"),
+                            "title": wp.get("title", "Authoritative Web Research"),
+                            "locator": wp.get("year", "Current"),
+                            "is_web": True,
+                            "url": wp.get("url", ""),
+                            "publisher": wp.get("publisher", ""),
+                        })
+                    src_bullets = "\n".join(f"- [{wc['title']}]({wc['url']}) ({wc['publisher']})" for wc in web_cits if wc.get('url'))
+                    gen_res = dict(
+                        gen_res,
+                        answer=f"**Answer:** {clean_ans}\n\n**External Authoritative Sources:**\n{src_bullets}" if src_bullets else f"**Answer:** {clean_ans}",
+                        abstained=False,
+                        reason=None,
+                        citations=web_cits,
+                    )
+                    generator_used = f"llm:google_gemini:{web_llm_out.get('model', 'gemini')}:web_grounded"
+            except Exception as web_llm_err:
+                log.warning("Web-grounded LLM synthesis failed: %s", web_llm_err)
+
+        # Level 3 (Gemini Knowledge Fallback) if still abstained
+        if gen_res.get("abstained") and (want_llm or (GENERATOR_BACKEND or "llm").lower() == "llm"):
+            from app.pipeline.gemini_provider import GeminiProvider
+            gem_fb = getattr(self, "_gemini_fb", None)
+            if gem_fb is None:
+                gem_fb = GeminiProvider()
+                self._gemini_fb = gem_fb
+
+            if gem_fb.is_available():
+                try:
+                    lang_label = {"en": "English", "hi": "Hindi (Devanagari)", "kn": "Kannada", "hinglish": "Hindi", "kanglish": "Kannada"}.get(effective_target_lang, "English")
+                    fb_prompt = (
+                        f"User Question: {query}\n"
+                        f"Target Language: {lang_label}\n\n"
+                        f"Guidelines:\n"
+                        f"- Provide a clear, comprehensive, and authentic educational explanation of this Ayurvedic or medical concept in {lang_label} using native script.\n"
+                        f"- Ground your explanation in foundational Ayurvedic principles (Tridosha, Dhatu, Agni, Ama, Srotas, classical definitions).\n"
+                        f"- Do not claim specific local corpus passage citations.\n"
+                        f"- Be helpful, accurate, educational, and respectful."
+                    )
+                    fb_res = gem_fb.generate_answer(
+                        system_instruction="You are AyurMitra, an authentic Ayurvedic and medical health education assistant.",
+                        user_prompt=fb_prompt,
+                        temperature=0.2,
+                        max_output_tokens=1024,
+                    )
+                    if fb_res.get("success") and fb_res.get("text", "").strip():
+                        fb_text = fb_res["text"].strip()
+                        # Clean any raw chunk brackets
+                        fb_text = re.sub(r"\[[A-Z0-9_\-]+(?:CHUNK|EVID|WHO|NAMASTE|IMPPAT)[A-Z0-9_\-]*\]", "", fb_text).strip()
+                        gen_res = dict(
+                            gen_res,
+                            answer=f"**Answer:** {fb_text}\n\n*Note: This explanation is synthesized from AyurMitra's Gemini foundational knowledge base.*",
+                            abstained=False,
+                            reason=None,
+                            citations=[],
+                        )
+                        generator_used = f"llm:google_gemini:{fb_res.get('model', 'gemini')}:knowledge_fallback"
+                except Exception as fb_err:
+                    log.warning("Level 3 Gemini knowledge fallback failed: %s", fb_err)
+
         # Step 8: Output-Side Term Restoration (P1/P2 only)
         if use_terminology and placeholder_map:
             final_answer = self.protector.restore_to_language(
@@ -398,6 +497,10 @@ class AyurMitraPipeline:
         final_answer = validate_output_language_and_script(
             final_answer, effective_target_lang, primary_concept=primary_concept
         )
+        # Strip any internal chunk codes from final output
+        final_answer = re.sub(r"\[[A-Za-z0-9_.\- :]+(?:CHUNK|EVID|WHO|NAMASTE|IMPPAT|CLASSIC|CI\.ASSIC|WEB|DOC)[^\]]*\]", "", final_answer, flags=re.IGNORECASE)
+        final_answer = re.sub(r"\[[A-Z][A-Z0-9_.\-]{3,}[A-Z0-9]\]", "", final_answer)
+        final_answer = re.sub(r"\s{2,}", " ", final_answer).strip()
 
         elapsed_ms = (time.time() - start_time) * 1000.0
 

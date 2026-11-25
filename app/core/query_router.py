@@ -110,7 +110,7 @@ AYURVEDIC_TERMS_BASE = {
     "shirodhara", "brahma muhurta", "brahmamuhurta", "viruddhahara", "upashaya", "purvarupa", "kavala", "gandusha",
     "abhyanga", "bhavaprakasha", "madhava", "trimala", "dhatuposhana", "nyaya", "dhatvagni", "dhatvagnis",
     "bhutagni", "bhutagnis", "sama", "grishma", "ritu", "varsha", "shad rasa", "rasas", "brihat trayi",
-    "basti", "vamana", "nasya", "swedana", "snehana", "purisha", "sweda",
+    "basti", "vamana", "nasya", "swedana", "snehana", "purisha", "sweda", "kamala",
 }
 
 INDIC_AYURVEDIC_TERMS = {
@@ -124,7 +124,7 @@ INDIC_AYURVEDIC_TERMS = {
     "मधुमेह", "कुष्ठ", "कुष्ठरोग", "आवृत्त", "आवरण", "धातुक्षयज", "अग्निमांद्य", "मंदाग्नि",
     "धातुसाम्यता", "धातुसाम्य", "धातुवैषम्य", "दोषवैषम्य", "समदोष", "समधातु",
     "चरक", "सुश्रुत", "वाग्भट", "संहिता", "अष्टांग", "हृदय", "दिनचर्या", "ऋतुचर्या", "अतिसार",
-    "गिलोय", "गुडूची", "त्रिमल", "मल",
+    "गिलोय", "गुडूची", "त्रिमल", "मल", "कामला",
     # Kannada
     "ರೋಗ", "ವ್ಯಾಧಿ", "ಲಕ್ಷಣ", "ನಿದಾನ", "ಚಿಕಿತ್ಸೆ", "ಸ್ವಾಸ್ಥ್ಯ", "ಸಂಪ್ರಾಪ್ತಿ",
     "ಆಯುರ್ವೇದ", "ವಾತ", "ವಾಯು", "ಪಿತ್ತ", "ಕಫ", "ಶ್ಲೇಷ್ಮ", "ಅಗ್ನಿ", "ಜಠರಾಗ್ನಿ",
@@ -135,7 +135,7 @@ INDIC_AYURVEDIC_TERMS = {
     "ಆವೃತ", "ಆವರಣ", "ಧಾತುಕ್ಷಯಜ", "ಅಗ್ನಿಮಾಂದ್ಯ", "ಮಂದಾಗ್ನಿ",
     "ಧಾತುಸಾಮ್ಯತೆ", "ಧಾತುಸಾಮ್ಯ", "ಧಾತುವೈಷಮ್ಯ", "ದೋಷವೈಷಮ್ಯ", "ಸಮದೋಷ",
     "ಚರಕ", "ಸುಶ್ರುತ", "ವಾಗ್ಭಟ", "ಸಂಹಿತೆ", "ಅಷ್ಟಾಂಗ", "ಹೃದಯ", "ದಿನಚರ್ಯೆ", "ಋತುಚರ್ಯೆ", "ಅತಿಸಾರ",
-    "ಕಷಾಯ", "ಗಿಲೋಯ್", "ತ್ರಿಮಲ", "ಮಲ",
+    "ಕಷಾಯ", "ಗಿಲೋಯ್", "ತ್ರಿಮಲ", "ಮಲ", "ಕಾಮಲೆ", "ಕಾಮಾಲೆ", "ಕಾಮಣಿ", "ಪಾಂಡು",
 }
 
 # ── General Educational Domains & Indicators ─────────────────────────────────
@@ -199,11 +199,12 @@ class IntelligentQueryRouter:
         words = re.findall(r"\b\w+\b", q_lower)
 
         # ── Layer 1 & 2: Ambiguity & Completeness Check ───────────────────────
-        if not raw or (len(words) <= 1 and len(raw) < 4 and not any(t in raw for t in INDIC_AYURVEDIC_TERMS)):
+        # Note: Do not reject short single-word Ayurvedic/medical concepts (e.g. 'Kamala', 'ಕಾಮಣಿ', 'ಕಾಮಾಲೆ')
+        if not raw:
             return {
                 "route": QueryRoute.UNCLEAR_QUERY,
                 "confidence": 0.98,
-                "reason": "Query is too brief, empty, or ungrounded punctuation.",
+                "reason": "Empty query received.",
                 "matched_ayurvedic_terms": [],
                 "matched_general_terms": [],
                 "matched_mixed_terms": [],
@@ -348,6 +349,32 @@ class IntelligentQueryRouter:
                 "confidence": 0.75,
                 "reason": "General open-domain question outside classical Ayurvedic literature.",
                 "matched_ayurvedic_terms": [],
+                "matched_general_terms": [],
+                "matched_mixed_terms": [],
+                "scores": scores,
+                "is_safe": True,
+            }
+
+        # If query has any Ayurvedic entity or root term, always route to AYURVEDA_DOMAIN
+        if ayur_matches:
+            return {
+                "route": QueryRoute.AYURVEDA_DOMAIN,
+                "confidence": 0.90,
+                "reason": f"Grounded in verified Ayurvedic entity: {ayur_matches[:3]}",
+                "matched_ayurvedic_terms": ayur_matches,
+                "matched_general_terms": [],
+                "matched_mixed_terms": [],
+                "scores": scores,
+                "is_safe": True,
+            }
+
+        # For unknown single words or brief queries, route to AYURVEDA_DOMAIN so Level 1 local search and Level 2 web research can resolve them automatically instead of rejecting
+        if len(words) <= 2:
+            return {
+                "route": QueryRoute.AYURVEDA_DOMAIN,
+                "confidence": 0.80,
+                "reason": f"Short concept query '{raw}' routed to knowledge base and web fallback for entity resolution.",
+                "matched_ayurvedic_terms": [raw],
                 "matched_general_terms": [],
                 "matched_mixed_terms": [],
                 "scores": scores,

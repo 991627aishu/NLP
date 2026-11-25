@@ -175,17 +175,26 @@ class GeminiProvider:
 
         config = types.GenerateContentConfig(**config_params)
 
-        # Exponential backoff retry loop
-        max_retries = 3
-        backoff_sec = 1.0
+        # Exponential backoff retry loop with demand spike circuit breaker
+        max_retries = 2
+        backoff_sec = 0.5
         last_error = None
         token_usage: Dict[str, int] = {"prompt_tokens": 0, "candidate_tokens": 0, "total_tokens": 0}
+
+        # Circuit breaker: if primary model has an active 503 demand spike, route to fast alternate
+        active_model = self.generation_model
+        now_time = time.time()
+        spike_until = getattr(self, "_spike_cooldown_until", 0)
+        if now_time < spike_until and active_model != "gemini-3.5-flash-lite":
+            log.info("Primary %s has active 503 demand cooldown (remaining: %.1fs); routing to gemini-3.5-flash-lite",
+                     active_model, spike_until - now_time)
+            active_model = "gemini-3.5-flash-lite"
 
         for attempt in range(max_retries):
             try:
                 t0 = time.perf_counter()
                 response = self._client.models.generate_content(
-                    model=self.generation_model,
+                    model=active_model,
                     contents=user_prompt,
                     config=config,
                 )
@@ -200,7 +209,8 @@ class GeminiProvider:
                         "total_tokens": getattr(meta, "total_token_count", 0),
                     }
                     log.info(
-                        "Gemini telemetry: %d prompt tokens, %d candidate tokens (latency: %.1fms)",
+                        "Gemini telemetry [%s]: %d prompt tokens, %d candidate tokens (latency: %.1fms)",
+                        active_model,
                         token_usage["prompt_tokens"],
                         token_usage["candidate_tokens"],
                         latency_ms,
@@ -225,7 +235,7 @@ class GeminiProvider:
                 text_out = response.text or ""
                 return {
                     "text": text_out,
-                    "model": self.generation_model,
+                    "model": active_model,
                     "token_usage": token_usage,
                     "latency_ms": latency_ms,
                     "grounding_sources": grounding_metadata,
@@ -240,40 +250,45 @@ class GeminiProvider:
                 is_transient = "503" in err_str or "unavailable" in err_str or "timeout" in err_str
 
                 log.warning(
-                    "Gemini API attempt %d/%d failed: %s (rate_limit=%s, transient=%s)",
+                    "Gemini API attempt %d/%d on %s failed: %s (rate_limit=%s, transient=%s)",
                     attempt + 1,
                     max_retries,
+                    active_model,
                     e,
                     is_rate_limit,
                     is_transient,
                 )
 
-                if is_transient and self.generation_model != "gemini-3.5-flash":
-                    log.info("Primary %s experiencing temporary 503 spike, trying alternate gemini-3.5-flash immediately...", self.generation_model)
-                    try:
-                        t0 = time.perf_counter()
-                        alt_response = self._client.models.generate_content(
-                            model="gemini-3.5-flash",
-                            contents=user_prompt,
-                            config=config,
-                        )
-                        latency_ms = (time.perf_counter() - t0) * 1000.0
-                        return {
-                            "text": alt_response.text or "",
-                            "model": "gemini-3.5-flash",
-                            "token_usage": token_usage,
-                            "latency_ms": latency_ms,
-                            "grounding_sources": [],
-                            "structured_json": structured_json,
-                            "success": True,
-                        }
-                    except Exception as alt_err:
-                        log.warning("Immediate alternate model failed: %s", alt_err)
+                if is_transient or is_rate_limit:
+                    # Set 60-second circuit breaker cooldown for primary model
+                    self._spike_cooldown_until = time.time() + 60.0
+                    for alt_candidate in ("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash"):
+                        if active_model != alt_candidate:
+                            log.info("Primary %s hit limit/spike, trying alternate %s immediately...", active_model, alt_candidate)
+                            try:
+                                t0 = time.perf_counter()
+                                alt_response = self._client.models.generate_content(
+                                    model=alt_candidate,
+                                    contents=user_prompt,
+                                    config=config,
+                                )
+                                latency_ms = (time.perf_counter() - t0) * 1000.0
+                                return {
+                                    "text": alt_response.text or "",
+                                    "model": alt_candidate,
+                                    "token_usage": token_usage,
+                                    "latency_ms": latency_ms,
+                                    "grounding_sources": [],
+                                    "structured_json": structured_json,
+                                    "success": True,
+                                }
+                            except Exception as alt_err:
+                                log.warning("Immediate alternate model %s failed: %s", alt_candidate, alt_err)
 
                 if attempt < max_retries - 1:
                     sleep_time = backoff_sec * (2 ** attempt)
                     if is_rate_limit:
-                        sleep_time += 2.0  # extra delay for rate limits
+                        sleep_time += 1.0
                     time.sleep(sleep_time)
                 else:
                     break

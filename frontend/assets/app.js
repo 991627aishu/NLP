@@ -239,7 +239,14 @@
   }
 
   const LANG_NAME = { en: "English", hi: "हिन्दी", kn: "ಕನ್ನಡ", hinglish: "Hinglish", kanglish: "Kanglish", unsupported: "Unsupported" };
-  function displayAnswer(ans) { return ans.replace(/\n\*\*Sources:\*\*[\s\S]*?(?=\n\n\*\*|$)/, "").replace(/\n\n\*\*Ayurvedic terms:\*\*[^\n]*/, ""); }
+  function displayAnswer(ans) {
+    let clean = (ans || "")
+      .replace(/\[[A-Za-z0-9_.\- :]+(?:CHUNK|EVID|WHO|NAMASTE|IMPPAT|CLASSIC|CI\.ASSIC|WEB|DOC)[^\]]*\]/gi, "")
+      .replace(/\[[A-Z][A-Z0-9_.\-]{3,}[A-Z0-9]\]/g, "")
+      .replace(/\n\*\*Sources:\*\*[\s\S]*?(?=\n\n\*\*|$)/, "")
+      .replace(/\n\n\*\*Ayurvedic terms:\*\*[^\n]*/, "");
+    return clean.replace(/\s{2,}/g, " ").trim();
+  }
 
   function renderAnswer(r, slot) {
     const card = document.createElement("article"); const lang = r.target_language || "en";
@@ -295,7 +302,7 @@
   function renderSources(r) {
     const cits = r.citations || [], passages = r.retrieved_passages || [];
     const local = cits.filter(c => !c.is_web), web = cits.filter(c => c.is_web);
-    let h = local.map(c => `<div class="src"><span class="badge">${esc(c.source_id)}</span><span>${esc(c.title || "")} — ${esc(c.locator || "")} <code class="mono">${esc(c.chunk_id)}</code></span></div>`).join("");
+    let h = local.map(c => `<div class="src"><span class="badge">${esc(c.source_id)}</span><span>${esc(c.title || "")} — ${esc(c.locator || "")}</span></div>`).join("");
     if (web.length) h += web.map(c => `<div class="src ext"><span class="badge">External</span><span><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> (${esc(c.publisher || "")} ${esc(c.year || "")})</span></div>`).join("");
     if (passages.length) h += `<details><summary class="muted" style="min-height:40px;display:flex;align-items:center;cursor:pointer">Retrieved passages (${passages.length})</summary>` +
       passages.map(p => `<blockquote style="margin:8px 0;padding-left:12px;border-left:3px solid var(--line)"><small><code class="mono">${esc(p.chunk_id)}</code> ${esc(p.source_id)} · ${esc(p.locator || "")}</small><br>${esc((p.text || "").slice(0, 420))}…</blockquote>`).join("") + "</details>";

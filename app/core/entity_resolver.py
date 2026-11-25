@@ -84,6 +84,20 @@ KANGLISH_PATTERNS = [
 
 # Known Grounded Conceptual Disambiguations
 SEMANTIC_ENTITY_CATALOG: Dict[str, Dict[str, Any]] = {
+    "kamala": {
+        "canonical_name": "Kamala",
+        "category": "AYURVEDIC_PATHOLOGY",
+        "ayurvedic_concept": True,
+        "general_concept": False,
+        "english_equivalent": "Jaundice",
+        "synonyms": ["kamala", "kaamala", "jaundice", "kosthashrita kamala", "shakhashrita kamala"],
+        "hindi_synonyms": ["कामला", "पीलिया"],
+        "kannada_synonyms": ["ಕಾಮಲೆ", "ಕಾಮಾಲೆ", "ಹಳದಿ ರೋಗ"],
+        "definition_short": "Kamala is a Pitta-predominant disorder affecting Rakta and Mamsa, characterized by yellow discoloration of sclera, skin, and urine.",
+        "ayurvedic_definition": "Charaka Chikitsasthana 16. Pitta vitiation causing Haridra Netra, Twak, Mutra, and Shakrit.",
+        "who_id": "ITA-4.4.19",
+        "wikipedia_target": "Jaundice",
+    },
     "roga": {
         "canonical_name": "Roga",
         "category": "DISEASE_GENERAL",

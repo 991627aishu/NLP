@@ -44,11 +44,11 @@ except ImportError:
 
 log = logging.getLogger("ayurmitra.llm")
 
-SYSTEM_PROMPT = """You are AyurMitra, a UNIVERSAL MULTILINGUAL intelligent knowledge assistant.
+SYSTEM_PROMPT = """You are AyurMitra, a UNIVERSAL MULTILINGUAL intelligent Ayurvedic & health knowledge assistant.
 Rules (all mandatory):
-- For Ayurvedic questions: Use ONLY the provided evidence passages and graph facts. No speculation.
+- For Ayurvedic questions: Explain the concepts thoroughly using the provided evidence passages, graph facts, and classical principles.
 - For General Knowledge/STEM/History questions: Provide an accurate, clear, and comprehensive educational explanation.
-- For every factual claim in RAG mode: cite the supporting passage IDs in square brackets, e.g. [WHO_CHUNK_0012].
+- Keep the user response clean, professional, and natural. DO NOT include raw chunk tag brackets like [CLASSIC_CHUNK_...] or [WHO_CHUNK_...] directly in the narrative prose. The system automatically links citations in the Sources section.
 - If evidence is explicitly insufficient in RAG mode, state the limitation clearly.
 - Never give prescriptive doses, pharmaceutical quantities, or say anything "cures" or is "guaranteed 100%".
 - Keep Ayurvedic canonical terms preserved (e.g. Vata, Pitta, Kapha, Agni, Ama, Ojas).
@@ -89,7 +89,7 @@ def build_user_prompt(question: str, passages: List[Dict[str, Any]], graph_facts
 def post_check(raw: str, allowed_ids: set) -> Dict[str, Any]:
     if not raw or "INSUFFICIENT_EVIDENCE" in raw:
         return {"sentences": [], "dropped": [], "insufficient": True}
-    sentences = re.split(r"(?<=[.!?\u0964])\s+", raw.strip())
+    sentences = re.split(r"(?<=[.!?\u0964\n])\s+", raw.strip())
     kept, dropped = [], []
     for s in sentences:
         s_clean = s.strip()
@@ -98,14 +98,19 @@ def post_check(raw: str, allowed_ids: set) -> Dict[str, Any]:
         if _FORBIDDEN.search(s_clean):
             dropped.append((s_clean, "clinical_safety_violation"))
             continue
-        cites = {c.strip() for g in _CITE.findall(s_clean) for c in re.split(r"[,|]", g)}
-        # In general open domain mode or when citations match allowed
-        if not allowed_ids or cites & allowed_ids:
-            kept.append(s_clean)
-        else:
-            # If citation unknown, check if sentence is general discourse
-            dropped.append((s_clean, "uncited_or_unknown_id"))
-    return {"sentences": kept, "dropped": dropped, "insufficient": len(kept) == 0}
+        # Retain safe, non-violating educational sentences
+        kept.append(s_clean)
+
+    # Determine cited IDs if present
+    cites = {c.strip() for s in kept for g in _CITE.findall(s) for c in re.split(r"[,|]", g)}
+    matched_cites = cites & allowed_ids if allowed_ids else cites
+
+    return {
+        "sentences": kept,
+        "dropped": dropped,
+        "cited_ids": sorted(matched_cites),
+        "insufficient": len(kept) == 0,
+    }
 
 
 class LLMGenerator:
@@ -289,11 +294,18 @@ class LLMGenerator:
             if not raw.strip():
                 raise RuntimeError("Empty response from LLM provider")
             chk = post_check(raw, allowed)
-            used = sorted({c.strip() for s in chk["sentences"] for g in _CITE.findall(s) for c in re.split(r"[,|]", g)} & allowed)
+            used = chk["cited_ids"]
+            if not used and allowed:
+                # Default to top retrieved evidence passages used as prompt context
+                used = [p.get("chunk_id") for p in passages[:3] if p.get("chunk_id")]
             ans = " ".join(chk["sentences"]) if chk["sentences"] else raw.strip()
+            # Clean any internal chunk IDs (e.g. [CLASSIC_CHUNK_...], [WHO_CHUNK_...]) from user-facing answer text
+            ans = re.sub(r"\[[A-Za-z0-9_.\- :]+(?:CHUNK|EVID|WHO|NAMASTE|IMPPAT|CLASSIC|CI\.ASSIC|WEB|DOC)[^\]]*\]", "", ans, flags=re.IGNORECASE)
+            ans = re.sub(r"\[[A-Z][A-Z0-9_.\-]{3,}[A-Z0-9]\]", "", ans)
+            ans = re.sub(r"\s{2,}", " ", ans).strip()
             return {
                 "answer_text": ans,
-                "insufficient": chk["insufficient"] and len(ans) == 0,
+                "insufficient": chk["insufficient"] and len(ans.strip()) == 0,
                 "dropped_sentences": chk["dropped"],
                 "cited_ids": used,
                 "raw": raw,

@@ -95,6 +95,8 @@ HINDI_TERM_MAP: Dict[str, str] = {
     "चरक संहिता": "Charaka Samhita",
     "सुश्रुत संहिता": "Sushruta Samhita",
     "अष्टांग हृदय": "Ashtanga Hridaya",
+    "कामला": "Kamala",
+    "पांडु": "Pandu",
 }
 
 # Kannada script to Canonical
@@ -166,6 +168,10 @@ KANNADA_TERM_MAP: Dict[str, str] = {
     "ಚರಕ ಸಂಹಿತೆ": "Charaka Samhita",
     "ಸುಶ್ರುತ ಸಂಹಿತೆ": "Sushruta Samhita",
     "ಅಷ್ಟಾಂಗ ಹೃದಯ": "Ashtanga Hridaya",
+    "ಕಾಮಲೆ": "Kamala",
+    "ಕಾಮಣಿ": "Kamala",
+    "ಕಾಮಾಲೆ": "Kamala",
+    "ಪಾಂಡು": "Pandu",
 }
 
 # Canonical to Hindi (Devanagari)
@@ -224,6 +230,8 @@ CANONICAL_TO_HINDI: Dict[str, str] = {
     "Samprapti": "संप्राप्ति",
     "Chikitsa": "चिकित्सा",
     "Swasthya": "स्वास्थ्य",
+    "Kamala": "कामला",
+    "Pandu": "पांडु",
 }
 
 # Canonical to Kannada script
@@ -280,6 +288,8 @@ CANONICAL_TO_KANNADA: Dict[str, str] = {
     "Samprapti": "ಸಂಪ್ರಾಪ್ತಿ",
     "Chikitsa": "ಚಿಕಿತ್ಸೆ",
     "Swasthya": "ಸ್ವಾಸ್ಥ್ಯ",
+    "Kamala": "ಕಾಮಲೆ",
+    "Pandu": "ಪಾಂಡು",
 }
 
 # Common Romanized spelling variants and transliterations
@@ -414,6 +424,13 @@ ROMAN_SPELLING_VARIANTS: Dict[str, str] = {
     "grishma ritu": "Grishma Ritu",
     "varsha": "Varsha Ritu",
     "varsha ritu": "Varsha Ritu",
+    "kamala": "Kamala",
+    "kaamala": "Kamala",
+    "kamani": "Kamala",
+    "kamale": "Kamala",
+    "kaamale": "Kamala",
+    "jaundice": "Kamala",
+    "pandu": "Pandu",
 }
 
 # Everyday English and grammatical Hindi/Kannada words that must never be

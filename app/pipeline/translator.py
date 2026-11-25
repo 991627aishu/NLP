@@ -90,6 +90,11 @@ KANGLISH_QUERY_PATTERNS = [
 
 # Concept explanations in Hindi and Kannada for evidence passage localization
 CONCEPT_EXPLANATIONS = {
+    "Kamala": {
+        "hi": "कामला (पीलिया / Jaundice) आयुर्वेद में एक प्रमुख पित्तज विकार है। चरक संहिता के अनुसार, जब पांडु (एनीमिया) से पीड़ित व्यक्ति अत्यधिक पित्तवर्धक आहार लेता है, तो कुपित पित्त रक्त और मांस धातुओं को जलाकर आंखों, त्वचा, नाखून और मूत्र में गहरा पीला रंग (हरिद्र वर्ण) उत्पन्न करता है।",
+        "kn": "ಕಾಮಲೆ (Kamala / Jaundice) ಆಯುರ್ವೇದದಲ್ಲಿ ಒಂದು ಪ್ರಮುಖ ಪಿತ್ತ ಪ್ರಧಾನ ಕಾಯಿಲೆಯಾಗಿದೆ. ಚರಕ ಸಂಹಿತೆಯ ಪ್ರಕಾರ, ಹೆಚ್ಚಿದ ಪಿತ್ತ ದೋಷವು ರಕ್ತ ಮತ್ತು ಮಾಂಸ ಧಾತುಗಳನ್ನು ದೂಷಿಸಿ, ಕಣ್ಣುಗಳು (ಹರಿದ್ರ ನೇತ್ರ), ಚರ್ಮ, ಉಗುರು ಮತ್ತು ಮೂತ್ರದಲ್ಲಿ ಹಳದಿ ಬಣ್ಣವನ್ನು ಉಂಟುಮಾಡುತ್ತದೆ. ಇದು ಜಠರಾಗ್ನಿಯನ್ನು ಕುಂದಿಸಿ ತೀವ್ರ ದೌರ್ಬಲ್ಯವನ್ನು ತರುತ್ತದೆ.",
+        "en": "Kamala (Jaundice) in classical Ayurveda is a Pitta-predominant disorder affecting Rakta (blood) and Mamsa (muscle) tissues (Charaka Chikitsasthana 16). Vitiated Pitta causes deep yellow discoloration of the sclera, skin, and urine, accompanied by fatigue and digestive debility."
+    },
     "Pitta": {
         "hi": "पित्त दोष मुख्य रूप से शरीर में पाचन (digestion), चयापचय (metabolism), शारीरिक ताप (body temperature) और ऊर्जा रूपांतरण का नियंत्रण करता है। यह अग्नि और जल महाभूतों के संयोजन से बना है।",
         "kn": "ಪಿತ್ತ ದೋಷವು ದೇಹದಲ್ಲಿ ಜೀರ್ಣಕ್ರಿಯೆ (digestion), ಚಯಾಪಚಯ (metabolism), ದೈಹಿಕ ಉಷ್ಣತೆ ಮತ್ತು ಶಕ್ತಿಯ ಪರಿವರ್ತನೆಯನ್ನು ನಿಯಂತ್ರಿಸುತ್ತದೆ. ಇದು ಅಗ್ನಿ ಮತ್ತು ಜಲ ಮಹಾಭೂತಗಳಿಂದ ಕೂಡಿದೆ."
