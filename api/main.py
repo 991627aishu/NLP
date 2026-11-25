@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import platform
 import threading
 import time
 from collections import defaultdict, deque
@@ -128,8 +129,8 @@ class AskRequest(BaseModel):
 
 
 class TTSRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=6000)
-    lang: Literal["en", "hi", "kn", "hinglish", "kanglish"] = "en"
+    text: str = Field(..., min_length=1, max_length=30000)
+    lang: Literal["auto", "en", "hi", "kn", "hinglish", "kanglish"] = "auto"
     voice: Literal["female", "male"] = "female"
     clean: bool = True
     add_disclaimer: bool = True
@@ -170,6 +171,10 @@ def _run_query(req: AskRequest) -> Dict[str, Any]:
         "route_category", "route_label", "source_label", "answer_source", "is_ayurvedic_grounded")}
     out["retrieved_passages"] = [_slim_passage(p) for p in r.get("retrieved_passages", [])]
     out["web_passages"] = r.get("web_passages", [])
+    from app.voice.tts import BROWSER_LANG, detect_response_language
+    resp_lang = detect_response_language(out.get("answer") or "", fallback_lang=out.get("target_language") or "en")
+    out["response_language"] = resp_lang
+    out["tts_lang"] = BROWSER_LANG.get(resp_lang, out.get("tts_lang") or "en-IN")
     out["ok"] = True
     log.info("Request completed in %.1fms [route=%s, model=%s, passages=%d, citations=%d]",
              r.get("latency_ms", 0), r.get("route_category"), r.get("generator_used"),
@@ -193,6 +198,7 @@ def health():
     kg = STATE.get("kg")
     tts_order = tts.available_backends()
     gemini_health = get_gemini_provider().check_health()
+    llm_avail = LLMGenerator().available()
     return {
         "ok": pipe is not None, "startup_seconds": STATE.get("startup_seconds"),
         "backends": {
@@ -201,12 +207,23 @@ def health():
             "embeddings": {"live": b.get("dense") in ("sentence_transformers", "gemini_embeddings"), "backend": b.get("dense"),
                            "model": b.get("dense_model"), "note": b.get("dense_warning")},
             "stt": stt.status() | {"live": stt.status()["server_stt"]},
-            "tts": {"live": tts_order[0] != "browser", "chain": tts_order},
-            "llm": LLMGenerator().available() | {"live": LLMGenerator().available()["available"]},
+            "tts": {"live": tts_order[0] != "browser", "selected": tts_order[0], "configured": config.TTS_BACKEND, "chain": tts_order},
+            "llm": llm_avail | {"live": llm_avail["available"]},
             "gemini": gemini_health,
             "web": {"live": True, "note": "EuropePMC / Wikipedia fallback; off by default, never used in benchmarks"},
             "knowledge_graph": {"live": kg is not None, "version": getattr(kg, "version", None)},
             "safety_gate": {"live": bool(b.get("safety_gate"))},
+        },
+        "diagnostics": {
+            "python_version": platform.python_version(),
+            "llm_provider_configured": config.LLM_PROVIDER,
+            "llm_provider_selected": llm_avail.get("provider"),
+            "gemini_credentials_configured": bool(gemini_health.get("api_key_configured")),
+            "tts_backend_selected": tts_order[0] if tts_order else "browser",
+            "tts_backends_available": tts_order,
+            "retrieval_backend": b.get("dense") or "tfidf",
+            "retrieval_model": b.get("dense_model"),
+            "kg_version": getattr(kg, "version", None),
         },
         "disclaimer": EDUCATIONAL_DISCLAIMER,
     }
@@ -224,7 +241,7 @@ def gemini_status():
 def ask(req: AskRequest):
     out = _run_query(req)
     if req.speak or out.get("is_emergency"):
-        out["tts"] = _speak(out["answer"], out.get("target_language") or "en", req.voice)
+        out["tts"] = _speak(out["answer"], out.get("response_language") or out.get("target_language") or "auto", req.voice)
     return out
 
 
@@ -261,7 +278,7 @@ async def voice_ask(audio: UploadFile = File(...), mode: str = Form("P2"), targe
     out["stage"] = "answered"
     out["transcript"] = stt_res
     if speak or out.get("is_emergency"):
-        out["tts"] = _speak(out["answer"], out.get("target_language") or "en", req.voice)
+        out["tts"] = _speak(out["answer"], out.get("response_language") or out.get("target_language") or "auto", req.voice)
     return out
 
 

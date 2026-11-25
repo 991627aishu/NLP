@@ -152,13 +152,10 @@ CHUNK_WORDS   = 400      # target words per chunk (initial engineering choice)
 CHUNK_OVERLAP = 60       # overlap in words
 
 # ── Answer generation ─────────────────────────────────────────────────────────
-# LLM configuration with multi-provider failover
-LLM_PROVIDER    = os.environ.get("AYUR_LLM_PROVIDER", "auto")
-LLM_MODEL       = os.environ.get("AYUR_LLM_MODEL", "auto")
+# Single authoritative source of truth for LLM settings is defined above
+# (LLM_PROVIDER, LLM_MODEL, OLLAMA_URL, OLLAMA_MODEL).
 LLM_MAX_TOKENS  = int(os.environ.get("AYUR_LLM_MAX_TOKENS", "1024"))
 LLM_TEMPERATURE = float(os.environ.get("AYUR_LLM_TEMPERATURE", "0.2"))
-OLLAMA_URL      = os.environ.get("AYUR_OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL    = os.environ.get("AYUR_OLLAMA_MODEL", "llama3.2")
 GENERATOR_MODEL = os.environ.get("AYUR_GENERATOR_MODEL", None)
 
 # ── Google Gemini API Configuration ──────────────────────────────────────────

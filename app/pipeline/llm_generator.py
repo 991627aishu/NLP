@@ -121,19 +121,21 @@ class LLMGenerator:
 
     def __init__(self, provider: Optional[str] = None, model: Optional[str] = None):
         self.gemini = get_gemini_provider()
-        self.provider = (provider or os.environ.get("AYUR_LLM_PROVIDER") or LLM_PROVIDER or "auto").lower()
+        self.provider = (provider or os.environ.get("AYUR_LLM_PROVIDER") or LLM_PROVIDER or "gemini").lower()
         self.model = model or os.environ.get("AYUR_LLM_MODEL") or LLM_MODEL or "default"
         self._detect_best_provider()
 
     def _detect_best_provider(self):
-        """Auto-detects active credentials across supported providers, prioritizing Google Gemini."""
-        if self.provider in ("auto", "google_gemini", "gemini"):
+        """Selects active provider. Explicit 'gemini' never silently falls back to Ollama."""
+        if self.provider in ("google_gemini", "gemini"):
+            self.provider = "google_gemini"
+            self.model = self.gemini.generation_model
+            return
+        if self.provider == "auto":
             if self.gemini.is_available():
                 self.provider = "google_gemini"
                 self.model = self.gemini.generation_model
-                return
-        if self.provider == "auto":
-            if os.environ.get("GROQ_API_KEY"):
+            elif os.environ.get("GROQ_API_KEY"):
                 self.provider = "groq"
                 self.model = "llama-3.3-70b-versatile"
             elif os.environ.get("OPENROUTER_API_KEY"):
@@ -145,12 +147,13 @@ class LLMGenerator:
             elif os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN"):
                 self.provider = "huggingface"
                 self.model = "Qwen/Qwen2.5-7B-Instruct"
-            elif self.gemini.is_available():
-                self.provider = "google_gemini"
-                self.model = self.gemini.generation_model
-            else:
+            elif not os.environ.get("RENDER"):
+                # Local development fallback only; never silently use localhost Ollama on Render
                 self.provider = "ollama"
                 self.model = OLLAMA_MODEL
+            else:
+                self.provider = "google_gemini"
+                self.model = self.gemini.generation_model
 
     def available(self) -> Dict[str, Any]:
         """Reports live provider status and readiness."""

@@ -120,43 +120,166 @@
 
   // ── speech output ──────────────────────────────────────────────────────────
   const Player = {
-    audio: null, queue: [], utter: null, rate: 1, onend: null, el: null,
-    stop() { if (this.audio) { this.audio.pause(); this.audio = null; } this.queue = []; if ("speechSynthesis" in window) speechSynthesis.cancel(); this._ui("idle"); },
-    _ui(state) {
+    audio: null, queue: [], utter: null, rate: 1, onend: null, el: null, _playId: 0,
+    stop() {
+      this._playId++;
+      if (this.audio) { this.audio.onended = null; this.audio.pause(); this.audio = null; }
+      this.queue = [];
+      this.utter = null;
+      if ("speechSynthesis" in window) speechSynthesis.cancel();
+      this._ui("idle");
+    },
+    _ui(state, customMsg) {
       if (!this.el) return;
       this.el.dataset.state = state;
       const p = $(".pp", this.el);
       if (p) p.textContent = state === "paused" ? t("resume") : t("pause");
       const vs = $(".voice-status", this.el);
       if (vs) {
-        if (state === "loading") vs.textContent = "🔊 Generating neural voice...";
+        if (customMsg) vs.textContent = customMsg;
+        else if (state === "loading") vs.textContent = "🔊 Generating neural voice...";
         else if (state === "playing") vs.textContent = "🔊 Speaking";
         else if (state === "paused") vs.textContent = "⏸ Paused";
         else vs.textContent = "";
       }
     },
+    _detectClientLang(text, fallbackLang) {
+      const s = text || "";
+      if (/[\u0C80-\u0CFF]/.test(s)) return "kn";
+      if (/[\u0900-\u097F]/.test(s)) return "hi";
+      return fallbackLang || "en";
+    },
     async speak(text, lang, el, onend) {
-      this.stop(); this.el = el; this.onend = onend; this._ui("loading");
-      let r; try { r = await api("/api/tts", { method: "POST", body: { text, lang, voice: $("#opt-voice").value } }); }
-      catch { r = { backend: "browser", chunks: [text], browser_lang: { en: "en-IN", hi: "hi-IN", kn: "kn-IN", hinglish: "hi-IN", kanglish: "kn-IN" }[lang] || "en-IN" }; }
-      if (r.audio_base64 && r.audio_base64.length) { this.queue = r.audio_base64.slice(); this._next(); }
-      else this._browser(r.chunks || [r.spoken_text || text], r.browser_lang || "en-IN");
+      this.stop();
+      const myId = this._playId;
+      this.el = el; this.onend = onend; this._ui("loading");
+      const effectiveLang = this._detectClientLang(text, lang || "auto");
+      let r;
+      try {
+        r = await api("/api/tts", { method: "POST", body: { text, lang: effectiveLang, voice: $("#opt-voice").value } });
+      } catch {
+        const bLang = { en: "en-IN", hi: "hi-IN", kn: "kn-IN", hinglish: "hi-IN", kanglish: "kn-IN" }[effectiveLang] || "en-IN";
+        r = { backend: "browser", chunks: [text], chunk_langs: [bLang], browser_lang: bLang };
+      }
+      if (myId !== this._playId) return;
+      if (r.audio_base64 && r.audio_base64.length) {
+        this.queue = r.audio_base64.slice();
+        this._next(myId);
+      } else {
+        await this._browser(r.chunks || [r.spoken_text || text], r.browser_lang || "en-IN", r.chunk_langs || null, myId);
+      }
     },
-    playBase64(list, el, onend) { this.stop(); this.el = el; this.onend = onend; this.queue = list.slice(); this._next(); },
-    _next() {
+    playBase64(list, el, onend) {
+      this.stop();
+      const myId = this._playId;
+      this.el = el; this.onend = onend; this.queue = list.slice();
+      this._next(myId);
+    },
+    _next(myId) {
+      if (myId !== undefined && myId !== this._playId) return;
       if (!this.queue.length) { this._ui("idle"); this.onend && this.onend(); return; }
-      this.audio = new Audio("data:audio/mpeg;base64," + this.queue.shift()); this.audio.playbackRate = this.rate;
-      this.audio.onended = () => this._next(); this.audio.play().catch(() => this._ui("idle")); this._ui("playing");
+      this.audio = new Audio("data:audio/mpeg;base64," + this.queue.shift());
+      this.audio.playbackRate = this.rate;
+      this.audio.onended = () => this._next(myId);
+      this.audio.play().catch(() => this._ui("idle"));
+      this._ui("playing");
     },
-    _browser(chunks, lang) {
-      if (!("speechSynthesis" in window)) { this._ui("idle"); return; }
-      const voices = speechSynthesis.getVoices(); const v = voices.find(x => x.lang === lang) || voices.find(x => x.lang.startsWith(lang.slice(0, 2)));
-      chunks.forEach((c, i) => {
-        const u = new SpeechSynthesisUtterance(c); u.lang = lang; u.rate = this.rate; if (v) u.voice = v;
-        u.onstart = () => this._ui("playing");
-        if (i === chunks.length - 1) u.onend = () => { this._ui("idle"); this.onend && this.onend(); };
-        speechSynthesis.speak(u);
+    _getVoices() {
+      const v = speechSynthesis.getVoices();
+      if (v && v.length) return Promise.resolve(v);
+      return new Promise(resolve => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(speechSynthesis.getVoices()); } };
+        speechSynthesis.addEventListener("voiceschanged", finish, { once: true });
+        setTimeout(finish, 600);
       });
+    },
+    _pickVoice(voices, lang) {
+      const norm = s => (s || "").replace(/_/g, "-").toLowerCase();
+      const target = norm(lang);
+      const base = target.split("-")[0];
+      return (
+        voices.find(x => norm(x.lang) === target) ||
+        voices.find(x => norm(x.lang).startsWith(base + "-")) ||
+        voices.find(x => norm(x.lang) === base) ||
+        null
+      );
+    },
+    _splitForBrowser(text, maxLen = 220) {
+      const out = [];
+      const sentences = String(text || "").split(/(?<=[.!?।])\s+/);
+      let cur = "";
+      for (let s of sentences) {
+        s = s.trim();
+        if (!s) continue;
+        while (s.length > maxLen) {
+          let cut = s.lastIndexOf(",", maxLen);
+          if (cut < maxLen * 0.4) cut = s.lastIndexOf(" ", maxLen);
+          if (cut <= 0) cut = maxLen;
+          out.push(s.slice(0, cut).trim());
+          s = s.slice(cut).replace(/^,\s*/, "").trim();
+        }
+        if (cur && (cur.length + s.length + 1 > maxLen)) {
+          out.push(cur);
+          cur = s;
+        } else {
+          cur = cur ? cur + " " + s : s;
+        }
+      }
+      if (cur) out.push(cur);
+      return out;
+    },
+    async _browser(chunks, defaultLang, chunkLangs, myId) {
+      if (!("speechSynthesis" in window)) { this._ui("idle"); return; }
+      const voices = await this._getVoices();
+      if (myId !== this._playId) return;
+
+      // Build sequential sub-chunks preserving per-chunk language tags
+      const items = [];
+      chunks.forEach((c, i) => {
+        const cLang = (chunkLangs && chunkLangs[i]) || defaultLang || "en-IN";
+        this._splitForBrowser(c, 220).forEach(sub => items.push({ text: sub, lang: cLang }));
+      });
+      if (!items.length) { this._ui("idle"); return; }
+
+      // Never silently fall back to an English voice for Kannada or Hindi
+      const primaryBase = (defaultLang || "en-IN").split("-")[0].toLowerCase();
+      const primaryVoice = this._pickVoice(voices, defaultLang || "en-IN");
+      if (!primaryVoice && (primaryBase === "kn" || primaryBase === "hi")) {
+        const label = primaryBase === "kn" ? "Kannada (kn-IN)" : "Hindi (hi-IN)";
+        this._ui("idle", `⚠️ No browser ${label} voice installed`);
+        return;
+      }
+
+      let idx = 0;
+      const speakNext = () => {
+        if (myId !== this._playId) return;
+        if (idx >= items.length) {
+          this.utter = null;
+          this._ui("idle");
+          this.onend && this.onend();
+          return;
+        }
+        const item = items[idx++];
+        const base = item.lang.split("-")[0].toLowerCase();
+        const v = this._pickVoice(voices, item.lang);
+        if (!v && (base === "kn" || base === "hi")) {
+          // Skip or warn instead of speaking Kannada/Hindi with English voice
+          const label = base === "kn" ? "Kannada (kn-IN)" : "Hindi (hi-IN)";
+          this._ui("idle", `⚠️ No browser ${label} voice installed`);
+          return;
+        }
+        const u = new SpeechSynthesisUtterance(item.text);
+        u.lang = item.lang;
+        u.rate = this.rate;
+        if (v) u.voice = v;
+        this.utter = u;
+        u.onstart = () => { if (myId === this._playId) this._ui("playing"); };
+        u.onend = () => speakNext();
+        u.onerror = () => speakNext();
+        speechSynthesis.speak(u);
+      };
+      speakNext();
     },
     toggle() {
       if (this.audio) { if (this.audio.paused) { this.audio.play(); this._ui("playing"); } else { this.audio.pause(); this._ui("paused"); } }
@@ -269,7 +392,7 @@
   }
 
   function renderAnswer(r, slot) {
-    const card = document.createElement("article"); const lang = r.target_language || "en";
+    const card = document.createElement("article"); const lang = r.response_language || r.target_language || "en";
     card.className = "a" + (r.is_emergency ? " emergency" : r.abstained ? " abstain" : ""); card.lang = lang;
     const terms = (r.detected_terms || []).filter((x, i, a) => a.findIndex(y => y.canonical_term === x.canonical_term) === i);
     const cits = r.citations || [];
@@ -308,7 +431,7 @@
       <div class="actions"></div>`;
     const lead = $(".answer-body p", card); if (lead && !r.abstained) lead.classList.add("lead");
     const actions = $(".actions", card);
-    actions.append(playerControls(() => r.answer, lang));
+    actions.append(playerControls(() => displayAnswer(r.answer || ""), lang));
     const mk = (label, fn) => { const b = document.createElement("button"); b.className = "btn ghost"; b.textContent = label; b.onclick = () => fn(b); actions.append(b); };
     mk(t("copy"), async b => { try { await navigator.clipboard.writeText(r.answer); b.textContent = t("copied"); } catch { /* clipboard blocked */ } });
     mk(t("share"), async () => { const txt = `${r.raw_query}\n\n${r.answer}`; if (navigator.share) { try { await navigator.share({ text: txt }); } catch { /* cancelled */ } } else { try { await navigator.clipboard.writeText(txt); } catch { } } });
@@ -317,7 +440,7 @@
     slot.replaceWith(card); card.scrollIntoView({ block: "nearest", behavior: "smooth" });
     const ctl = $(".player", card);
     if (r.tts && r.tts.audio_base64 && r.tts.audio_base64.length) Player.playBase64(r.tts.audio_base64, ctl, onSpokenEnd);
-    else if (r.is_emergency || $("#opt-autoplay").checked || r._fromVoice) Player.speak(r.answer, lang, ctl, onSpokenEnd);
+    else if (r.is_emergency || $("#opt-autoplay").checked || r._fromVoice) Player.speak(displayAnswer(r.answer || ""), lang, ctl, onSpokenEnd);
   }
   function renderSources(r) {
     const cits = r.citations || [], passages = r.retrieved_passages || [];

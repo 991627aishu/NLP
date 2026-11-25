@@ -6,7 +6,7 @@
 
 # retrieval / NLP core (tested)
 rank-bm25==0.2.2
-scikit-learn==1.9.1
+scikit-learn==1.7.2    # matches saved Data/processed/dense_index.pkl (_stamp sklearn=1.7.2)
 numpy==2.5.3
 scipy==1.18.1
 pandas==3.0.5
