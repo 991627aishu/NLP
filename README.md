@@ -31,6 +31,81 @@ Linux/macOS: `./run.sh`, `./run.sh --neural --voice`, `./run.sh --test`, `./run.
 | **Corpus** | 2,887 indexed chunks (IMPPAT 1,328 · API formulations 541 · QA 350 · Hindi QA 250 · Kannada QA 250 · WHO 128 · NAMASTE 40) |
 | **Evaluation** | B0 / B1 / P1 / P2 with K=20 candidates per branch (reconciled with paper §5.5), gold-passage metrics, seed-level bootstrap CIs, uncontaminated zero-leakage benchmark, Go/No-Go probe, two-rater kit |
 
+## Core Capabilities & 3-Tier Hybrid RAG Architecture
+
+AyurMitra operates a resilient **3-Tier Evidence Cascade** ensuring high-quality, authentic Ayurvedic and health answers:
+
+```
+                  USER QUERY (Text / Voice in EN, HI, KN, Hinglish, Kanglish)
+                                              │
+                                              ▼
+                        LANGUAGE DETECTION & SCRIPT IDENTIFICATION
+                                              │
+                                              ▼
+                         SAFETY & RED-FLAG MEDICAL RISK GATE
+                                              │
+                                              ▼
+                        TERMINOLOGY DETECTION & CANONICAL MAPPING
+                                              │
+                                              ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ LEVEL 1: LOCAL AYURMITRA KNOWLEDGE BASE RETRIEVAL                                     │
+│ • Hybrid Retrieval: BM25 Lexical + 3,072-dim Gemini Vector Embeddings (RRF k=60)        │
+│ • Knowledge Graph Grounding (NetworkX v2: 9,530 nodes, 72,341 edges)                   │
+│ • Terminology Restoration & Strict Evidence Sufficiency Check                          │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │
+                          [Sufficient Local Evidence?]
+                                  /            \
+                             YES /              \ NO / Weak / Missing Entity
+                                /                \
+                               ▼                  ▼
+                    GROUNDED LOCAL GENERATION   ┌────────────────────────────────────────┐
+                    (Gemini / LLM Synthesizer)  │ LEVEL 2: LIVE WEB RESEARCH FALLBACK    │
+                                                │ • Automatic Web Search & Grounding     │
+                                                │ • DuckDuckGo, EuropePMC, Wikipedia     │
+                                                │ • Clean HTML Text Extraction           │
+                                                │ • Real Clickable Citations & URLs      │
+                                                └───────────────────┬────────────────────┘
+                                                                    │
+                                                  [Web Research Successful?]
+                                                          /            \
+                                                     YES /              \ NO / Offline
+                                                        /                \
+                                                       ▼                  ▼
+                                            GROUNDED WEB PASSAGES   ┌────────────────────┐
+                                            (Gemini Multilingual)   │ LEVEL 3: GEMINI    │
+                                                                    │ FOUNDATIONAL       │
+                                                                    │ KNOWLEDGE FALLBACK │
+                                                                    │ (Clearly labeled,  │
+                                                                    │ no fake citations) │
+                                                                    └─────────┬──────────┘
+                                                                              │
+                                                                              ▼
+                                                                FINAL VERIFIED ANSWER
+                                                                (Zero raw chunk codes,
+                                                                 native script, audio TTS)
+```
+
+### 1. Enterprise Google Gemini Integration
+- **Official SDK:** Fully powered by the Google GenAI SDK (`google-genai` v3.6.1+).
+- **Active Model Cascade:** Configured with `gemini-3.5-flash-lite`, with seamless failover across `gemini-3.1-flash-lite` and `gemini-3.5-flash` to handle demand spikes and rate limits.
+- **Multilingual Embeddings:** Document and query vector indexing powered by `gemini-embedding-001` (3,072-dimensional space).
+- **Telemetry & Grounding:** Live tracking of prompt tokens, candidate tokens, total tokens, and request latency.
+
+### 2. Live Web Research Fallback Engine
+- When local evidence does not directly address the query's primary entity (e.g. specialized medical queries, newly published literature), AyurMitra **automatically** launches live internet research.
+- Searches authoritative sources (EuropePMC, PubMed research indexes, Wikipedia medical portals, open health literature).
+- Extracts clean readability text using BeautifulSoup4 and returns verified passage context to Gemini with real, clickable external citations.
+
+### 3. Sanskrit & Indic Entity Resolution
+- Single-word regional queries (e.g., `ಕಾಮಣಿ`, `ಕಾಮಾಲೆ` for Kamala/Jaundice, `ಜ್ವರ` for Jwara, `ಪಾಂಡು` for Pandu) are automatically resolved without requesting premature clarification.
+- Raw internal chunk identifiers (e.g., `[CLASSIC_CHUNK_...]`, `[WHO_CHUNK_...]`, `[CI.ASSIC...]`) are scrubbed from user-facing answers by multi-pass regex cleaners on both backend and frontend.
+
+### 4. Multilingual Neural Speech Interface
+- **Speech-to-Text (STT):** Local faster-whisper neural transcription with browser Web Speech API fallback.
+- **Text-to-Speech (TTS):** Edge-TTS high-fidelity neural voices (`kn-IN-GaganNeural`, `hi-IN-MadhurNeural`, `en-IN-NeerjaNeural`) with instant audio playback, speed control, replay, and browser speech synthesis fallback.
+
 ## Results — read this before citing numbers
 
 The measured results are in **`docs/research_findings_v2.md`** and the clean uncontaminated benchmark in **`Data/evaluation/experiment_results_clean.json`**.

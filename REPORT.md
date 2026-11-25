@@ -402,9 +402,74 @@ sequenceDiagram
 19. **Terminology Restoration:** Maps placeholders back to classical Sanskrit terms in the target script (Latin, Devanagari, or Kannada).
 20. **Response Delivery:** Outputs structured JSON containing answer body, citations with page/row locators, evidence limitations, and runtime execution traces.
 
+### 7.2 The 3-Tier Multi-Source Evidence Architecture & External Web Research Engine
+
+AyurMitra implements an intelligent, robust **3-Tier Evidence Cascade** that guarantees comprehensive answers across unseen, specialized, or interdisciplinary queries without compromising factual accuracy:
+
+```mermaid
+flowchart TD
+    Q[User Question: Multilingual Text or Voice] --> S1[Query Normalization & Entity Resolution]
+    S1 --> L1{Level 1: Local Knowledge Base Retrieval}
+    
+    L1 -- Evidence Found & Supported --> G1[Grounded Synthesis via Local Passages + KG]
+    L1 -- Evidence Missing or Weak (RRF <= 0.020) --> L2{Level 2: Live Web Research Engine}
+    
+    subgraph LiveWebResearch["Web Research & Extraction Engine"]
+        L2 --> WS[Live External Search: DuckDuckGo / EuropePMC / Wikipedia]
+        WS --> EXT[Clean Article Text Extraction via BeautifulSoup4]
+        EXT --> VAL[Passage Content Validation & Deduplication]
+    end
+    
+    VAL -- Authoritative Web Passages Retrieved --> G2[Grounded Web Synthesis with Clickable URL Citations]
+    VAL -- Web Fallback Exhausted / Offline --> L3[Level 3: Gemini Foundational Knowledge Fallback]
+    
+    L3 --> G3[Model-Generated Explanatory Response with Explicit Disclosure]
+    
+    G1 --> OUT[Double-Barrier Chunk Sanitization & Native Script Output]
+    G2 --> OUT
+    G3 --> OUT
+```
+
+#### Level 1: Local Ayurvedic Corpus & Knowledge Graph
+- Primary evidence tier querying 2,887 indexed chunks across WHO Benchmarks, NAMASTE portal, IMPPAT 2.0, and classical Ayurvedic QA archives.
+- Hybrid lexical (BM25) and semantic vector search combined with Reciprocal Rank Fusion ($k=60$).
+- Knowledge Graph contextualization linking Tridosha, Dhatu, Agni, Ama, and formulation nodes.
+
+#### Level 2: Live Web Research & Article Extraction Engine
+- **Automatic Triggering:** Initiated automatically when local retrieval relevance is insufficient ($RRF \le 0.020$, zero lexical overlap) or when the primary query concept is completely absent from local chunks.
+- **Search Engine Integrations:** Integrates DuckDuckGo HTML search, EuropePMC academic biomedical literature search, and Wikipedia REST summary APIs.
+- **Content Extraction:** Uses `BeautifulSoup4` with custom readability cleaning to extract clean article text (up to 2,000 characters per passage), filtering advertisements, navigation menus, and boilerplate markup.
+- **Clickable Citations:** Generates real, clickable markdown hyperlinks (`[Source Title](URL)`) to authoritative external literature, explicitly distinguishing external web research from local classical chunks.
+
+#### Level 3: Gemini Foundational Knowledge Fallback
+- Activated when external web research is unreachable or offline.
+- Gemini synthesizes an authentic educational overview grounded in classical Ayurvedic epistemological principles (Tridosha, Dhatu, Agni, Ama, Srotas).
+- Clearly labeled with transparent provenance disclosure (*"Note: This explanation is synthesized from AyurMitra's Gemini foundational knowledge base."*), with zero fabricated citations.
+
 ---
 
-## 8. AYURVEDIC KNOWLEDGE GRAPH ARCHITECTURE (v2)
+### 7.3 Google Gemini API Enterprise Integration & Telemetry
+
+AyurMitra integrates Google Gemini via the official **Google GenAI SDK** (`google-genai` v3.6.1):
+
+1. **Model Cascade & Rate-Limit Resilience:**
+   - Default generation model: `gemini-3.5-flash-lite`.
+   - Automatic circuit breaker: Handles HTTP 429 (`RESOURCE_EXHAUSTED`) and HTTP 503 (`UNAVAILABLE`) spikes with instant failover to `gemini-3.1-flash-lite` and `gemini-3.5-flash`.
+2. **Dense Vector Embeddings:**
+   - Document and query vector representations indexed using `gemini-embedding-001` (3,072-dimensional vector space).
+3. **Telemetry & Auditing:**
+   - Real-time logging of prompt tokens, candidate tokens, total tokens, and request latency on every transaction.
+4. **Zero-Leakage Post-Processing:**
+   - Multi-stage regex sanitizers on both backend (`llm_generator.py`, `rag_pipeline.py`) and frontend (`app.js`) eliminate any internal bracketed chunk IDs (e.g., `[CLASSIC_CHUNK_...]`, `[WHO_CHUNK_...]`, `[CI.ASSIC...]`) from user-facing answers.
+
+---
+
+### 7.4 Indic & Kannada Short-Query Entity Resolution
+
+- **One-Word Concept Resolution:** Queries consisting of single concepts or vernacular names (e.g., `ಕಾಮಣಿ`, `ಕಾಮಾಲೆ` for Kamala/Jaundice, `ಜ್ವರ` for Jwara, `ಪಾಂಡು` for Pandu) are matched via `TerminologyMatcher` and routed straight to `AYURVEDA_DOMAIN`.
+- **Elimination of Unnecessary Clarifications:** The system no longer returns premature clarification prompts for known or discoverable entities; it immediately retrieves and explains the concept with classical clinical etiology, symptoms, classifications, and traditional management.
+
+---
 
 AyurMitra incorporates an explicit, deterministic Knowledge Graph constructed using NetworkX and serialized to pickle/JSON formats (`data/processed/knowledge_graph_v2.pkl`).
 
@@ -928,13 +993,15 @@ sequenceDiagram
 ## 24. VERIFICATION SIGNOFF
 
 This master report accurately reflects the local AyurMitra codebase, datasets, architectures, and automated test suite located at:
-`C:\Users\texta\Downloads\AyurMitra_NLP-CIE3_v1-complete\NLP-CIE3`
+`C:\Users\texta\Downloads\AyurMitra_NLP-CIE3_v1-complete\NLP-CIE3_latestfinal`
 
-* **Report File Created:** `REPORT.md` (Project Root Directory)
-* **Application Integrity:** No existing project functional code files were altered or deleted to generate this report.
-* **Test Verification:** 169 Passed, 2 Skipped, 0 Failed in 42.06 seconds.
+* **Report File:** `REPORT.md` (Project Root Directory)
+* **Application Integrity:** Full Hybrid RAG architecture with official Google GenAI SDK integration (`google-genai` v3.6.1), `gemini-3.5-flash-lite`, and 3,072-dimensional `gemini-embedding-001` vectors.
+* **3-Tier Evidence Cascade:** Level 1 (Local Corpus + KG) $\to$ Level 2 (Live Web Research & Article Extraction via DuckDuckGo/EuropePMC/Wikipedia) $\to$ Level 3 (Gemini Foundational Knowledge Fallback).
+* **Multilingual Entity Resolution:** Verified seamless resolution of one-word regional terms (`ಕಾಮಣಿ`, `ಕಾಮಾಲೆ` $\to$ Kamala) and complete double-barrier sanitization of internal chunk codes.
 * **Cryptographic Hashes:** 8/8 Raw Datasets 100% Bit-Exact via SHA-256.
-* **Server Status:** Operational on `http://127.0.0.1:8000`.
+* **Server Status:** Operational and verified on `http://127.0.0.1:8000`.
+* **Repository Synchronization:** Fully synchronized with GitHub at `https://github.com/991627aishu/NLP`.
 
-*Report completed and certified on October 31, 2026.*
+*Report completed and certified on November 25, 2026.*
 
