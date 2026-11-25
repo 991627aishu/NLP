@@ -466,6 +466,25 @@ def _normalize_latin(text: str) -> str:
     return re.sub(r"[^\w\s]", " ", cleaned).lower().strip()
 
 
+def _phonetic_key(word: str) -> str:
+    """Fold common Romanized Indic/Sanskrit spelling variations (ph->p, th->t, aa->a)."""
+    w = (word or "").lower().strip()
+    for src, dst in (
+        ("ph", "p"), ("th", "t"), ("dh", "d"), ("kh", "k"), ("gh", "g"),
+        ("bh", "b"), ("chh", "ch"), ("sh", "s"), ("aa", "a"), ("ee", "i"), ("oo", "u"),
+    ):
+        w = w.replace(src, dst)
+    return w
+
+
+_AYURVEDA_CONTEXT_WORDS = {
+    "ayurveda", "ayurvedic", "ayurved", "dosha", "doshas", "dosh", "tridosha",
+    "dhatu", "dhatus", "srotas", "samhita", "charaka", "sushruta", "vagbhata",
+    "chikitsa", "nidana", "lakshana", "samprapti", "panchakarma", "rasayana",
+    "herb", "herbs", "herbal", "dravya", "roga", "vyadhi", "prakriti", "agni",
+}
+
+
 class TerminologyMatcher:
     """Matches text against Ayurvedic terminology inventories."""
 
@@ -516,6 +535,85 @@ class TerminologyMatcher:
                 if stem in self.kannada_lookup:
                     return self.kannada_lookup[stem]
         return None
+
+    def find_fuzzy_terms(self, text: str, require_ayurveda_context: bool = True) -> List[Dict[str, Any]]:
+        """
+        Resolve spelling/phonetic variants of Ayurvedic terms (e.g., 'kapa' -> 'Kapha',
+        'kushta' -> 'Kushtha', 'ashwaganda' -> 'Ashwagandha') when Ayurvedic context
+        is present (or when require_ayurveda_context=False).
+        """
+        if not text:
+            return []
+        words = re.findall(r"\b[A-Za-z]{4,}\b", text)
+        if not words:
+            return []
+        lower_set = {w.lower() for w in words}
+        if require_ayurveda_context and not (lower_set & _AYURVEDA_CONTEXT_WORDS):
+            return []
+
+        import difflib
+        exact_canons = {m["canonical_term"].lower() for m in self.find_terms(text)}
+        # Build phonetic map over Latin lookup keys
+        phon_map: Dict[str, str] = {}
+        for k, canon in self.latin_lookup.items():
+            if " " not in k and len(k) >= 4 and k not in DISALLOWED_PLAIN_WORDS:
+                phon_map.setdefault(_phonetic_key(k), canon)
+
+        out: List[Dict[str, Any]] = []
+        seen_canons = set(exact_canons)
+        for m in re.finditer(r"\b[A-Za-z]{4,}\b", text):
+            tok = m.group(0)
+            low = tok.lower()
+            if low in DISALLOWED_PLAIN_WORDS or low in _AYURVEDA_CONTEXT_WORDS:
+                continue
+            if low in self.latin_lookup:
+                continue
+            pk = _phonetic_key(low)
+            canon = phon_map.get(pk)
+            if not canon:
+                close = difflib.get_close_matches(low, [k for k in self.latin_lookup if " " not in k and len(k) >= 4], n=1, cutoff=0.82)
+                if close:
+                    canon = self.latin_lookup[close[0]]
+            if canon and canon.lower() not in seen_canons:
+                seen_canons.add(canon.lower())
+                inv_meta = self.inventory.get(canon, {})
+                out.append({
+                    "canonical_term": canon,
+                    "matched_text": tok,
+                    "start": m.start(),
+                    "end": m.end(),
+                    "concept_id": inv_meta.get("concept_id", f"CID_{canon}"),
+                    "script": "Latin_Fuzzy",
+                    "ambiguity_note": inv_meta.get("ambiguity_note", ""),
+                })
+        return out
+
+    def suggest_ambiguous_ayurvedic_terms(self, text: str) -> List[Dict[str, str]]:
+        """
+        For context-free short queries (e.g., 'What is kapa?'), detect tokens that are
+        phonetically/orthographically close to core Ayurvedic terms.
+        """
+        if not text:
+            return []
+        import difflib
+        phon_map: Dict[str, str] = {}
+        for k, canon in self.latin_lookup.items():
+            if " " not in k and len(k) >= 4 and k not in DISALLOWED_PLAIN_WORDS:
+                phon_map.setdefault(_phonetic_key(k), canon)
+        suggestions: List[Dict[str, str]] = []
+        stop = {"what", "when", "where", "which", "who", "how", "why", "this", "that", "explain", "define", "mean", "meaning"}
+        for tok in re.findall(r"\b[A-Za-z]{4,}\b", text):
+            low = tok.lower()
+            if low in stop or low in DISALLOWED_PLAIN_WORDS or low in self.latin_lookup:
+                continue
+            canon = phon_map.get(_phonetic_key(low))
+            if not canon:
+                close = difflib.get_close_matches(low, list(phon_map.keys()), n=1, cutoff=0.82)
+                if close:
+                    canon = phon_map[close[0]]
+            if canon:
+                suggestions.append({"token": tok, "canonical_term": canon})
+        return suggestions
 
     def find_terms(self, text: str) -> List[Dict[str, Any]]:
         """

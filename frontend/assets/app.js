@@ -490,7 +490,7 @@
     const cits = r.citations || [], passages = r.retrieved_passages || [];
     const local = cits.filter(c => !c.is_web), web = cits.filter(c => c.is_web);
     let h = local.map(c => `<div class="src"><span class="badge">${esc(c.source_id)}</span><span>${esc(c.title || "")} — ${esc(c.locator || "")}</span></div>`).join("");
-    if (web.length) h += web.map(c => `<div class="src ext"><span class="badge">External</span><span><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> (${esc(c.publisher || "")} ${esc(c.year || "")})</span></div>`).join("");
+    if (web.length) h += web.map(c => `<div class="src ext"><span class="badge">${esc(c.source_id || "External API")}</span><span><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> (${esc(c.publisher || "")} ${esc(c.locator || c.year || "")})</span></div>`).join("");
     if (passages.length) h += `<details><summary class="muted" style="min-height:40px;display:flex;align-items:center;cursor:pointer">Retrieved passages (${passages.length})</summary>` +
       passages.map(p => `<blockquote style="margin:8px 0;padding-left:12px;border-left:3px solid var(--line)"><small><code class="mono">${esc(p.chunk_id)}</code> ${esc(p.source_id)} · ${esc(p.locator || "")}</small><br>${esc((p.text || "").slice(0, 420))}…</blockquote>`).join("") + "</details>";
     return h || `<p class="muted">No sources — the system did not answer.</p>`;

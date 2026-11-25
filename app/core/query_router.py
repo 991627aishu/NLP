@@ -54,7 +54,8 @@ MIXED_DOMAIN_PATTERNS = [
     re.compile(r"\b(compare|comparison|difference between|versus|vs\.?)\b.*\b(biological|metabolism|modern|science|scientific|allopath\w*|fever)\b.*(with|and|versus|vs\.?).*\b(traditional|ayurved\w*|agni|vata|pitta|kapha|jwara)\b", re.IGNORECASE),
     re.compile(r"\b(ai|artificial intelligence|nlp|machine learning|deep learning|data science|comput\w*|ontology|ontologies)\b.*\b(preserve|preservation|traditional|ayurved\w*|sanskrit)\b", re.IGNORECASE),
     re.compile(r"\b(how can|how does)\b.*\b(ai|nlp|technology|informatics)\b.*\b(ayurved\w*|traditional\s+medic\w*|herbal)\b", re.IGNORECASE),
-    re.compile(r"\b(ayurved\w*|traditional\s+medic\w*)\b.*\b(modern\s+medicine|modern\s+terminology|snomed|icd-11|scientific\s+validation|modern\s+science|clinical\s+trials)\b", re.IGNORECASE),
+    re.compile(r"\b(ayurved\w*|traditional\s+medic\w*)\b.*\b(modern\s+medicine|modern\s+terminology|snomed|icd-11|scientific\s+validation|modern\s+science|clinical\s+trials?|clinical\s+studies|modern\s+studies|scientific\s+studies)\b", re.IGNORECASE),
+    re.compile(r"\b(clinical\s+trials?|clinical\s+studies|modern\s+studies|scientific\s+studies|modern\s+science)\b.*\b(ayurved\w*|ashwagandha|tulsi|triphala|rasayana|dosha|tridosha)\b", re.IGNORECASE),
     re.compile(r"\b(medicinal plants?|herbs?|phytochem\w*)\b.*\b(traditional.*modern|modern.*traditional|botanical\s+science|pharmacolog\w*)\b", re.IGNORECASE),
     re.compile(r"\b(traditional\s+ayurvedic\s+terminology\s+with\s+modern\s+medical\s+terminology)\b", re.IGNORECASE),
     re.compile(r"\b(is|are)\b.*\b(same as|equivalent to|equal to|similar to|different from|synonymous with)\b.*\b(modern|biology|pharmacolog\w*|allopath\w*|western|scientific|biomedic\w*)\b", re.IGNORECASE),
@@ -341,6 +342,28 @@ class IntelligentQueryRouter:
                 "scores": scores,
                 "is_safe": True,
             }
+
+        # Ambiguity check: context-free short queries whose token is close to an Ayurvedic term
+        # (e.g., "What is kapa?" -> could mean Kapha in Ayurveda or Hawaiian kapa)
+        if score_ayur == 0 and score_gen == 0 and len(words) <= 5 and self.matcher and hasattr(self.matcher, "suggest_ambiguous_ayurvedic_terms"):
+            ambig = self.matcher.suggest_ambiguous_ayurvedic_terms(raw)
+            if ambig:
+                first = ambig[0]
+                return {
+                    "route": QueryRoute.UNCLEAR_QUERY,
+                    "confidence": 0.85,
+                    "reason": f"Ambiguous term '{first['token']}' without domain context — could refer to Ayurvedic '{first['canonical_term']}' or another meaning.",
+                    "ambiguous_token": first["token"],
+                    "clarification_candidates": [
+                        f"{first['canonical_term']} (Ayurveda)",
+                        f"'{first['token']}' in a non-Ayurvedic / general context",
+                    ],
+                    "matched_ayurvedic_terms": [],
+                    "matched_general_terms": [],
+                    "matched_mixed_terms": [],
+                    "scores": scores,
+                    "is_safe": True,
+                }
 
         # Default fallback to general educational intelligence if coherent sentence
         if len(words) >= 3:

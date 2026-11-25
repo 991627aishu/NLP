@@ -212,7 +212,7 @@ class AyurMitraPipeline:
             t_cursor = t_now
 
             if route_cat == QueryRoute.UNCLEAR_QUERY:
-                unclear_res = self.general_ai.process_unclear_query(query, target_lang=effective_target_lang)
+                unclear_res = self.general_ai.process_unclear_query(query, target_lang=effective_target_lang, route_res=route_res)
                 stage_timings["general_ai_ms"] = round((time.time() - t_cursor) * 1000, 2)
                 return self._wrap_general_ai_response(
                     query, system_mode, lang_info, dominant_lang, effective_target_lang,
@@ -261,8 +261,28 @@ class AyurMitraPipeline:
 
         if use_terminology:
             detected_terms = self.matcher.find_terms(query)
+            if hasattr(self.matcher, "find_fuzzy_terms"):
+                fuzzy = self.matcher.find_fuzzy_terms(query, require_ayurveda_context=True)
+                seen_c = {t.get("canonical_term", "").lower() for t in detected_terms}
+                for fz in fuzzy:
+                    if fz.get("canonical_term", "").lower() not in seen_c:
+                        detected_terms.append(fz)
+                        seen_c.add(fz["canonical_term"].lower())
             if detected_terms:
                 protected_text, placeholder_map = self.protector.protect(query)
+                for fz in detected_terms:
+                    if fz.get("script") == "Latin_Fuzzy":
+                        mt = fz.get("matched_text", "")
+                        ct = fz.get("canonical_term", "")
+                        if mt and ct and mt in protected_text:
+                            tok_key = f"__AYURTERM_{len(placeholder_map)}__"
+                            protected_text = re.sub(rf"\b{re.escape(mt)}\b", tok_key, protected_text, count=1)
+                            placeholder_map[tok_key] = {
+                                "canonical_term": ct,
+                                "matched_text": mt,
+                                "script": "Latin_Fuzzy",
+                                "concept_id": fz.get("concept_id", f"CID_{ct}"),
+                            }
                 processed_query = protected_text
         t_now = time.time()
         stage_timings["terminology_detection_ms"] = round((t_now - t_cursor) * 1000, 2)
@@ -325,11 +345,19 @@ class AyurMitraPipeline:
             top_score = top_p.get("rrf_score", top_p.get("bm25_score", 0.0))
             if top_score <= 0.020 and top_p.get("bm25_score", 0.0) == 0:
                 is_local_insufficient = True
-            # Also verify if the primary detected concepts actually exist in retrieved passages
-            primary_terms = [t.get("canonical_term", "").lower() for t in (detected_terms or []) if t.get("canonical_term")]
+            # Ignore generic meta-terms so e.g. 'ayurveda' alone does not mask missing concept coverage
+            generic_meta = {"ayurveda", "ayurvedic", "disease", "roga", "health", "medicine"}
+            primary_terms = [
+                t.get("canonical_term", "").lower() for t in (detected_terms or [])
+                if t.get("canonical_term") and t.get("canonical_term", "").lower() not in generic_meta
+            ]
             if primary_terms:
                 all_text = " ".join((p.get("text", "") + " " + p.get("title", "")) for p in retrieved_passages).lower()
                 if not any(pt in all_text for pt in primary_terms):
+                    is_local_insufficient = True
+            if not is_local_insufficient:
+                pre_ev = self._evidence_check(english_query, detected_terms, retrieved_passages)
+                if pre_ev.get("judgeable") and not pre_ev.get("supported"):
                     is_local_insufficient = True
 
         explicit_external_req = any(w in query.lower() for w in ["recent", "modern", "latest", "who report", "clinical trial", "pubchem", "news", "current"])
@@ -350,7 +378,8 @@ class AyurMitraPipeline:
                     canon_names = [t.get("canonical_term") for t in detected_terms if t.get("canonical_term")]
                     if canon_names:
                         search_term = " ".join(canon_names) + " " + search_term
-                web_res = self.web_search.search(search_term.strip(), max_results=4)
+                domain_terms = [t.get("canonical_term", "") for t in (detected_terms or []) if t.get("canonical_term")]
+                web_res = self.web_search.search(search_term.strip(), max_results=4, domain="ayurveda", domain_terms=domain_terms)
                 if web_res.get("success") and web_res.get("passages"):
                     web_passages = web_res.get("passages", [])
                     web_status = "success"
@@ -414,9 +443,12 @@ class AyurMitraPipeline:
                 self._llm = llm
                 out = llm.generate(english_query if effective_target_lang == "en" else query,
                                    retrieved_passages, graph_facts, target_lang=effective_target_lang)
-                if out["insufficient"]:
+                if not out.get("success", True):
+                    generator_note = {"llm_error": str(out.get("error", "llm_failed"))[:200], "fell_back_to": "extractive"}
+                elif out["insufficient"]:
                     gen_res = dict(gen_res, answer=safety_message("insufficient_evidence", effective_target_lang),
                                    abstained=True, reason="insufficient_evidence", citations=[])
+                    generator_used = f"llm:{out['provider']}:{out['model']}"
                 else:
                     cited = set(out["cited_ids"])
                     clean_ans = out['answer_text']
@@ -427,8 +459,8 @@ class AyurMitraPipeline:
                     src_lines = "\n".join(f"- {c['title']} ({c.get('source_id', 'Corpus')} | {c.get('locator', 'Ref')})" for c in cits)
                     gen_res = dict(gen_res, citations=cits,
                                    answer=f"**Answer:** {clean_ans}\n\n**Sources:**\n{src_lines}")
-                generator_used = f"llm:{out['provider']}:{out['model']}"
-                generator_note = {"dropped_sentences": out["dropped_sentences"]}
+                    generator_used = f"llm:{out['provider']}:{out['model']}"
+                    generator_note = {"dropped_sentences": out["dropped_sentences"]}
             except Exception as e:
                 generator_note = {"llm_error": f"{type(e).__name__}: {e}"[:300], "fell_back_to": "extractive"}
 
@@ -555,6 +587,17 @@ class AyurMitraPipeline:
 
         all_citations = gen_res.get("citations", []) + gen_res.get("web_citations", [])
 
+        ext_providers = sorted(set(wp.get("provider", "") for wp in (web_passages or []) if wp.get("provider")))
+        if ":web_grounded" in generator_used:
+            computed_source_label = f"External Authoritative APIs ({', '.join(ext_providers) or 'Web Research'})"
+            computed_answer_source = "external_api_grounded"
+        elif ":knowledge_fallback" in generator_used:
+            computed_source_label = "Gemini Foundational Knowledge (No Local Corpus Match)"
+            computed_answer_source = "gemini_knowledge_fallback"
+        else:
+            computed_source_label = "AyurMitra Knowledge Base (WHO / NAMASTE / IMPPAT)"
+            computed_answer_source = "ayurveda_rag"
+
         return {
             "raw_query": query,
             "system_mode": system_mode,
@@ -608,10 +651,10 @@ class AyurMitraPipeline:
             "evidence_support_rate": gen_res.get("evidence_support_rate", 1.0),
             "claim_validation": gen_res.get("claim_validation"),
             "route_category": "AYURVEDA_DOMAIN",
-            "route_label": "AyurMitra Knowledge Base",
-            "source_label": "AyurMitra Knowledge Base (WHO / NAMASTE / IMPPAT)",
-            "answer_source": "ayurveda_rag",
-            "is_ayurvedic_grounded": True,
+            "route_label": "AyurMitra Knowledge Base" if computed_answer_source == "ayurveda_rag" else "AyurMitra + External APIs",
+            "source_label": computed_source_label,
+            "answer_source": computed_answer_source,
+            "is_ayurvedic_grounded": computed_answer_source == "ayurveda_rag",
         }
 
     @staticmethod

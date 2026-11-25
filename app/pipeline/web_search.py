@@ -269,13 +269,25 @@ class WebSearchFallback:
             log.debug("EuropePMC search error: %s", e)
         return passages
 
-    def search(self, query: str, max_results: int = 4) -> Dict[str, Any]:
+    def search(self, query: str, max_results: int = 4, domain: str = "ayurveda",
+               domain_terms: Optional[List[str]] = None) -> Dict[str, Any]:
         """
-        Executes multi-tier live web search, extraction, and ranking.
+        Executes multi-tier live external API retrieval (EuropePMC, PubMed, OpenAlex,
+        Crossref, Wikipedia) with DuckDuckGo fallback, extraction, and deduplication.
         """
         clean_q = query.strip()
         if not clean_q:
             return {"success": False, "passages": [], "message": "Empty query"}
+
+        try:
+            from app.pipeline.external_retriever import ExternalKnowledgeRetriever
+            ext = getattr(self, "_ext", None) or ExternalKnowledgeRetriever()
+            self._ext = ext
+            ext_res = ext.retrieve(clean_q, domain=domain, max_results=max_results, domain_terms=domain_terms)
+            if ext_res.get("success") and ext_res.get("passages"):
+                return ext_res
+        except Exception as e:
+            log.debug("ExternalKnowledgeRetriever fallback to legacy web search: %s", e)
 
         # Check cache (12-hour TTL)
         cache_key = f"web:{clean_q.lower()}"
@@ -327,14 +339,18 @@ class WebSearchFallback:
                     except Exception as e:
                         log.debug("Concurrent page extraction error: %s", e)
 
-        # Deduplicate by URL
+        # Deduplicate by URL and filter out low-relevance noise
+        from app.pipeline.external_retriever import _relevance_score
         seen_urls = set()
         unique_results = []
         for r in results:
             u = r.get("url", "")
-            if u not in seen_urls:
-                seen_urls.add(u)
-                unique_results.append(r)
+            if u in seen_urls:
+                continue
+            if _relevance_score(clean_q, r.get("title", ""), r.get("snippet", "")) < 0.25:
+                continue
+            seen_urls.add(u)
+            unique_results.append(r)
 
         ret_dict = {
             "success": len(unique_results) > 0,

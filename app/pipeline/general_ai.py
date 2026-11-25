@@ -317,6 +317,11 @@ class GeneralAIEngine:
         self.entity_resolver = SemanticEntityResolver()
         self.retrieval_gate = RetrievalQualityGate(entity_resolver=self.entity_resolver)
         try:
+            from app.pipeline.external_retriever import ExternalKnowledgeRetriever
+            self.external_retriever = ExternalKnowledgeRetriever()
+        except Exception:
+            self.external_retriever = None
+        try:
             from app.pipeline.llm_generator import LLMGenerator
             self.llm_generator = LLMGenerator()
         except Exception:
@@ -594,21 +599,63 @@ class GeneralAIEngine:
                 "is_web": True
             })
         else:
-            # 2. Strict Entity-Verified Wikipedia Retrieval
-            evidence = (
-                self._search_wikipedia(focal.get("raw_extracted_entity", ""), focal_info=focal) or
-                self._search_wikipedia(search_query, focal_info=focal) or
-                self._search_wikipedia(query, focal_info=focal)
-            )
-            if evidence:
-                citations.append({
-                    "source_id": "Wikipedia_Public_Encyclopedia",
-                    "title": evidence["title"],
-                    "url": evidence["url"],
-                    "publisher": evidence["publisher"],
-                    "locator": "Encyclopedic Reference",
-                    "is_web": True
-                })
+            # 2. Multi-Provider External API Retrieval (Wikipedia + OpenAlex + Crossref)
+            ext_passages: List[Dict[str, Any]] = []
+            providers_used: List[str] = []
+            if self.external_retriever is not None:
+                ext_q = focal.get("raw_extracted_entity") or search_query or query
+                is_acad = any(w in (search_query or query).lower() for w in (
+                    "research", "study", "studies", "paper", "algorithm", "neural", "quantum",
+                    "machine learning", "deep learning", "pharmacology", "clinical", "biology",
+                ))
+                ext_res = self.external_retriever.retrieve(
+                    ext_q if len(ext_q.split()) >= 2 else (search_query or query),
+                    domain="academic" if is_acad else "general",
+                    max_results=4,
+                )
+                ext_passages = ext_res.get("passages", [])
+                providers_used = ext_res.get("providers_used", [])
+
+            if ext_passages:
+                top_ext = ext_passages[0]
+                evidence = {
+                    "title": top_ext.get("title", query),
+                    "url": top_ext.get("url", ""),
+                    "publisher": top_ext.get("publisher", "External Reference"),
+                    "extract": "\n\n".join(
+                        f"[{p.get('provider', 'Source')}: {p.get('title', '')}] {p.get('snippet', '')}"
+                        for p in ext_passages[:3]
+                    ),
+                    "domain": "External Academic & Encyclopedic APIs",
+                    "providers_used": providers_used,
+                    "ext_passages": ext_passages,
+                }
+                for p in ext_passages:
+                    if p.get("url"):
+                        citations.append({
+                            "source_id": p.get("provider", "External_API"),
+                            "title": p.get("title", "External Reference"),
+                            "url": p.get("url", ""),
+                            "publisher": p.get("publisher", ""),
+                            "locator": str(p.get("year", "Reference")),
+                            "is_web": True,
+                        })
+            else:
+                # Strict Entity-Verified Wikipedia fallback
+                evidence = (
+                    self._search_wikipedia(focal.get("raw_extracted_entity", ""), focal_info=focal) or
+                    self._search_wikipedia(search_query, focal_info=focal) or
+                    self._search_wikipedia(query, focal_info=focal)
+                )
+                if evidence:
+                    citations.append({
+                        "source_id": "Wikipedia_Public_Encyclopedia",
+                        "title": evidence["title"],
+                        "url": evidence["url"],
+                        "publisher": evidence["publisher"],
+                        "locator": "Encyclopedic Reference",
+                        "is_web": True
+                    })
 
         # 3. Dedicated High-Fidelity Multilingual Explanations for Core Concepts
         norm_ent = focal.get("normalized_entity", "")
@@ -728,18 +775,76 @@ class GeneralAIEngine:
                     log.info("LLM generation fallback error: %s", e)
 
             if llm_text:
-                raw_en_answer = f"**Answer:** {llm_text}"
+                raw_en_answer = f"**Answer:** {llm_text}\n\n*Note: No external API citation matched directly; synthesized from Gemini foundational knowledge.*"
+                source_lbl = "Gemini Foundational Knowledge (No External API Match)"
             else:
-                raw_en_answer = (
-                    f"**Answer:** Educational explanation regarding '{clean_sub}':\n\n"
-                    f"'{clean_sub}' is an established topic in educational knowledge and multidisciplinary studies. "
-                    f"It involves key foundational definitions, systemic principles, and standard academic applications across science, technology, and health."
-                )
+                # Never fabricate citations or generic boilerplate when no source is available
+                return {
+                    "answer": f"I could not retrieve reliable external sources or generate a verified answer for '{clean_sub}' right now. Please try rephrasing or check API connectivity.",
+                    "route_category": "GENERAL_KNOWLEDGE",
+                    "source_label": "No Reliable External Source Available",
+                    "answer_source": "general_ai_abstained",
+                    "citations": [],
+                    "retrieved_passages": [],
+                    "is_ayurvedic_grounded": False,
+                    "machine_translated": False,
+                    "abstained": True,
+                    "abstention_reason": "no_reliable_external_source",
+                }
         else:
+            ext_passages_for_llm = evidence.get("ext_passages") or [{
+                "chunk_id": "EXT_01",
+                "source_id": evidence.get("publisher", "External"),
+                "locator": evidence.get("domain", "Reference"),
+                "title": evidence.get("title", query),
+                "text": evidence.get("extract", ""),
+            }]
+            llm_synth = None
+            if hasattr(self, "llm_generator") and self.llm_generator and self.llm_generator.available()["available"]:
+                try:
+                    res_llm = self.llm_generator.generate(
+                        question=query,
+                        passages=ext_passages_for_llm,
+                        graph_facts=[],
+                        target_lang=target_lang,
+                        domain="GENERAL_KNOWLEDGE",
+                    )
+                    if res_llm.get("success") and res_llm.get("answer_text"):
+                        llm_synth = res_llm["answer_text"]
+                except Exception as e:
+                    log.debug("General AI grounded LLM synthesis error: %s", e)
+
+            if llm_synth:
+                final_answer = f"**Answer:** {llm_synth}"
+                prov_str = ", ".join(evidence.get("providers_used") or [evidence.get("publisher", "External API")])
+                source_lbl = f"External Authoritative APIs ({prov_str})" if not curated else "Curated Reference + External APIs"
+                return {
+                    "answer": final_answer,
+                    "route_category": "GENERAL_KNOWLEDGE",
+                    "source_label": source_lbl,
+                    "answer_source": "general_ai_api_grounded",
+                    "citations": citations,
+                    "retrieved_passages": [
+                        {
+                            "chunk_id": f"EXT_{i+1:02d}",
+                            "source_id": p.get("provider", p.get("publisher", "External")),
+                            "locator": str(p.get("year", "Reference")),
+                            "title": p.get("title", query),
+                            "text": p.get("snippet", p.get("text", ""))[:700],
+                        }
+                        for i, p in enumerate(ext_passages_for_llm[:4])
+                    ],
+                    "is_ayurvedic_grounded": False,
+                    "machine_translated": False,
+                    "abstained": False,
+                }
+
             raw_en_answer = (
-                f"**Answer:** Based on verified educational knowledge regarding {evidence['title']}:\n\n"
+                f"**Answer:** Based on verified external sources regarding {evidence['title']}:\n\n"
                 f"{evidence['extract']}"
             )
+            prov_str = ", ".join(evidence.get("providers_used") or [evidence.get("publisher", "External API")])
+            source_lbl = f"External Authoritative APIs ({prov_str})" if not curated else "General AI Knowledge (Curated Reference)"
 
         if target_lang == "hi" and curated and curated.get("native_hi"):
             final_answer = curated["native_hi"]
@@ -759,28 +864,17 @@ class GeneralAIEngine:
                 except Exception as e:
                     log.warning("General AI translation failed: %s", e)
 
-        if not evidence and not citations:
-            clean_sub_title = (clean_sub or query).strip().title()
-            citations.append({
-                "source_id": "General_Educational_Reference",
-                "title": f"Educational Reference: {clean_sub_title}",
-                "url": "https://en.wikipedia.org/wiki/" + clean_sub_title.replace(" ", "_"),
-                "publisher": "Educational Reference & Multidisciplinary Studies",
-                "locator": "Foundational Overview",
-                "is_web": True
-            })
-
         return {
             "answer": final_answer,
             "route_category": "GENERAL_KNOWLEDGE",
-            "source_label": "General AI Knowledge (Encyclopedic & Academic References)",
+            "source_label": locals().get("source_lbl", "General AI Knowledge (Encyclopedic & Academic References)"),
             "answer_source": "general_ai",
             "citations": citations,
             "retrieved_passages": [
                 {
                     "chunk_id": f"GEN_AI_{evidence.get('title', 'Ref')[:15].replace(' ', '_')}" if evidence else "GEN_AI_001",
-                    "source_id": evidence.get("publisher", "General AI Encyclopedia") if evidence else "General Educational Reference",
-                    "locator": evidence.get("domain", "Educational Encyclopedia") if evidence else "Public Reference",
+                    "source_id": evidence.get("publisher", "General AI Encyclopedia") if evidence else "Gemini Foundational Knowledge",
+                    "locator": evidence.get("domain", "Educational Encyclopedia") if evidence else "Foundational",
                     "title": evidence.get("title", query) if evidence else query,
                     "text": evidence.get("extract", raw_en_answer) if evidence else raw_en_answer
                 }
@@ -975,11 +1069,32 @@ class GeneralAIEngine:
             "abstained": False
         }
 
-    def process_unclear_query(self, query: str, target_lang: str = "en") -> Dict[str, Any]:
+    def process_unclear_query(self, query: str, target_lang: str = "en", route_res: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Handles unclear or ambiguous queries by politely asking for clarification.
         """
-        if target_lang == "hi":
+        cands = (route_res or {}).get("clarification_candidates") or []
+        ambig_tok = (route_res or {}).get("ambiguous_token") or ""
+        if cands and ambig_tok:
+            if target_lang == "hi":
+                text = (
+                    f"आपका शब्द **'{ambig_tok}'** एक से अधिक अर्थों की ओर संकेत कर सकता है:\n"
+                    + "\n".join(f"- {c}" for c in cands)
+                    + "\n\nकृपया स्पष्ट करें कि आप किस संदर्भ में पूछ रहे हैं (उदाहरण: *'What is Kapha in Ayurveda?'* या *'कफ दोष क्या है?'*)।"
+                )
+            elif target_lang == "kn":
+                text = (
+                    f"ನಿಮ್ಮ ಪ್ರಶ್ನೆಯಲ್ಲಿರುವ **'{ambig_tok}'** ಪದವು ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚು ಅರ್ಥಗಳನ್ನು ಸೂಚಿಸಬಹುದು:\n"
+                    + "\n".join(f"- {c}" for c in cands)
+                    + "\n\nದಯವಿಟ್ಟು ನೀವು ಯಾವ ವಿಷಯದ ಬಗ್ಗೆ ಕೇಳುತ್ತಿದ್ದೀರಿ ಎಂಬುದನ್ನು ಸ್ಪಷ್ಟಪಡಿಸಿ (ಉದಾ: *'What is Kapha in Ayurveda?'* ಅಥವಾ *'ಕಫ ಎಂದರೇನು?'*)।"
+                )
+            else:
+                text = (
+                    f"Your query **'{ambig_tok}'** is ambiguous without more context and could refer to:\n"
+                    + "\n".join(f"- {c}" for c in cands)
+                    + "\n\nCould you clarify which one you mean? For example, ask *'What is Kapha in Ayurveda?'* or specify the non-Ayurvedic topic."
+                )
+        elif target_lang == "hi":
             text = "आपका प्रश्न अधूरा या अस्पष्ट प्रतीत होता है। कृपया अपना प्रश्न अधिक स्पष्टता के साथ पूछें — जैसे कि किसी विशिष्ट आयुर्वेदिक अवधारणा (उदा. 'वात दोष क्या है?'), जड़ी-बूटी, या किसी सामान्य विषय के बारे में।"
         elif target_lang == "kn":
             text = "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯು ಅಪೂರ್ಣ ಅಥವಾ ಅಸ್ಪಷ್ಟವಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಹೆಚ್ಚು ವಿವರವಾಗಿ ಕೇಳಿ — ಉದಾಹರಣೆಗೆ ಯಾವುದೇ ನಿರ್ದಿಷ್ಟ ಆಯುರ್ವೇದ ಪರಿಕಲ್ಪನೆ (ಉದಾ. 'ವಾತ ದೋಷ ಎಂದರೇನು?'), ಗಿಡಮೂಲಿಕೆ, ಅಥವಾ ಸಾಮಾನ್ಯ ವಿಷಯದ ಬಗ್ಗೆ."
