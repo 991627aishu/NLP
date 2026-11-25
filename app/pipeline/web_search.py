@@ -24,7 +24,10 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None  # Safe fallback for headless deployments without bs4
 from app.config import CACHE_DIR
 
 log = logging.getLogger("ayurmitra.web_search")
@@ -81,19 +84,26 @@ class WebSearchFallback:
                 if "html" not in content_type and "text" not in content_type:
                     return {}
                 html_bytes = resp.read(250000)  # max 250KB
-                soup = BeautifulSoup(html_bytes, "html.parser")
+                if BeautifulSoup is not None:
+                    soup = BeautifulSoup(html_bytes, "html.parser")
+                    for tag in soup(["script", "style", "nav", "header", "footer", "aside", "form"]):
+                        tag.decompose()
 
-                for tag in soup(["script", "style", "nav", "header", "footer", "aside", "form"]):
-                    tag.decompose()
+                    title = soup.title.get_text(strip=True) if soup.title else ""
+                    body_parts = []
+                    for p in soup.find_all(["p", "article", "section"]):
+                        txt = p.get_text(strip=True)
+                        if len(txt) > 40:
+                            body_parts.append(txt)
 
-                title = soup.title.get_text(strip=True) if soup.title else ""
-                body_parts = []
-                for p in soup.find_all(["p", "article", "section"]):
-                    txt = p.get_text(strip=True)
-                    if len(txt) > 40:
-                        body_parts.append(txt)
-
-                full_text = " ".join(body_parts) if body_parts else soup.get_text(separator=" ", strip=True)
+                    full_text = " ".join(body_parts) if body_parts else soup.get_text(separator=" ", strip=True)
+                else:
+                    # Built-in regex fallback when BeautifulSoup is unavailable
+                    raw_html = html_bytes.decode("utf-8", errors="ignore")
+                    cleaned = re.sub(r"<(script|style|nav|header|footer|aside|form)[^>]*>.*?</\1>", " ", raw_html, flags=re.DOTALL | re.IGNORECASE)
+                    title_m = re.search(r"<title[^>]*>(.*?)</title>", cleaned, re.IGNORECASE)
+                    title = html.unescape(title_m.group(1).strip()) if title_m else ""
+                    full_text = html.unescape(re.sub(r"<[^>]+>", " ", cleaned))
                 clean_body = re.sub(r"\s+", " ", full_text)[:2000]
                 return {
                     "extracted_title": title,
@@ -111,36 +121,56 @@ class WebSearchFallback:
             req = urllib.request.Request(search_url, headers=self.headers)
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 html_doc = resp.read().decode("utf-8", errors="ignore")
-                soup = BeautifulSoup(html_doc, "html.parser")
+                if BeautifulSoup is not None:
+                    soup = BeautifulSoup(html_doc, "html.parser")
 
-                for r in soup.select(".result"):
-                    title_elem = r.select_one(".result__title a")
-                    snippet_elem = r.select_one(".result__snippet")
-                    if not title_elem or not snippet_elem:
-                        continue
+                    for r in soup.select(".result"):
+                        title_elem = r.select_one(".result__title a")
+                        snippet_elem = r.select_one(".result__snippet")
+                        if not title_elem or not snippet_elem:
+                            continue
 
-                    raw_href = title_elem.get("href", "")
-                    m = re.search(r"uddg=([^&]+)", raw_href)
-                    final_url = urllib.parse.unquote(m.group(1)) if m else raw_href
-                    if not final_url.startswith("http"):
-                        continue
+                        raw_href = title_elem.get("href", "")
+                        m = re.search(r"uddg=([^&]+)", raw_href)
+                        final_url = urllib.parse.unquote(m.group(1)) if m else raw_href
+                        if not final_url.startswith("http"):
+                            continue
 
-                    title = title_elem.get_text(strip=True)
-                    snippet = snippet_elem.get_text(strip=True)
-                    parsed_domain = urllib.parse.urlparse(final_url).netloc
+                        title = title_elem.get_text(strip=True)
+                        snippet = snippet_elem.get_text(strip=True)
+                        parsed_domain = urllib.parse.urlparse(final_url).netloc
 
-                    results.append({
-                        "source_type": "live_web_source",
-                        "title": title,
-                        "url": final_url,
-                        "publisher": parsed_domain or "Authoritative Web Source",
-                        "year": "Current Web Evidence",
-                        "doi": "",
-                        "snippet": snippet,
-                        "provenance": f"[{parsed_domain or 'Web'}]"
-                    })
-                    if len(results) >= max_results:
-                        break
+                        results.append({
+                            "source_type": "live_web_source",
+                            "title": title,
+                            "url": final_url,
+                            "publisher": parsed_domain or "Authoritative Web Source",
+                            "year": "Current Web Evidence",
+                            "doi": "",
+                            "snippet": snippet,
+                            "provenance": f"[{parsed_domain or 'Web'}]"
+                        })
+                        if len(results) >= max_results:
+                            break
+                else:
+                    # Regex-based extraction fallback for DuckDuckGo
+                    raw_results = re.findall(r'<a[^>]+class="[^"]*result__snippet[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', html_doc, re.DOTALL | re.IGNORECASE)
+                    for raw_href, raw_snip in raw_results[:max_results]:
+                        m = re.search(r"uddg=([^&]+)", raw_href)
+                        final_url = urllib.parse.unquote(m.group(1)) if m else raw_href
+                        clean_snip = html.unescape(re.sub(r"<[^>]+>", "", raw_snip)).strip()
+                        parsed_domain = urllib.parse.urlparse(final_url).netloc
+                        if final_url.startswith("http") and clean_snip:
+                            results.append({
+                                "source_type": "live_web_source",
+                                "title": "Web Search Result",
+                                "url": final_url,
+                                "publisher": parsed_domain or "Authoritative Web Source",
+                                "year": "Current Web Evidence",
+                                "doi": "",
+                                "snippet": clean_snip,
+                                "provenance": f"[{parsed_domain or 'Web'}]"
+                            })
         except Exception as e:
             log.warning("DuckDuckGo search error: %s", e)
         return results
