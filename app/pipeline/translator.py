@@ -480,26 +480,34 @@ class MultilingualTranslator:
         return en_text
 
     def _load_parallel_datasets(self) -> None:
-        """Indexes parallel question pairs from hi.parquet and kn.parquet."""
-        try:
-            df_hi = pd.read_parquet(HI_PARQUET)
-            for _, r in df_hi.head(3000).iterrows():
-                hi_q = str(r.get("question_translated", "")).strip().lower()
-                en_q = str(r.get("question", "")).strip()
-                if hi_q and en_q:
-                    self.parallel_qa[hi_q] = en_q
-        except Exception as e:  # F21: was a silent pass (e.g. pyarrow missing)
-            log.warning("Hindi parallel-QA lookup disabled: could not read %s (%s)", HI_PARQUET.name, e)
-
-        try:
-            df_kn = pd.read_parquet(KN_PARQUET)
-            for _, r in df_kn.head(3000).iterrows():
-                kn_q = str(r.get("question_translated", "")).strip().lower()
-                en_q = str(r.get("question", "")).strip()
-                if kn_q and en_q:
-                    self.parallel_qa[kn_q] = en_q
-        except Exception as e:  # F21
-            log.warning("Kannada parallel-QA lookup disabled: could not read %s (%s)", KN_PARQUET.name, e)
+        """Indexes parallel question pairs from hi.parquet and kn.parquet with minimal memory footprint."""
+        import gc
+        for label, path in (("Hindi", HI_PARQUET), ("Kannada", KN_PARQUET)):
+            try:
+                import pyarrow.parquet as pq  # type: ignore
+                pf = pq.ParquetFile(path)
+                cols = [c for c in ("question_translated", "question") if c in pf.schema_arrow.names]
+                if len(cols) == 2:
+                    batch = next(pf.iter_batches(batch_size=3000, columns=cols), None)
+                    if batch is not None:
+                        d = batch.to_pydict()
+                        for q1, q2 in zip(d["question_translated"], d["question"]):
+                            s1, s2 = str(q1 or "").strip().lower(), str(q2 or "").strip()
+                            if s1 and s2:
+                                self.parallel_qa[s1] = s2
+                del pf
+            except Exception as e:
+                try:
+                    df = pd.read_parquet(path, columns=["question_translated", "question"])
+                    for _, r in df.head(3000).iterrows():
+                        s1 = str(r.get("question_translated", "")).strip().lower()
+                        s2 = str(r.get("question", "")).strip()
+                        if s1 and s2:
+                            self.parallel_qa[s1] = s2
+                    del df
+                except Exception as e2:
+                    log.warning("%s parallel-QA lookup disabled: could not read %s (%s / %s)", label, path.name, e, e2)
+        gc.collect()
 
     def translate_to_english(
         self, text: str, source_lang: str = "auto"

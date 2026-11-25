@@ -490,7 +490,9 @@
       if (v === "en-IN") return "en-IN";
       if (v === "hi-IN") return "hi-IN";
       if (v === "kn-IN") return "kn-IN";
-      // Auto: return browser locale or en-IN by default without forcing Devanagari/Kannada
+      // Auto: respect active UI / starter language, then browser locale, else en-IN
+      if (UI === "hi" || QL === "hi" || QL === "hinglish") return "hi-IN";
+      if (UI === "kn" || QL === "kn" || QL === "kanglish") return "kn-IN";
       return navigator.language && navigator.language.startsWith("hi") ? "hi-IN" :
              navigator.language && navigator.language.startsWith("kn") ? "kn-IN" : "en-IN";
     },
@@ -510,8 +512,9 @@
       if (!window.isSecureContext) return this.fail(t("mic_insecure"));
       this._ui(true);
       const isAuto = this.selectedVoiceLang() === "auto";
-      // Auto-detect MUST use server-side Whisper because browser Web Speech API cannot auto-detect multilingual speech (defaults to en-IN)
-      if (!isAuto && SR && store.get("ayur.forceServerSTT", false) !== true) return this._webSpeech();
+      const serverSttLive = !!(HEALTH && HEALTH.backends && HEALTH.backends.stt && HEALTH.backends.stt.live);
+      // Use server-side Whisper for Auto when available; otherwise use browser Web Speech API so voice works on Render
+      if (SR && (!isAuto || !serverSttLive) && store.get("ayur.forceServerSTT", false) !== true) return this._webSpeech();
       if (!navigator.mediaDevices || !window.MediaRecorder) {
         if (SR) return this._webSpeech();
         this._ui(false); return this.fail(t("no_mic"));
