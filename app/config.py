@@ -101,9 +101,9 @@ def _env_bool(name: str, default: bool) -> bool:
 # and ALWAYS record which backend actually ran in the response trace.
 TRANSLATOR_BACKEND = _env("AYUR_TRANSLATOR_BACKEND", "auto")      # auto | indictrans2 | rules
 DENSE_BACKEND      = _env("AYUR_DENSE_BACKEND", "auto")           # auto | sentence_transformers | tfidf
-GENERATOR_BACKEND  = _env("AYUR_GENERATOR_BACKEND", "extractive") # extractive | llm
-LLM_PROVIDER       = _env("AYUR_LLM_PROVIDER", "anthropic")       # anthropic | ollama
-LLM_MODEL          = _env("AYUR_LLM_MODEL", "claude-sonnet-5-5")
+GENERATOR_BACKEND  = _env("AYUR_GENERATOR_BACKEND", "llm")        # llm | extractive
+LLM_PROVIDER       = _env("AYUR_LLM_PROVIDER", "gemini")          # gemini | anthropic | ollama
+LLM_MODEL          = _env("AYUR_LLM_MODEL", "gemini-3.8-flash")
 OLLAMA_URL         = _env("AYUR_OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL       = _env("AYUR_OLLAMA_MODEL", "llama3.1:8b")
 KG_VERSION         = _env("AYUR_KG_VERSION", "auto")              # auto (v2 if built) | v1 | v2

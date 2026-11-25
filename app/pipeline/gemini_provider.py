@@ -248,6 +248,28 @@ class GeminiProvider:
                     is_transient,
                 )
 
+                if is_transient and self.generation_model != "gemini-3.5-flash":
+                    log.info("Primary %s experiencing temporary 503 spike, trying alternate gemini-3.5-flash immediately...", self.generation_model)
+                    try:
+                        t0 = time.perf_counter()
+                        alt_response = self._client.models.generate_content(
+                            model="gemini-3.5-flash",
+                            contents=user_prompt,
+                            config=config,
+                        )
+                        latency_ms = (time.perf_counter() - t0) * 1000.0
+                        return {
+                            "text": alt_response.text or "",
+                            "model": "gemini-3.5-flash",
+                            "token_usage": token_usage,
+                            "latency_ms": latency_ms,
+                            "grounding_sources": [],
+                            "structured_json": structured_json,
+                            "success": True,
+                        }
+                    except Exception as alt_err:
+                        log.warning("Immediate alternate model failed: %s", alt_err)
+
                 if attempt < max_retries - 1:
                     sleep_time = backoff_sec * (2 ** attempt)
                     if is_rate_limit:

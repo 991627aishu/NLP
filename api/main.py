@@ -30,7 +30,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app import config
-from app.config import DATA_EVAL, DATA_PROC, EDUCATIONAL_DISCLAIMER, LICENCE_NOTES, ROOT
+from app.config import DATA_EVAL, DATA_PROC, EDUCATIONAL_DISCLAIMER, LICENCE_NOTES, ROOT, GENERATOR_BACKEND
 
 log = logging.getLogger("ayurmitra.api")
 FRONTEND_DIR = ROOT / "frontend"
@@ -122,7 +122,7 @@ class AskRequest(BaseModel):
     mode: Literal["B0", "B1", "P1", "P2"] = "P2"
     target_lang: Literal["auto", "en", "hi", "kn", "hinglish", "kanglish"] = "auto"
     web_fallback: bool = False
-    generator: Literal["extractive", "llm"] = "extractive"
+    generator: Literal["extractive", "llm"] = "llm" if (GENERATOR_BACKEND or "llm").lower() == "llm" else "extractive"
     speak: bool = False
     voice: Literal["female", "male"] = "female"
 
